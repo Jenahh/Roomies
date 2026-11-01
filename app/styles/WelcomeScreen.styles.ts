@@ -1,0 +1,27 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
+  page: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 24, maxWidth: 480, width: '100%', alignSelf: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logoImage: { width: 44, height: 44 },
+  wordmark: { fontSize: 24, fontWeight: '800', color: '#2B2D38', letterSpacing: -0.7 },
+  main: { flex: 1, justifyContent: 'center', paddingTop: 42, paddingBottom: 22 },
+  illustrationFrame: { alignItems: 'center', justifyContent: 'center', marginBottom: 36 },
+  welcomeImage: { width: '100%', maxWidth: 372, aspectRatio: 690 / 570 },
+  copy: { alignItems: 'center' },
+  badge: { backgroundColor: '#EAF5EF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginBottom: 19 },
+  badgeText: { fontSize: 10, fontWeight: '600', color: '#394147' },
+  title: { fontSize: 35, lineHeight: 38, fontWeight: '800', letterSpacing: -0.8, textAlign: 'center', color: '#292B35', marginBottom: 20 },
+  subtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', color: '#7B7D87' },
+  footer: { gap: 10 },
+  button: { minHeight: 49, paddingHorizontal: 44, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  primaryButton: { backgroundColor: '#657EEA' },
+  secondaryButton: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7E6E3' },
+  primaryLabel: { fontSize: 15, fontWeight: '700', color: '#19213A' },
+  arrow: { position: 'absolute', right: 18, fontSize: 21, color: '#263350' },
+  secondaryLabel: { fontSize: 14, fontWeight: '600', color: '#353743' },
+  primaryPressed: { backgroundColor: '#8A9FFF' },
+  secondaryPressed: { backgroundColor: '#EDF0FF', borderColor: '#657EEA' },
+  finePrint: { textAlign: 'center', color: '#8B8C93', fontSize: 11, marginTop: 2, marginBottom: 8 },
+});

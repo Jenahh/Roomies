@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import roomiesLogo from '../assets/Roomies Logo.png';
-import { styles } from './RegistrationScreen.styles';
+import { styles } from './styles/RegistrationScreen.styles';
 
 const roles = [
   { id: 'resident', title: 'Resident / Roommate', description: 'Manage your shared home', icon: '⌂', color: '#EDF0FF', label: 'Resident' },

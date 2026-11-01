@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import { styles } from './WelcomeScreen.styles';
+import { styles } from './styles/WelcomeScreen.styles';
 import roomiesLogo from '../assets/Roomies Logo.png';
 import roomiesWelcome from '../assets/Roomies Welcome.png';
 
