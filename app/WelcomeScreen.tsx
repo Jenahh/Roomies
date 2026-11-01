@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import { styles } from './WelcomeScreen.styles';
+import { styles } from './styles/WelcomeScreen.styles';
 import roomiesLogo from '../assets/Roomies Logo.png';
 import roomiesWelcome from '../assets/Roomies Welcome.png';
 
@@ -41,10 +41,10 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
         </View>
 
         <View style={styles.footer}>
-          <Pressable accessibilityRole="button" onPress={onGetStarted} style={({ pressed }) => [styles.button, styles.primaryButton, pressed && styles.pressed]}>
-            <Text style={styles.arrow}>→</Text><Text style={styles.primaryLabel}>Get Started</Text>
+          <Pressable accessibilityRole="button" onPress={onGetStarted} style={({ pressed }) => [styles.button, styles.primaryButton, pressed && styles.primaryPressed]}>
+            <Text style={styles.primaryLabel}>Get Started</Text><Text style={styles.arrow} aria-hidden>{'\u2192'}</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={onLogIn} style={({ pressed }) => [styles.button, styles.secondaryButton, pressed && styles.pressed]}>
+          <Pressable accessibilityRole="button" onPress={onLogIn} style={({ pressed }) => [styles.button, styles.secondaryButton, pressed && styles.secondaryPressed]}>
             <Text style={styles.secondaryLabel}>Log In</Text>
           </Pressable>
           <Text style={styles.finePrint}>Your home. Your people. All in one place.</Text>

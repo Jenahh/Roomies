@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import WelcomeScreen from './WelcomeScreen';
-import './global.css';
+import App from './App';
+import './styles/global.css';
 
-createRoot(document.getElementById('root')!).render(<WelcomeScreen />);
+createRoot(document.getElementById('root')!).render(<App />);
