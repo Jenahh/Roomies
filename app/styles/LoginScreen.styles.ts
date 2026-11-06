@@ -1,3 +1,4 @@
+import { backNavigationText } from './BackNavigation.styles';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
@@ -5,7 +6,7 @@ export const styles = StyleSheet.create({
   page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: 26, paddingBottom: 30 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16 },
   backButton: { minHeight: 44, justifyContent: 'center', paddingRight: 8, borderRadius: 8 },
-  backText: { fontSize: 14, color: '#292B35' },
+  backText: backNavigationText,
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logo: { width: 38, height: 38 },
   wordmark: { fontSize: 25, fontWeight: '800', letterSpacing: -0.7, color: '#292B35' },
