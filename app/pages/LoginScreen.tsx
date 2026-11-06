@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
-import roomiesLogo from '../assets/Roomies Logo.png';
-import { styles } from './styles/LoginScreen.styles';
-import { demoResident, type ResidentUser } from './data/demoAccount';
+import roomiesLogo from '../../assets/Roomies Logo.png';
+import { styles } from '../styles/LoginScreen.styles';
+import { demoAccounts, type ResidentUser } from '../data/demoAccount';
 
 type LoginScreenProps = {
   onBack?: () => void;
@@ -17,14 +17,15 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
   const [message, setMessage] = useState('');
 
   function logIn() {
+    const account = demoAccounts.find(account => account.user.email === email.trim().toLowerCase() && account.password === password);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setMessage('Enter a valid email address.');
     } else if (!password) {
       setMessage('Enter your password.');
-    } else if (email.trim().toLowerCase() === demoResident.email && password === '1234') {
+    } else if (account) {
       // Local demo credentials; replace with backend authentication when available.
       setMessage('');
-      onResidentLogin(demoResident);
+      onResidentLogin(account.user);
     } else {
       setMessage('Incorrect email or password.');
     }
@@ -34,8 +35,8 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Pressable onPress={onBack} accessibilityRole="button" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
-            <Text style={styles.backText}>{'\u2190'}  Back</Text>
+          <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
+            <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
           <View style={styles.brand}>
             <Image source={{ uri: roomiesLogo }} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
@@ -64,7 +65,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           {!!message && <Text accessibilityRole="alert" aria-live="polite" style={styles.message}>{message}</Text>}
           <Pressable accessibilityRole="button" onPress={logIn} style={({ pressed }) => [styles.loginButton, pressed && styles.buttonPressed]}>
             <Text style={styles.loginText}>Log In</Text>
-            <Text aria-hidden style={styles.arrow}>{'\u2192'}</Text>
+            
           </Pressable>
         </View>
 

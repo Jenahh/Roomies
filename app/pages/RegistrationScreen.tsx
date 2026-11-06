@@ -1,12 +1,13 @@
+import DashboardIcon from '../components/dashboard/DashboardIcon';
 import { useState } from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
-import roomiesLogo from '../assets/Roomies Logo.png';
-import { styles } from './styles/RegistrationScreen.styles';
+import roomiesLogo from '../../assets/Roomies Logo.png';
+import { styles } from '../styles/RegistrationScreen.styles';
 
 const roles = [
-  { id: 'resident', title: 'Resident / Roommate', description: 'Manage your shared home', icon: '⌂', color: '#EDF0FF', label: 'Resident' },
-  { id: 'assistant', title: 'Resident Assistant', description: 'Support your residents', icon: '♡', color: '#F2EEFF', label: 'Resident Assistant' },
-  { id: 'landlord', title: 'Landlord / Property Manager', description: 'Manage your community', icon: '▥', color: '#EAF6F0', label: 'Landlord' },
+  { id: 'resident', title: 'Resident', description: 'Manage your shared home', color: '#EDF0FF', label: 'Resident' },
+  { id: 'assistant', title: 'Resident Assistant', description: 'Support your residents', color: '#F2EEFF', label: 'Resident Assistant' },
+  { id: 'landlord', title: 'Property Manager', description: 'Manage your community', color: '#EAF6F0', label: 'Property Manager' },
 ] as const;
 
 type Role = typeof roles[number]['id'];
@@ -24,7 +25,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
       <ScrollView contentContainerStyle={styles.page}>
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={styles.backButton}>
-            <Text style={styles.backArrow}>{'\u2190'}</Text>
+            <Text style={styles.backArrow}>{'<'}</Text>
           </Pressable>
           <Image source={{ uri: roomiesLogo }} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
           <Text style={styles.wordmark}>Roomies</Text>
@@ -39,7 +40,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
             const isSelected = role.id === selectedRole;
             return (
               <Pressable key={role.id} accessibilityRole="radio" accessibilityState={{ checked: isSelected }} onPress={() => setSelectedRole(role.id)} style={[styles.card, isSelected && styles.selectedCard]}>
-                <View style={[styles.iconBox, { backgroundColor: role.color }]}><Text style={styles.icon}>{role.icon}</Text></View>
+                <View style={[styles.iconBox, { backgroundColor: role.color }]}><DashboardIcon name={role.id === 'assistant' ? 'group' : role.id === 'resident' ? 'profile' : 'home'} color="#657EEA" size={24} /></View>
                 <View style={styles.roleCopy}>
                   <Text style={styles.roleTitle}>{role.title}</Text>
                   <Text style={styles.roleDescription}>{role.description}</Text>
@@ -56,7 +57,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
         </View>
         <Pressable accessibilityRole="button" onPress={() => onContinue?.(selectedRole)} style={({ pressed }) => [styles.continueButton, pressed && styles.pressed]}>
           <Text style={styles.continueText}>Continue as {selected.label}</Text>
-          <Text style={styles.continueArrow} aria-hidden>{'\u2192'}</Text>
+          
         </Pressable>
       </ScrollView>
     </SafeAreaView>

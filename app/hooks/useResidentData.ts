@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 
-export type Chore = { id: string; title: string; due: string; completed: boolean };
-export type Expense = { id: string; title: string; amount: number; due: string };
-export type HouseholdEvent = { id: string; title: string; date: string };
+export type Chore = { id: string; title: string; due: string; completed: boolean; assignee?: string; time?: string };
+export type Expense = { id: string; title: string; amount: number; due: string; totalAmount?: number; splitCount?: number; paidBy?: string; category?: string; recurring?: boolean; settled?: boolean };
+export type HouseholdEvent = { id: string; title: string; date: string; time?: string; attendees?: string };
+export type SupportDraft = { id: string; kind: 'maintenance' | 'ra'; title: string; description: string; location: string; createdAt: string; category?: string; photo?: string };
 export type ResidentData = {
   name: string;
   household: string;
-  pet: { name: string; lastAttention: string | null } | null;
+  pet: { name: string; lastAttention: string | null; color?: string; accessory?: string } | null;
   chores: Chore[];
   expenses: Expense[];
   events: HouseholdEvent[];
+  supportDrafts?: SupportDraft[];
+  livingPreferences?: { quietHours: string; cleaning: string; guests: string };
+  notificationPreferences?: { choresAndBills: boolean; events: boolean; quietHours: boolean };
+  reminderState?: Record<string, { read?: boolean; snoozedUntil?: string }>;
 };
 
 export function useResidentData(email: string, initialName: string) {

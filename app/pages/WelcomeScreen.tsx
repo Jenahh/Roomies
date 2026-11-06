@@ -9,9 +9,9 @@ import {
   View,
 } from 'react-native';
 
-import { styles } from './styles/WelcomeScreen.styles';
-import roomiesLogo from '../assets/Roomies Logo.png';
-import roomiesWelcome from '../assets/Roomies Welcome.png';
+import { styles } from '../styles/WelcomeScreen.styles';
+import roomiesLogo from '../../assets/Roomies Logo.png';
+import roomiesWelcome from '../../assets/Roomies Welcome.png';
 
 type WelcomeScreenProps = {
   onGetStarted?: () => void;
@@ -42,7 +42,7 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
 
         <View style={styles.footer}>
           <Pressable accessibilityRole="button" onPress={onGetStarted} style={({ pressed }) => [styles.button, styles.primaryButton, pressed && styles.primaryPressed]}>
-            <Text style={styles.primaryLabel}>Get Started</Text><Text style={styles.arrow} aria-hidden>{'\u2192'}</Text>
+            <Text style={styles.primaryLabel}>Get Started</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onLogIn} style={({ pressed }) => [styles.button, styles.secondaryButton, pressed && styles.secondaryPressed]}>
             <Text style={styles.secondaryLabel}>Log In</Text>
