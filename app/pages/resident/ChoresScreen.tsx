@@ -1,3 +1,4 @@
+import SmartScheduler from '../../features/scheduler/SmartScheduler';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 
@@ -11,6 +12,7 @@ function dateKey(date: Date) {
 export default function ChoresScreen({ data, setData, storageError }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string;
 }) {
+  const [schedulerOpen, setSchedulerOpen] = useState(false);
   const [filter, setFilter] = useState('All Chores');
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
@@ -37,12 +39,15 @@ export default function ChoresScreen({ data, setData, storageError }: {
     setAdding(false);
   }
 
+  if (schedulerOpen) return <SmartScheduler storageError={storageError} data={data} setData={setData} onBack={() => setSchedulerOpen(false)} />;
+
   return <>
     <View style={s.header}>
       
       <View style={s.copy}><Text accessibilityRole="header" style={s.title}>Chores</Text><Text style={s.subtitle}>{data.household || 'Your household'} · {format(start)}–{format(end)}</Text></View>
     </View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
+    <View style={[s.progressCard, { backgroundColor: '#EDF0FF', marginBottom: 14 }]}><Text style={s.sectionTitle}>A fairer chore plan</Text><Text style={s.caption}>Balance the week around everyone’s availability and effort.</Text><Pressable accessibilityRole="button" onPress={() => setSchedulerOpen(true)} style={s.addButton}><Text style={s.addText}>Plan a smart schedule →</Text></Pressable></View>
     <View style={s.progressCard}>
       <View style={s.row}><Text style={s.cardTitle}>A fresher home, together</Text><Text style={s.count}>{completed} / {weekly.length}</Text></View>
       <View accessibilityRole="progressbar" accessibilityLabel="Chores completed this week" accessibilityValue={{ min: 0, max: weekly.length || 1, now: completed }} style={s.track}><View style={[s.fill, { width: `${weekly.length ? completed / weekly.length * 100 : 0}%` }]} /></View>

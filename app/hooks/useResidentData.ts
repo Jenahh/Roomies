@@ -1,10 +1,12 @@
+import type { SchedulerMember, ChoreTemplate } from '../features/scheduler/scheduler';
 import { useEffect, useState } from 'react';
 
-export type Chore = { id: string; title: string; due: string; completed: boolean; assignee?: string; time?: string };
+export type Chore = { id: string; title: string; due: string; completed: boolean; assignee?: string; time?: string; memberId?: string; templateId?: string; minutes?: number; scheduleWeek?: string; reason?: string };
 export type Expense = { id: string; title: string; amount: number; due: string; totalAmount?: number; splitCount?: number; paidBy?: string; category?: string; recurring?: boolean; settled?: boolean };
 export type HouseholdEvent = { id: string; title: string; date: string; time?: string; attendees?: string };
 export type SupportDraft = { id: string; kind: 'maintenance' | 'ra'; title: string; description: string; location: string; createdAt: string; category?: string; photo?: string };
 export type ResidentData = {
+  scheduler?: { members: SchedulerMember[]; templates: ChoreTemplate[] };
   name: string;
   household: string;
   pet: { name: string; lastAttention: string | null; color?: string; accessory?: string } | null;
