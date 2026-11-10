@@ -11,9 +11,10 @@ import DashboardNavigation, { type DashboardTab } from '../../components/dashboa
 import ResidentAssistantHeader from '../../components/dashboard/ResidentAssistantHeader';
 import ResidentAssistantHomeScreen from './ResidentAssistantHomeScreen';
 import { styles as s } from '../../styles/ResidentAssistantDashboard.styles';
-
+import CalendarScreen from '../resident/CalendarScreen';
 const tabs: DashboardTab[] = [
   { label: 'Home', icon: 'home' },
+  { label: 'Calendar', icon: 'calendar' },
   { label: 'Concerns', icon: 'concerns' },
   { label: 'Messages', icon: 'messages' },
   { label: 'Profile', icon: 'profile' },
@@ -42,6 +43,9 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
         <ScrollView ref={pageScroll} contentContainerStyle={s.page}>
           <ResidentAssistantHeader />
           {activeTab === 'Home' && <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />}
+          {activeTab === 'Calendar' && (
+            <CalendarScreen data={data} setData={setData} storageError={storageError} />
+          )} 
           {activeTab === 'Concerns' && <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />}
           {activeTab === 'Messages' && <ResidentAssistantMessagesScreen />}
           {activeTab === 'Profile' && <ResidentAssistantProfileScreen user={user} name={data.name} hall={demoHall} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
