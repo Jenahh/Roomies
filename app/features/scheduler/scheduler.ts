@@ -1,6 +1,8 @@
+import type { ChoreLook } from '../../data/chorePresets';
+
 export type SchedulerMember = { id: string; name: string; days: number[]; capacity: number };
-export type ChoreTemplate = { id: string; title: string; minutes: number; frequency: number };
-export type ScheduledTask = { id: string; title: string; due: string; completed: boolean; assignee?: string; memberId?: string; templateId?: string; minutes?: number; scheduleWeek?: string; reason?: string };
+export type ChoreTemplate = { look?: ChoreLook; id: string; title: string; minutes: number; frequency: number };
+export type ScheduledTask = { unassigned?: boolean; look?: ChoreLook; id: string; title: string; due: string; completed: boolean; assignee?: string; memberId?: string; templateId?: string; minutes?: number; scheduleWeek?: string; reason?: string };
 export type ScheduleDraft = { tasks: ScheduledTask[]; conflicts: string[] };
 export function dateKey(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 export function validDate(value: string): boolean { const d = new Date(value+'T12:00:00'); return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(d.getTime()) && dateKey(d) === value; }
@@ -33,7 +35,7 @@ export function generateSchedule(week: string, members: SchedulerMember[], templ
    const best=candidates[0];
    if(!best){conflicts.push(`${template.title}: occurrence ${occurrence+1} could not be placed within availability and workload limits. Adjust availability or capacity and generate again.`);continue;}
    used.add(best.due); loads[best.m.id]+=template.minutes; daily[best.m.id+':'+best.day]=(daily[best.m.id+':'+best.day]??0)+template.minutes;
-   tasks.push({id:`scheduler:${week}:${template.id}:${occurrence}`,title:template.title,due:best.due,completed:false,assignee:best.m.name,memberId:best.m.id,templateId:template.id,minutes:template.minutes,scheduleWeek:week,reason:'Available that day; balances weekly effort and considers assignments from the previous 4 weeks.'});
+   tasks.push({id:`scheduler:${week}:${template.id}:${occurrence}`,title:template.title,look:template.look,due:best.due,completed:false,assignee:best.m.name,memberId:best.m.id,templateId:template.id,minutes:template.minutes,scheduleWeek:week,reason:'Available that day; balances weekly effort and considers assignments from the previous 4 weeks.'});
   }
  }
  return {tasks:tasks.sort((a,b)=>a.due.localeCompare(b.due)||a.title.localeCompare(b.title)),conflicts};
@@ -51,4 +53,75 @@ export function publishSchedule(existing: ScheduledTask[], tasks: ScheduledTask[
  const errors=validateDraft(tasks,members,existing,week);if(errors.length)throw new Error(errors.join(' '));
  if(tasks.some(t=>existing.some(e=>e.id===t.id)))throw new Error('These assignments already exist.');
  return [...existing,...tasks];
+}
+
+export const DEFAULT_CHORE_MINUTES = 30;
+const normalizedName = (name: string) => name.trim().toLowerCase().replace(/\s+/g, ' ');
+
+export function weekOf(date: string): string {
+  return addDays(date, -(new Date(date + 'T12:00:00').getDay() + 6) % 7);
+}
+
+function isAssignedTo(chore: ScheduledTask, member: SchedulerMember, members: SchedulerMember[], residentName: string) {
+  if (chore.unassigned) return false;
+  if (chore.memberId && members.some(person => person.id === chore.memberId)) return chore.memberId === member.id;
+  return normalizedName(chore.assignee || residentName) === normalizedName(member.name);
+}
+
+export function weeklyWorkload(week: string, members: SchedulerMember[], chores: ScheduledTask[], residentName: string) {
+  const end = addDays(week, 7);
+  return members.map(member => ({
+    member,
+    minutes: chores.filter(chore => chore.due >= week && chore.due < end && isAssignedTo(chore, member, members, residentName)).reduce((sum, chore) => sum + (chore.minutes ?? DEFAULT_CHORE_MINUTES), 0),
+  }));
+}
+
+export function suggestAssignee(input: { title: string; look?: ChoreLook; due: string; minutes: number }, members: SchedulerMember[], chores: ScheduledTask[], residentName: string) {
+  if (!members.length || !validDate(input.due) || !Number.isInteger(input.minutes) || input.minutes < 1 || input.minutes > 1440) return [];
+  const week = weekOf(input.due);
+  const day = (new Date(input.due + 'T12:00:00').getDay() + 6) % 7;
+  const title = normalizedName(input.title);
+  const last = chores.filter(chore => !chore.unassigned && chore.due < input.due && chore.due >= addDays(input.due, -28) && (
+    normalizedName(chore.title) === title || (input.look && input.look !== 'custom' && input.look === chore.look)
+  )).sort((a,b) => b.due.localeCompare(a.due))[0];
+  // Rotate exact ties by calendar week; sort stable IDs so roster order does not affect it.
+  const order = [...members].sort((a, b) => a.id.localeCompare(b.id));
+  const weekIndex = Math.floor(Date.parse(week + 'T00:00:00Z') / 604800000);
+  const offset = ((weekIndex % order.length) + order.length) % order.length;
+  const rank = (id: string) => (order.findIndex(member => member.id === id) - offset + order.length) % order.length;
+  return weeklyWorkload(week, members, chores, residentName)
+    .filter(({ member, minutes }) => member.days.includes(day) && minutes + input.minutes <= member.capacity)
+    .map(entry => {
+      const { member, minutes } = entry;
+      const repeated = !!last && isAssignedTo(last, member, members, residentName);
+      return { ...entry, repeated, lastAssignee: last?.assignee || (last ? residentName : undefined), projected: minutes + input.minutes, score: (minutes + input.minutes) / member.capacity + (repeated ? 0.2 : 0) };
+    })
+    .sort((a,b) => a.score - b.score || Number(a.repeated) - Number(b.repeated) || a.minutes - b.minutes || rank(a.member.id) - rank(b.member.id));
+}
+
+export function choreDates(first: string, frequency: 'once' | 'weekly' | 'daily', through: string): string[] {
+  if (!validDate(first)) return [];
+  if (frequency === 'once') return [first];
+  if (!validDate(through) || through < first) return [];
+  const step = frequency === 'daily' ? 1 : 7;
+  const dates: string[] = [];
+  for (let date = first; date <= through; date = addDays(date, step)) {
+    if (dates.length === 52) return [];
+    dates.push(date);
+  }
+  return dates;
+}
+
+export function planChoreOccurrences(
+  input: { title: string; look?: ChoreLook; minutes: number; time?: string },
+  dates: string[], members: SchedulerMember[], existing: ScheduledTask[], residentName: string,
+  firstChoice: string | null, id: string,
+) {
+  const tasks: (ScheduledTask & { time?: string })[] = [];
+  for (const [index, due] of dates.entries()) {
+    const candidates = suggestAssignee({ ...input, due }, members, [...existing, ...tasks], residentName);
+    const choice = index === 0 && firstChoice !== null ? candidates.find(candidate => candidate.member.id === firstChoice) : candidates[0];
+    tasks.push({ ...input, id: `${id}:${index}`, due, completed: false, assignee: choice?.member.name, memberId: choice?.member.id, unassigned: !choice });
+  }
+  return tasks;
 }
