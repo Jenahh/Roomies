@@ -15,7 +15,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
   const [accessory, setAccessory] = useState(data.pet?.accessory || 'Little bow');
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-  const points = data.chores.filter(chore => chore.completed && (!chore.assignee || chore.assignee === data.name)).length * 10;
+  const points = data.chores.filter(chore => chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name))).length * 10;
   const leafUnlocked = points >= 210;
   function save() {
     if (!name.trim()) { setError('Give your Roomie Pet a name.'); return; }

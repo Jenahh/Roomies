@@ -12,7 +12,7 @@ function weekKey(value: Date) {
 }
 
 export default function AchievementsScreen({ data, now, onBack }: { data: ResidentData; now: Date; onBack: () => void }) {
-  const personalCompleted = data.chores.filter(chore => chore.completed && (!chore.assignee || chore.assignee === data.name));
+  const personalCompleted = data.chores.filter(chore => chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name)));
   const currentWeek = weekKey(now);
   const weeks = [2, 1, 0].map(offset => {
     const date = new Date(now);
