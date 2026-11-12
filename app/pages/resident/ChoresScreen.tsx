@@ -92,7 +92,7 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
     <View style={s.petHero}>
       <View style={s.petIntro}>
-        <ChorePet key={celebration ? `done:${celebration.id}` : featuredChore?.id ?? 'idle'} look={petLook} name={petName} color={data.pet?.color} accessory={data.pet?.accessory} celebrating={!!celebration} />
+        <ChorePet key={celebration ? `done:${celebration.id}` : featuredChore?.id ?? 'idle'} look={petLook} name={petName} color={data.pet?.color} accessory={data.pet?.accessory} accessories={data.pet?.accessories} accessoryColors={data.pet?.accessoryColors} celebrating={!!celebration} />
         <View style={s.copy}>
           <Text style={s.petEyebrow}>{celebration ? '✦ SMALL WIN' : 'YOUR CHORE BUDDY'}</Text>
           <Text style={s.sectionTitle}>{petName}</Text>

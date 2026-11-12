@@ -1,7 +1,6 @@
 import type { ChoreLook } from '../../data/chorePresets';
-import bow from '../../../assets/Roomie Pet Bow.png';
-import sprout from '../../../assets/Roomie Pet Sprout Hat.png';
-import { getHatlessPetImage } from '../../data/roomiePetImages';
+import { getPetAccessoryIds, type RoomieAccessoryId } from '../../data/roomiePetAccessories';
+import RoomiePet from '../../components/RoomiePet';
 import './ChorePet.css';
 
 const scenes = {
@@ -33,18 +32,28 @@ function ChoreProp({ look }: { look: ChoreLook }) {
   </svg>;
 }
 
-export default function ChorePet({ name, color, accessory, celebrating, look }: {
+export default function ChorePet({ name, color, accessory, accessories, accessoryColors, celebrating, look }: {
   name: string;
   color?: string;
   accessory?: string;
+  accessories?: RoomieAccessoryId[];
+  accessoryColors?: Partial<Record<RoomieAccessoryId, string>>;
   celebrating: boolean;
   look?: ChoreLook;
 }) {
-  return <div className={`chore-pet${celebrating ? ' chore-pet--celebrating' : ''}`} style={{ backgroundColor: look ? scenes[look].backdrop : undefined }} role="img" aria-label={celebrating ? `${name} celebrating a finished chore` : look ? `${name} ${scenes[look].action}` : `${name} ready to help`}>
+  const accessibilityLabel = celebrating ? `${name} celebrating a finished chore` : look ? `${name} ${scenes[look].action}` : `${name} ready to help`;
+  return <div className={`chore-pet${celebrating ? ' chore-pet--celebrating' : ''}`} style={{ backgroundColor: look ? scenes[look].backdrop : undefined }}>
     <span className="chore-pet-shadow" />
-    <img className="chore-pet-body" src={getHatlessPetImage(color, 'Happy')} alt="" />
-    {accessory === 'Little bow' && <img className="chore-pet-bow" src={bow} alt="" />}
-    {accessory === 'Leaf hat' && <img className="chore-pet-leaf" src={sprout} alt="" />}
+    <div className="chore-pet-body">
+      <RoomiePet
+        mood="happy"
+        color={color}
+        accessories={getPetAccessoryIds({ accessory, accessories })}
+        accessoryColors={accessoryColors}
+        size={78}
+        accessibilityLabel={accessibilityLabel}
+      />
+    </div>
     {look && <ChoreProp look={look} />}
     <svg className="chore-pet-sparkles" width="106" height="100" viewBox="0 0 106 100" aria-hidden="true">
       <path d="M91 17l1.5 5 5 1.5-5 1.5-1.5 5-1.5-5-5-1.5 5-1.5zM15 13l1 3.5 3.5 1-3.5 1L15 22l-1-3.5-3.5-1 3.5-1z" fill="#C28932" />
