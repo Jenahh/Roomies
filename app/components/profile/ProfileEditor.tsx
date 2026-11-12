@@ -11,6 +11,7 @@ type ProfileEditorProps = {
   name: string;
   email: string;
   role: ResidentUser['role'];
+  color?: string;
   locationLabel: string;
   location: string;
   locationEditable?: boolean;
@@ -20,7 +21,7 @@ type ProfileEditorProps = {
   children?: ReactNode;
 };
 
-export default function ProfileEditor({ name, email, role, locationLabel, location, locationEditable = false, storageError, onSave, onSignOut, children }: ProfileEditorProps) {
+export default function ProfileEditor({ name, email, role, color, locationLabel, location, locationEditable = false, storageError, onSave, onSignOut, children }: ProfileEditorProps) {
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [draftLocation, setDraftLocation] = useState(location);
@@ -39,7 +40,7 @@ export default function ProfileEditor({ name, email, role, locationLabel, locati
 
   return (
     <>
-      <ProfileIdentity name={name} email={email} role={role} />
+      <ProfileIdentity name={name} email={email} role={role} color={color} />
       {!editing && <Pressable accessibilityRole="button" accessibilityLabel="Edit personal details" onPress={() => { reset(); setEditing(true); }} style={({ pressed }) => [s.editProfile, pressed && s.pressed]}><Text style={s.editProfileText}>Edit profile</Text></Pressable>}
       {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
       {!!message && !storageError && <Text accessibilityLiveRegion="polite" style={s.success}>{message}</Text>}
