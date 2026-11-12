@@ -7,7 +7,6 @@ export const styles = StyleSheet.create({
   subtitle: { fontSize: 11, lineHeight: 18, color: '#7B7D87', marginBottom: 10 },
   title: { fontSize: 27, lineHeight: 34, fontWeight: '700', color: '#292B35', marginBottom: 6 },
   hero: { backgroundColor: '#EAF6EF', borderRadius: 22, alignItems: 'center', padding: 12, marginBottom: 12 },
-  image: { width: 145, height: 145 },
   heading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 12 },
   sectionTitle: { flexShrink: 1, fontSize: 18, fontWeight: '700', color: '#292B35' },
   badge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14, backgroundColor: '#EAF6EF' },

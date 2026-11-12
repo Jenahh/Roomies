@@ -1,7 +1,8 @@
 import { useState, type Dispatch, type SetStateAction } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import type { ResidentData } from '../../hooks/useResidentData';
-import { getHatlessPetImage } from '../../data/roomiePetImages';
+import RoomiePet from '../../components/RoomiePet';
+import { getPetAccessoryIds, togglePetAccessory } from '../../data/roomiePetAccessories';
 import { getPetMood } from '../../data/roomiePetMood';
 import Icon from '../../components/dashboard/DashboardIcon';
 import { styles as s } from '../../styles/RoomieCheckInScreen.styles';
@@ -49,7 +50,7 @@ export default function RoomieCheckInScreen({ data, setData, now, storageError, 
       <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text><Text style={s.detail}>My Roomie Pet</Text></Pressable>
       <Text accessibilityRole="header" style={s.title}>{checkedIn && mood === 'Happy' ? 'A fresh start!' : 'Roomie check-in'}</Text>
       <Text style={s.subtitle}>{mood === 'Stressed' ? 'A little progress can help your pet feel better.' : mood === 'Attention' ? 'Your companion could use a little attention.' : 'Keep growing together.'}</Text>
-      <View style={s.hero}><Image source={{ uri: getHatlessPetImage(data.pet?.color, mood) }} style={s.image} resizeMode="contain" accessibilityLabel={`${name}, ${mood.toLowerCase()}`} /></View>
+      <View style={s.hero}><RoomiePet color={data.pet?.color} mood={mood} accessories={getPetAccessoryIds(data.pet)} accessoryColors={data.pet?.accessoryColors} size={145} accessibilityLabel={`${name}, ${mood.toLowerCase()}`} /></View>
       <View style={s.heading}><Text accessibilityRole="header" accessibilityLiveRegion="polite" style={s.sectionTitle}>{mood === 'Happy' ? `${name} is happy${checkedIn ? ' again' : ''}` : mood === 'Stressed' ? `${name} feels stressed` : `${name} needs attention`}</Text><View style={s.badge}><Text style={s.badgeText}>{mood === 'Attention' ? 'Needs attention' : mood}</Text></View></View>
       <View style={s.card}>
         {chores.map(chore => <View key={chore.id}>
@@ -64,7 +65,7 @@ export default function RoomieCheckInScreen({ data, setData, now, storageError, 
       <View style={s.points}><Text style={s.pointsTitle}>{gained ? `+${gained} Roomie Points` : `${points} Roomie Points`}</Text><Text style={s.detail}>{gained ? `${startingPoints} → ${points} personal points` : 'Earn 10 points for each assigned chore completed.'}</Text></View>
       {points >= 210 && <>
         <View style={s.unlock}><View style={s.row}><Icon name="sprout" color="#399366" size={26} /><Text style={s.text}>{startingPoints < 210 ? 'Leaf hat unlocked!' : 'Leaf hat available'}</Text></View><Text style={s.detail}>{points} / 210 points reached.</Text></View>
-        <Pressable accessibilityRole="button" disabled={data.pet?.accessory === 'Leaf hat'} onPress={() => setData(previous => ({ ...previous, pet: previous.pet ? { ...previous.pet, accessory: 'Leaf hat' } : null }))} style={s.button}><Text style={s.buttonText}>{data.pet?.accessory === 'Leaf hat' ? 'Leaf hat equipped' : 'Equip leaf hat'}</Text></Pressable>
+        <Pressable accessibilityRole="button" disabled={getPetAccessoryIds(data.pet).includes('sprout-hat')} onPress={() => setData(previous => ({ ...previous, pet: previous.pet ? { ...previous.pet, accessory: 'Leaf hat', accessories: togglePetAccessory(getPetAccessoryIds(previous.pet), 'sprout-hat') } : null }))} style={s.button}><Text style={s.buttonText}>{getPetAccessoryIds(data.pet).includes('sprout-hat') ? 'Leaf hat equipped' : 'Equip leaf hat'}</Text></Pressable>
       </>}
       {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
     </>
