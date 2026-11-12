@@ -10,6 +10,15 @@ export const demoResident: ResidentUser = {
   role: 'resident',
 };
 
+// The demo resident is already assigned to this household before opening Chores.
+export const demoResidentHousehold = {
+  name: 'Maple Hall · 3B',
+  roommates: [
+    { id: 'maple-3b-maya', name: 'Maya' },
+    { id: 'maple-3b-jordan', name: 'Jordan' },
+  ],
+};
+
 export const demoResidentAssistant: ResidentUser = {
   name: 'Resident Assistant',
   email: 'resident.assistant@gmail.com',

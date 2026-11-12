@@ -35,7 +35,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
   const [accessoryColors, setAccessoryColors] = useState<Partial<Record<RoomieAccessoryId, string>>>(() => data.pet?.accessoryColors || {});
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-  const points = data.chores.filter(chore => chore.completed && (!chore.assignee || chore.assignee === data.name)).length * 10;
+  const points = data.chores.filter(chore => chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name))).length * 10;
   const leafUnlocked = points >= 210;
 
   function chooseAccessory(id: RoomieAccessoryId) {

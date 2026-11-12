@@ -17,13 +17,13 @@ type RoomieCheckInScreenProps = {
 };
 
 function personalPoints(data: ResidentData) {
-  return data.chores.filter(chore => chore.completed && (!chore.assignee || chore.assignee === data.name)).length * 10;
+  return data.chores.filter(chore => chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name))).length * 10;
 }
 
 export default function RoomieCheckInScreen({ data, setData, now, storageError, onBack, onExpenses }: RoomieCheckInScreenProps) {
   const [startingPoints] = useState(() => personalPoints(data));
   const [checkedIn, setCheckedIn] = useState(false);
-  const [startingChoreIds] = useState(() => data.chores.filter(chore => !chore.completed && (!chore.assignee || chore.assignee === data.name)).map(chore => chore.id));
+  const [startingChoreIds] = useState(() => data.chores.filter(chore => !chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name))).map(chore => chore.id));
   const chores = data.chores.filter(chore => startingChoreIds.includes(chore.id));
   const mood = getPetMood(data, now);
   const points = personalPoints(data);
@@ -39,7 +39,7 @@ export default function RoomieCheckInScreen({ data, setData, now, storageError, 
   function completeChore(id: string) {
     setData(previous => ({
       ...previous,
-      chores: previous.chores.map(chore => chore.id === id && (!chore.assignee || chore.assignee === previous.name) ? { ...chore, completed: true } : chore),
+      chores: previous.chores.map(chore => chore.id === id && (!chore.unassigned && (!chore.assignee || chore.assignee === previous.name)) ? { ...chore, completed: true } : chore),
       pet: previous.pet ? { ...previous.pet, lastAttention: new Date().toISOString() } : null,
     }));
     setCheckedIn(true);
