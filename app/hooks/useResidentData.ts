@@ -1,4 +1,5 @@
 import type { SchedulerMember, ChoreTemplate } from '../features/scheduler/scheduler';
+import type { RoomieAccessoryId } from '../data/roomiePetAccessories';
 import { useEffect, useState } from 'react';
 
 export type Chore = { id: string; title: string; due: string; completed: boolean; assignee?: string; time?: string; memberId?: string; templateId?: string; minutes?: number; scheduleWeek?: string; reason?: string };
@@ -9,7 +10,7 @@ export type ResidentData = {
   scheduler?: { members: SchedulerMember[]; templates: ChoreTemplate[] };
   name: string;
   household: string;
-  pet: { name: string; lastAttention: string | null; color?: string; accessory?: string } | null;
+  pet: { name: string; lastAttention: string | null; color?: string; accessory?: string; accessories?: RoomieAccessoryId[]; accessoryColors?: Partial<Record<RoomieAccessoryId, string>> } | null;
   chores: Chore[];
   expenses: Expense[];
   events: HouseholdEvent[];

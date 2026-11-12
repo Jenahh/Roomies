@@ -48,7 +48,7 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
           )} 
           {activeTab === 'Concerns' && <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />}
           {activeTab === 'Messages' && <ResidentAssistantMessagesScreen />}
-          {activeTab === 'Profile' && <ResidentAssistantProfileScreen user={user} name={data.name} hall={demoHall} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
+          {activeTab === 'Profile' && <ResidentAssistantProfileScreen user={user} name={data.name} hall={demoHall} color={data.pet?.color} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
         </ScrollView>
         <DashboardNavigation activeTab={activeTab} onNavigate={setActiveTab} tabs={tabs} showLabels />
       </View>

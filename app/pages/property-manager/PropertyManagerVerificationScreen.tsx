@@ -1,5 +1,5 @@
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
-import DashboardIcon from '../../components/dashboard/DashboardIcon';
+import RoomiePet from '../../components/RoomiePet';
 import { styles as s } from '../../styles/ResidentVerificationScreen.styles';
 import '../../styles/ResidentVerificationScreen.css';
 
@@ -11,7 +11,7 @@ export default function PropertyManagerVerificationScreen({ onBack, onContinueAd
         <View style={s.content}>
           <Text accessibilityRole="header" style={s.title}>Your manager request is in.</Text>
           <div className="verification-pet" role="status" aria-label="Awaiting administrator approval for Property Manager access">
-            <DashboardIcon name="home" size={100} color="#657EEA" />
+            <RoomiePet role="property-manager" size={160} accessibilityLabel="Property Manager Roomie" />
             <div className="verification-dots" aria-hidden="true"><span /><span /><span /></div>
           </div>
           <Text style={s.note}>Your administrator must approve your Property Manager role before you can access your property.</Text>

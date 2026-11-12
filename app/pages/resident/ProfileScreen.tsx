@@ -1,6 +1,8 @@
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import type { ResidentUser } from '../../data/demoAccount';
 import type { ResidentData } from '../../hooks/useResidentData';
+import type { PetMood } from '../../data/roomiePetMood';
+import { getPetAccessoryIds } from '../../data/roomiePetAccessories';
 import ProfileEditor from '../../components/profile/ProfileEditor';
 import ProfilePetCard from '../../components/profile/ProfilePetCard';
 import ProfileSupport from '../../components/profile/ProfileSupport';
@@ -10,6 +12,7 @@ type ProfileScreenProps = {
   header: ReactNode;
   user: ResidentUser;
   data: ResidentData;
+  petMood: PetMood;
   setData: Dispatch<SetStateAction<ResidentData>>;
   storageError: string;
   onOpenPet?: () => void;
@@ -17,7 +20,7 @@ type ProfileScreenProps = {
   onContactRA: () => void;
 };
 
-export default function ProfileScreen({ onSignOut, header, user, data, setData, storageError, onOpenPet, onMaintenance, onContactRA }: ProfileScreenProps) {
+export default function ProfileScreen({ onSignOut, header, user, data, petMood, setData, storageError, onOpenPet, onMaintenance, onContactRA }: ProfileScreenProps) {
   return <>
     {header}
     <ProfileEditor name={data.name} email={user.email} role={user.role} locationLabel="Household name" location={data.household} locationEditable storageError={storageError} onSignOut={onSignOut}
@@ -25,7 +28,7 @@ export default function ProfileScreen({ onSignOut, header, user, data, setData, 
         ...previous, name, household: location,
         chores: previous.chores.map(chore => chore.assignee === previous.name ? { ...chore, assignee: name } : chore),
       }))}>
-      {onOpenPet && <ProfilePetCard name={data.pet?.name} color={data.pet?.color} onOpen={onOpenPet} />}
+      {onOpenPet && <ProfilePetCard name={data.pet?.name} color={data.pet?.color} mood={petMood} accessories={getPetAccessoryIds(data.pet)} accessoryColors={data.pet?.accessoryColors} onOpen={onOpenPet} />}
       <ProfileSupport onMaintenance={onMaintenance} onContactRA={onContactRA} />
     </ProfileEditor>
   </>;

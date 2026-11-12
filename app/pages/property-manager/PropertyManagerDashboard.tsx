@@ -89,7 +89,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
           {activeTab === 'Announcements' && <PropertyManagerAnnouncementsScreen property={demoProperty} announcements={announcements} onCreate={openAnnouncement} />}
           {activeTab === 'Properties' && <PropertyManagerPropertiesScreen property={demoProperty} households={households} residents={residents} onManageHousehold={openResidents} onCreateHousehold={name => setHouseholds(previous => [...previous, { id: crypto.randomUUID(), propertyName: demoProperty.name, name }])} />}
           {activeTab === 'ManageResidents' && <ManageResidentsScreen key={selectedHouseholdId || 'property'} propertyName={demoProperty.name} household={selectedHousehold} residents={getHouseholdResidents(residents, selectedHouseholdId)} setResidents={updateHouseholdResidents} onBack={() => setActiveTab('Properties')} />}
-          {activeTab === 'Profile' && <PropertyManagerProfileScreen user={user} name={data.name} propertyName={demoProperty.name} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
+          {activeTab === 'Profile' && <PropertyManagerProfileScreen user={user} name={data.name} propertyName={demoProperty.name} color={data.pet?.color} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
         </ScrollView>
         <DashboardNavigation activeTab={activeTab === 'ManageResidents' ? 'Properties' : activeTab} onNavigate={setActiveTab} tabs={tabs} />
       </View>

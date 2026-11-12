@@ -1,5 +1,5 @@
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
-import { getHatlessPetImage } from '../../data/roomiePetImages';
+import RoomiePet from '../../components/RoomiePet';
 import { styles as s } from '../../styles/ResidentVerificationScreen.styles';
 import '../../styles/ResidentVerificationScreen.css';
 
@@ -9,7 +9,7 @@ export default function ResidentVerificationScreen({ onBack, onContinueAdmin }: 
     <View style={s.content}>
       <Text accessibilityRole="header" style={s.title}>Your request is in.</Text>
       <div className="verification-pet" role="status" aria-label="Awaiting property manager approval">
-        <img className="verification-pet-image" src={getHatlessPetImage()} alt="Roomie Pet" />
+        <RoomiePet className="verification-pet-image" size={160} accessibilityLabel="Roomie Pet" />
         <div className="verification-dots" aria-hidden="true"><span /><span /><span /></div>
       </div>
       <Text style={s.note}>You must be approved by your property manager before you can access your household.</Text>

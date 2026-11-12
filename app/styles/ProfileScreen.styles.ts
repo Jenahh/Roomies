@@ -21,7 +21,6 @@ export const styles = StyleSheet.create({
   saveText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
   pet: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 18, borderRadius: 20, backgroundColor: '#FFF2DC', marginTop: 12 },
   copy: { flex: 1, gap: 5 },
-  petImage: { width: 52, height: 52 },
   link: { fontSize: 12, fontWeight: '600', color: '#4056DE' },
   error: { fontSize: 12, lineHeight: 18, color: '#9B3636' },
   success: { fontSize: 12, color: '#28734E' },

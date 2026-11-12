@@ -47,7 +47,6 @@ export const styles = StyleSheet.create({
   checkmark: { color: '#FFFFFF', fontSize: 12 },
   completed: { textDecorationLine: 'line-through', color: '#7B7D87' },
   petCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 11, backgroundColor: '#FFF2DC', borderRadius: 20, marginTop: 10 },
-  petImage: { width: 46, height: 46 },
   petCopy: { flex: 1, gap: 7 },
   petHeading: { fontSize: 11, fontWeight: '600', color: '#292B35' },
   petName: { fontSize: 16, fontWeight: '700', color: '#292B35' },
