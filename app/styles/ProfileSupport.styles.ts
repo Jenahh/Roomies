@@ -4,7 +4,7 @@ export const styles = StyleSheet.create({
   section: { marginTop: 26, gap: 12 },
   heading: { fontSize: 22, fontWeight: '700', color: '#292B35', letterSpacing: -0.5 },
   subtitle: { fontSize: 12, color: '#7B7D87', lineHeight: 18, marginTop: -6 },
-  feature: { padding: 16, borderRadius: 12, gap: 10 },
+  feature: { minHeight: 96, flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 12, gap: 14 },
   maintenance: { backgroundColor: '#EDF0FF' },
   ra: { backgroundColor: '#F2EDFF' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },

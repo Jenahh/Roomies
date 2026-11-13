@@ -3,6 +3,7 @@ import { Image, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } fro
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import { styles } from '../styles/LoginScreen.styles';
 import { demoAccounts, type ResidentUser } from '../data/demoAccount';
+import PasswordVisibilityIcon from '../components/auth/PasswordVisibilityIcon';
 
 type LoginScreenProps = {
   onBack?: () => void;
@@ -45,17 +46,12 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
         </View>
 
         <Text accessibilityRole="header" style={styles.title}>Welcome back.</Text>
-        <Text style={styles.subtitle}>Log in to get back to your people and your space.</Text>
-
         <View style={styles.form}>
-          <Text nativeID="email-label" style={styles.label}>Email</Text>
-          <TextInput accessibilityLabel="Email" aria-labelledby="email-label" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
-
-          <Text nativeID="password-label" style={[styles.label, styles.passwordLabel]}>Password</Text>
+          <TextInput accessibilityLabel="Email" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
           <View style={styles.passwordField}>
-            <TextInput accessibilityLabel="Password" aria-labelledby="password-label" value={password} onChangeText={setPassword} placeholder="Enter your password" placeholderTextColor="#7B7D87" secureTextEntry={!showPassword} autoCapitalize="none" autoCorrect={false} autoComplete="current-password" onSubmitEditing={logIn} style={styles.passwordInput} />
+            <TextInput accessibilityLabel="Password" value={password} onChangeText={setPassword} placeholder="Enter your password" placeholderTextColor="#7B7D87" secureTextEntry={!showPassword} autoCapitalize="none" autoCorrect={false} autoComplete="current-password" onSubmitEditing={logIn} style={styles.passwordInput} />
             <Pressable accessibilityRole="button" accessibilityLabel={showPassword ? 'Hide password' : 'Show password'} accessibilityState={{ expanded: showPassword }} onPress={() => setShowPassword(value => !value)} style={({ pressed }) => [styles.visibilityButton, pressed && styles.linkPressed]}>
-              <Text style={styles.visibilityText}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <PasswordVisibilityIcon visible={showPassword} />
             </Pressable>
           </View>
 

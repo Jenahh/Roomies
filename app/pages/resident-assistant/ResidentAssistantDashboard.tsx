@@ -12,6 +12,7 @@ import ResidentAssistantHeader from '../../components/dashboard/ResidentAssistan
 import ResidentAssistantHomeScreen from './ResidentAssistantHomeScreen';
 import { styles as s } from '../../styles/ResidentAssistantDashboard.styles';
 import CalendarScreen from '../resident/CalendarScreen';
+import { getPetMood } from '../../data/roomiePetMood';
 const tabs: DashboardTab[] = [
   { label: 'Home', icon: 'home' },
   { label: 'Calendar', icon: 'calendar' },
@@ -25,6 +26,7 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
   const [activeTab, setActiveTab] = useState('Home');
   const [selectedConcern, setSelectedConcern] = useState<ResidentConcern | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const petMood = getPetMood(data, now);
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
           <ResidentAssistantHeader />
           {activeTab === 'Home' && <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />}
           {activeTab === 'Calendar' && (
-            <CalendarScreen data={data} setData={setData} storageError={storageError} />
+            <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} />
           )} 
           {activeTab === 'Concerns' && <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />}
           {activeTab === 'Messages' && <ResidentAssistantMessagesScreen />}

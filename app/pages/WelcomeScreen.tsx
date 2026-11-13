@@ -47,10 +47,8 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
           <Pressable accessibilityRole="button" onPress={onLogIn} style={({ pressed }) => [styles.button, styles.secondaryButton, pressed && styles.secondaryPressed]}>
             <Text style={styles.secondaryLabel}>Log In</Text>
           </Pressable>
-          <Text style={styles.finePrint}>Your home. Your people. All in one place.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-

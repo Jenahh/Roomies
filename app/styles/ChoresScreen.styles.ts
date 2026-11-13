@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
   badge: { backgroundColor: '#F1EBFF', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5, fontSize: 10, color: '#343048' },
   pointsCard: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#EDF0FF', borderRadius: 12, padding: 14, marginTop: 10 },
   points: { fontSize: 11, fontWeight: '600', color: '#4056DE', backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16 },
-  addButton: { minHeight: 48, backgroundColor: '#657EEA', borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
+  addButton: { minHeight: 52, flexDirection: 'row', gap: 8, backgroundColor: '#657EEA', borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
   addText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
   pressed: { opacity: 0.7 },
   empty: { backgroundColor: '#FFFFFF', padding: 22, borderRadius: 12, gap: 8 },

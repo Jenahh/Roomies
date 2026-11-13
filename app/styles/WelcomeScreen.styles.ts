@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
   button: { minHeight: 49, paddingHorizontal: 44, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   primaryButton: { backgroundColor: '#657EEA' },
   secondaryButton: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E7E6E3' },
-  primaryLabel: { fontSize: 15, fontWeight: '700', color: '#19213A' },
+  primaryLabel: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
   arrow: { position: 'absolute', right: 18, fontSize: 21, color: '#263350' },
   secondaryLabel: { fontSize: 14, fontWeight: '600', color: '#353743' },
   primaryPressed: { backgroundColor: '#8A9FFF' },

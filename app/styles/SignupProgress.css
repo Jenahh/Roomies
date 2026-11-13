@@ -1,0 +1,24 @@
+.signup-progress {
+  display: flex;
+  width: 100%;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+.signup-progress-segment {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: #e4e3e0;
+  transition: background-color 200ms ease;
+}
+
+.signup-progress-segment-active {
+  background: #657eea;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-progress-segment {
+    transition: none;
+  }
+}

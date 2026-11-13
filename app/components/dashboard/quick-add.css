@@ -25,17 +25,17 @@
 
 .quick-add-option:nth-child(1) {
   right: 8px;
-  bottom: 124px;
+  bottom: 132px;
 }
 
 .quick-add-option:nth-child(2) {
-  right: 74px;
-  bottom: 76px;
+  right: 88px;
+  bottom: 78px;
 }
 
 .quick-add-option:nth-child(3) {
-  right: 116px;
-  bottom: 18px;
+  right: 132px;
+  bottom: 8px;
 }
 
 .quick-add-menu.is-open .quick-add-option {

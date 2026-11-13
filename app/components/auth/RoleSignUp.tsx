@@ -3,9 +3,10 @@ import { Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'reac
 import { styles as s } from '../../styles/ResidentSignUp.styles';
 import { demoJoinCodes } from '../../data/demoJoinCodes';
 import { matchesResidentInvitation } from '../../data/residentInvitations';
-import DashboardIcon from '../dashboard/DashboardIcon';
 import type { ResidentUser } from '../../data/demoAccount';
 import AccountDetailsFields from './AccountDetailsFields';
+import SignupProgress from './SignupProgress';
+import RoomiePet from '../RoomiePet';
 
 export type SignUpNavigationProps = {
   onBack: () => void;
@@ -15,7 +16,7 @@ export type SignUpNavigationProps = {
 
 const roleContent = {
   resident: {
-    label: 'Resident', icon: 'profile',
+    label: 'Resident', avatarBackground: '#EDF0FF',
     title: 'Your shared home\nstarts here.', joinTitle: 'Join your\nhousehold.',
     subtitle: 'Create your resident account to get started.',
     codeLabel: 'Property manager join code',
@@ -23,7 +24,7 @@ const roleContent = {
     submit: 'Create account & join household',
   },
   assistant: {
-    label: 'Resident Assistant', icon: 'group',
+    label: 'Resident Assistant', avatarBackground: '#F2EEFF',
     title: 'Support your\ncommunity.', joinTitle: 'Join as a\nResident Assistant.',
     subtitle: 'Create your Resident Assistant account to get started.',
     codeLabel: 'RA join code',
@@ -31,7 +32,7 @@ const roleContent = {
     submit: 'Create account & request RA access',
   },
   'property-manager': {
-    label: 'Property Manager', icon: 'home',
+    label: 'Property Manager', avatarBackground: '#EAF6F0',
     title: 'Manage your\ncommunity.', joinTitle: 'Join as a\nProperty Manager.',
     subtitle: 'Create your Property Manager account to get started.',
     codeLabel: 'Property manager join code',
@@ -72,7 +73,14 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
   }
   return <SafeAreaView style={s.safeArea}><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
     <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable><Text style={s.step}>{step} of 2</Text></View>
-    <View style={s.homeIcon}><DashboardIcon name={content.icon} color="#55516D" size={25} /></View>
+    <SignupProgress step={step === 1 ? 2 : 3} />
+    <View style={[s.homeIcon, { backgroundColor: content.avatarBackground }]}>
+      {role === 'assistant'
+        ? <RoomiePet role="assistant" size={72} accessibilityLabel="Resident Assistant Roomie" />
+        : role === 'property-manager'
+          ? <RoomiePet role="property-manager" size={72} accessibilityLabel="Property Manager Roomie" />
+          : <RoomiePet mood="happy-3d" size={72} accessibilityLabel="Resident Roomie Pet" />}
+    </View>
     <Text accessibilityRole="header" style={s.title}>{step === 1 ? content.title : content.joinTitle}</Text>{step === 1 && <Text style={s.subtitle}>{content.subtitle}</Text>}
     <View style={[s.card, step === 2 && s.joinCard]}>
       {step === 1 && <Text accessibilityRole="header" style={s.cardTitle}>{content.label} Sign Up</Text>}

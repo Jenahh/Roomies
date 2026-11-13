@@ -1,11 +1,13 @@
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
 import RoomiePet from '../../components/RoomiePet';
+import SignupProgress from '../../components/auth/SignupProgress';
 import { styles as s } from '../../styles/ResidentVerificationScreen.styles';
 import '../../styles/ResidentVerificationScreen.css';
 
 export default function ResidentVerificationScreen({ onBack, onContinueAdmin }: { onBack: () => void; onContinueAdmin: () => void }) {
   return <SafeAreaView style={s.safeArea}><View style={s.page}>
     <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Back to role selection" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable></View>
+    <SignupProgress step={4} />
     <View style={s.content}>
       <Text accessibilityRole="header" style={s.title}>Your request is in.</Text>
       <div className="verification-pet" role="status" aria-label="Awaiting property manager approval">

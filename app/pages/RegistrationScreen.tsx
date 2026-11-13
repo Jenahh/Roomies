@@ -1,7 +1,8 @@
-import DashboardIcon from '../components/dashboard/DashboardIcon';
 import { useState } from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import roomiesLogo from '../../assets/Roomies Logo.png';
+import RoomiePet from '../components/RoomiePet';
+import SignupProgress from '../components/auth/SignupProgress';
 import { styles } from '../styles/RegistrationScreen.styles';
 
 const roles = [
@@ -29,18 +30,22 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
           </Pressable>
           <Image source={{ uri: roomiesLogo }} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
           <Text style={styles.wordmark}>Roomies</Text>
-          <Text style={styles.headerCaption}>Choose your role</Text>
         </View>
 
-        <Text accessibilityRole="header" style={styles.title}>How will you use{'\n'}Roomies?</Text>
-        <Text style={styles.subtitle}>A shared home. A little support. Find the space that’s right for you.</Text>
-
+        <SignupProgress step={1} />
+        <Text accessibilityRole="header" style={styles.title}>Choose your role</Text>
         <View accessibilityRole="radiogroup" accessibilityLabel="Your role" style={styles.roles}>
           {roles.map(role => {
             const isSelected = role.id === selectedRole;
             return (
               <Pressable key={role.id} accessibilityRole="radio" accessibilityState={{ checked: isSelected }} onPress={() => setSelectedRole(role.id)} style={[styles.card, isSelected && styles.selectedCard]}>
-                <View style={[styles.iconBox, { backgroundColor: role.color }]}><DashboardIcon name={role.id === 'assistant' ? 'group' : role.id === 'resident' ? 'profile' : 'home'} color="#657EEA" size={24} /></View>
+                <View style={[styles.iconBox, { backgroundColor: role.color }]}>
+                  {role.id === 'assistant'
+                    ? <RoomiePet role="assistant" size={64} accessibilityLabel="Resident Assistant Roomie" />
+                    : role.id === 'landlord'
+                      ? <RoomiePet role="property-manager" size={64} accessibilityLabel="Property Manager Roomie" />
+                      : <RoomiePet mood="happy-3d" size={64} accessibilityLabel="Resident Roomie Pet" />}
+                </View>
                 <View style={styles.roleCopy}>
                   <Text style={styles.roleTitle}>{role.title}</Text>
                   <Text style={styles.roleDescription}>{role.description}</Text>
@@ -51,10 +56,6 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
           })}
         </View>
 
-        <View style={styles.notice}>
-          <Text style={styles.noticeIcon}>{'\u24D8'}</Text>
-          <Text style={styles.noticeText}>Choosing a role does not grant permissions. Professional roles require an invitation or administrator approval.</Text>
-        </View>
         <Pressable accessibilityRole="button" onPress={() => onContinue?.(selectedRole)} style={({ pressed }) => [styles.continueButton, pressed && styles.pressed]}>
           <Text style={styles.continueText}>Continue as {selected.label}</Text>
           

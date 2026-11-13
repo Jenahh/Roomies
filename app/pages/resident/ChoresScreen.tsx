@@ -2,6 +2,7 @@ import { addDays, choreDates, planChoreOccurrences, DEFAULT_CHORE_MINUTES, sugge
 import { resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge, ChorePresets } from '../../features/scheduler/ChorePresets';
 import ChorePet, { chorePetPrompt } from './ChorePet';
+import RoomiePet from '../../components/RoomiePet';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -12,9 +13,10 @@ function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function ChoresScreen({ data, setData, storageError, onPet, assignedHousehold }: {
+export default function ChoresScreen({ data, setData, storageError, onPet, assignedHousehold, autoOpenAdd = false, onAddOpened }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onPet?: () => void;
   assignedHousehold?: { name: string; roommates: { id: string; name: string }[] };
+  autoOpenAdd?: boolean; onAddOpened?: () => void;
 }) {
   const [celebration, setCelebration] = useState<ResidentData['chores'][number] | null>(null);
   useEffect(() => {
@@ -64,6 +66,11 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
     setTitle(''); setLook('custom'); setDue(dateKey(new Date())); setMinutes(String(DEFAULT_CHORE_MINUTES));
     setRepeat('once'); setThrough(''); setChoice(null); setError(''); setAdding(true);
   }
+  useEffect(() => {
+    if (!autoOpenAdd) return;
+    openAdd();
+    onAddOpened?.();
+  }, [autoOpenAdd]);
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : !chore.completed && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
   const points = data.chores.filter(chore => chore.completed && mine(chore)).length * 10;
@@ -101,7 +108,6 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
       <View style={s.row}><Text style={s.cardTitle}>This week’s progress</Text><Text style={s.count}>{completed} / {weekly.length} done</Text></View>
       <View accessibilityRole="progressbar" accessibilityLabel="Chores completed this week" accessibilityValue={{ min: 0, max: weekly.length || 1, now: completed }} style={s.track}><View style={[s.fill, { width: `${weekly.length ? completed / weekly.length * 100 : 0}%` }]} /></View>
     </View>
-    <Pressable accessibilityRole="button" onPress={openAdd} style={({ pressed }) => [s.addButton, pressed && s.pressed]}><Text style={s.addText}>＋ Add chore</Text></Pressable>
     <View style={s.splitCard}>
       <Text accessibilityRole="header" style={s.cardTitle}>This week’s split</Text>
       <View style={s.splitRow}>{workloads.map(({member, minutes}) => <Text key={member.id} style={s.splitChip}>{member.name} · {minutes} min</Text>)}</View>

@@ -1,8 +1,10 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import type { Expense, ResidentData } from '../../hooks/useResidentData';
+import type { PetMood } from '../../data/roomiePetMood';
 import { styles as s } from '../../styles/ExpensesScreen.styles';
+import RoomiePet from '../../components/RoomiePet';
 
 const paths = {
   wallet: 'M20 8V4H4v16h16v-8h-6V8h7v4M17 10h.01',
@@ -21,7 +23,7 @@ const money = (cents: number) => new Intl.NumberFormat('en-US', { style: 'curren
 const cents = (amount: number) => Math.round(amount * 100);
 const dateLabel = (date: string) => new Date(date + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
-export default function ExpensesScreen({ data, setData, storageError }: { data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string }) {
+export default function ExpensesScreen({ data, setData, mood, storageError, autoOpenAdd = false, onAddOpened }: { data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; mood: PetMood; storageError: string; autoOpenAdd?: boolean; onAddOpened?: () => void }) {
   const [panel, setPanel] = useState<'add' | 'balances' | 'recurring' | null>(null);
   const [selected, setSelected] = useState<Expense | null>(null);
   const [title, setTitle] = useState('');
@@ -41,6 +43,11 @@ export default function ExpensesScreen({ data, setData, storageError }: { data: 
   const balances = Array.from(new Set(outstanding.map(item => item.paidBy || 'Household'))).map(name => ({ name, amount: outstanding.filter(item => (item.paidBy || 'Household') === name).reduce((sum, item) => sum + cents(item.amount), 0) }));
   const recurringExpenses = data.expenses.filter(item => item.recurring);
   function openAdd() { setTitle(''); setAmount(''); setSplitCount('1'); setPaidBy(''); setDue(today()); setCategory('Other'); setRecurring(false); setError(''); setPanel('add'); }
+  useEffect(() => {
+    if (!autoOpenAdd) return;
+    openAdd();
+    onAddOpened?.();
+  }, [autoOpenAdd]);
   function save() {
     if (!title.trim()) { setError('Enter an expense title.'); return; }
     if (!/^\d+(\.\d{1,2})?$/.test(amount) || !Number.isSafeInteger(cents(Number(amount))) || cents(Number(amount)) <= 0) { setError('Enter a positive total with up to two decimal places.'); return; }
@@ -56,7 +63,7 @@ export default function ExpensesScreen({ data, setData, storageError }: { data: 
   function expenseRow(item: Expense) {
     const kind = (['Rent', 'Electricity', 'Groceries', 'Internet'].includes(item.category || '') ? item.category : 'Other') as keyof typeof paths;
     return <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={`${item.title}, your share ${money(cents(item.amount))}${item.settled ? ', settled' : ''}`} onPress={() => { setPanel(null); setSelected(item); }} style={({ pressed }) => [s.expense, pressed && s.pressed]}>
-      <View style={[s.iconBox, { backgroundColor: kind === 'Electricity' ? '#FFF2DC' : kind === 'Groceries' ? '#EAF6EF' : '#F1EBFF' }]}><Icon name={kind} /></View>
+      <View style={[s.iconBox, { backgroundColor: kind === 'Electricity' ? '#FFF2DC' : kind === 'Groceries' ? '#EAF6EF' : '#F1EBFF' }]}><RoomiePet action="expenses" color={data.pet?.color} mood={mood} size={50} /></View>
       <View style={s.copy}><Text style={s.expenseTitle}>{item.title}</Text><Text style={s.detail}>{item.paidBy ? `Paid by ${item.paidBy}` : 'Your expense share'} · {dateLabel(item.due)}{item.settled ? ' · Settled' : ''}</Text></View>
       <View style={s.amounts}><Text style={s.expenseTitle}>{money(cents(item.totalAmount ?? item.amount))}</Text><Text style={s.detail}>{money(cents(item.amount))} each</Text></View>
     </Pressable>;
@@ -70,7 +77,6 @@ export default function ExpensesScreen({ data, setData, storageError }: { data: 
     <View style={s.section}><Text accessibilityRole="header" style={s.sectionTitle}>Shared this month</Text><Text style={s.link}>{monthly.length} {monthly.length === 1 ? 'expense' : 'expenses'}</Text></View>
     <View style={s.expenses}>{monthly.length ? monthly.map(expenseRow) : <View style={s.empty}><Text style={s.expenseTitle}>Keep household costs in one place</Text><Text style={s.subtitle}>Add rent, groceries, or a bill to split with your roomies.</Text></View>}</View>
     <Pressable accessibilityRole="button" onPress={() => setPanel('recurring')} style={s.recurring}><Icon name="repeat" size={17} /><Text style={s.recurringText}>Recurring monthly expenses</Text><Text style={s.link}>›</Text></Pressable>
-    <Pressable accessibilityRole="button" onPress={openAdd} style={({ pressed }) => [s.addButton, pressed && s.pressed]}><Text style={s.addText}>＋ Add Expense</Text></Pressable>
     <Modal visible={panel !== null || selected !== null} transparent animationType="fade" onRequestClose={() => { setPanel(null); setSelected(null); }}><View style={s.backdrop}><ScrollView style={s.modal} contentContainerStyle={s.form} keyboardShouldPersistTaps="handled">
       <Text accessibilityRole="header" style={s.sectionTitle}>{selected ? selected.title : panel === 'add' ? 'Add expense' : panel === 'balances' ? 'Your outstanding balances' : 'Recurring monthly expenses'}</Text>
       {panel === 'add' && <>
