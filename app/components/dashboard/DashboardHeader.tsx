@@ -1,12 +1,18 @@
 import { Pressable, Text, View } from 'react-native';
 import { styles } from '../../styles/ResidentDashboard.styles';
 import Icon from './DashboardIcon';
+import RoomiePet from '../RoomiePet';
+import { getPetAccessoryIds } from '../../data/roomiePetAccessories';
+import type { PetMood } from '../../data/roomiePetMood';
+import type { ResidentData } from '../../hooks/useResidentData';
 
-export default function DashboardHeader({ household, onHousehold, onNotifications, onAchievements }: {
+export default function DashboardHeader({ household, pet, mood, onHousehold, onNotifications, onPet }: {
   household: string;
+  pet: ResidentData['pet'];
+  mood: PetMood;
   onHousehold: () => void;
   onNotifications: () => void;
-  onAchievements: () => void;
+  onPet: () => void;
 }) {
   return (
 <View style={styles.header}>
@@ -17,7 +23,9 @@ export default function DashboardHeader({ household, onHousehold, onNotification
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#606675" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="m6 9 6 6 6-6" /></svg>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Notifications" onPress={onNotifications} style={styles.notification}><Icon name="bell" size={18} /></Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Achievements" onPress={onAchievements} style={styles.notification}><Icon name="star" color="#657EEA" size={21} /></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Customize Roomie Pet" onPress={onPet} style={({ pressed }) => [styles.headerPet, pressed && styles.pressed]}>
+              <RoomiePet color={pet?.color} mood={mood} accessories={getPetAccessoryIds(pet)} accessoryColors={pet?.accessoryColors} size={40} accessibilityLabel="Roomie Pet" />
+            </Pressable>
           </View>
   );
 }

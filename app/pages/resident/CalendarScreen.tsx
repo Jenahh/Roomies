@@ -44,7 +44,7 @@ export default function CalendarScreen({ data, setData, storageError }: { data: 
     setMonth(new Date(parsed.getFullYear(), parsed.getMonth(), 1)); setSelected(date); setAdding(false);
   }
   return <>
-    <View style={s.header}><View style={s.copy}><Text accessibilityRole="header" style={s.title}>Our calendar</Text><Text style={s.subtitle}>One home. Everyone in the loop.</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Add event" onPress={openAdd} style={s.add}><Text style={s.plus}>+</Text></Pressable></View>
+    <View style={s.header}><View style={s.copy}><Text accessibilityRole="header" style={s.title}>Our calendar</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Add event" onPress={openAdd} style={s.add}><Text style={s.plus}>+</Text></Pressable></View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
     <View style={s.calendar}>
       <View style={s.monthHeader}><Pressable accessibilityRole="button" accessibilityLabel="Previous month" onPress={() => changeMonth(-1)} style={s.arrow}><Text style={s.arrowText}>‹</Text></Pressable><Text accessibilityRole="header" accessibilityLiveRegion="polite" style={s.monthTitle}>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</Text><Pressable accessibilityRole="button" accessibilityLabel="Next month" onPress={() => changeMonth(1)} style={s.arrow}><Text style={s.arrowText}>›</Text></Pressable></View>

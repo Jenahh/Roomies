@@ -62,7 +62,7 @@ export default function ExpensesScreen({ data, setData, storageError }: { data: 
     </Pressable>;
   }
   return <>
-    <View style={s.header}><View style={s.copy}><Text accessibilityRole="header" style={s.title}>Expenses</Text><Text style={s.subtitle}>{new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</Text></View><Pressable accessibilityRole="button" accessibilityLabel="View expense balances" onPress={() => setPanel('balances')} style={s.headerButton}><Icon name="Other" size={18} /></Pressable></View>
+    <View style={s.header}><View style={s.copy}><Text accessibilityRole="header" style={s.title}>Expenses</Text></View><Pressable accessibilityRole="button" accessibilityLabel="View expense balances" onPress={() => setPanel('balances')} style={s.headerButton}><Icon name="Other" size={18} /></Pressable></View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
     <View style={s.summary}><View style={s.row}><View style={s.copy}><Text style={s.summaryLabel}>You owe{balances.length === 1 && balances[0].name !== 'Household' ? ` ${balances[0].name}` : ''}</Text><Text style={s.balance}>{money(balance)}</Text></View><View style={s.wallet}><Icon name="wallet" size={28} /></View></View><Text style={s.summaryDetail}>{nextDue ? `Next due ${dateLabel(nextDue)} · ` : 'All settled up · '}Monthly total {money(total)}</Text></View>
     <View style={s.section}><Text accessibilityRole="header" style={s.sectionTitle}>Who you owe</Text><Pressable accessibilityRole="button" onPress={() => setPanel('balances')} style={s.linkButton}><Text style={s.link}>View balances</Text></Pressable></View>

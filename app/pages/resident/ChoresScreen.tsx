@@ -67,8 +67,6 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : !chore.completed && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
   const points = data.chores.filter(chore => chore.completed && mine(chore)).length * 10;
-  const format = (date: Date) => date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-
   function save() {
     const parsed = new Date(due + 'T12:00:00');
     if (!title.trim()) { setError('Enter a chore title.'); return; }
@@ -87,7 +85,7 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
   return <>
     <View style={s.header}>
       
-      <View style={s.copy}><Text accessibilityRole="header" style={s.title}>Chores</Text><Text style={s.subtitle}>{assignedHousehold?.name || data.household || 'Your household'} · {format(start)}–{format(end)}</Text></View>
+      <View style={s.copy}><Text accessibilityRole="header" style={s.title}>Chores</Text></View>
     </View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
     <View style={s.petHero}>

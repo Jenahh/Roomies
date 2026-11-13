@@ -8,7 +8,6 @@ import Icon from './DashboardIcon';
 import DashboardHeader from './DashboardHeader';
 import DashboardNavigation from './DashboardNavigation';
 import HouseholdProgressCard from './HouseholdProgressCard';
-import RoomiePetCard from './RoomiePetCard';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Modal, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -23,6 +22,7 @@ import ProfileScreen from '../../pages/resident/ProfileScreen';
 import NotificationsScreen from '../../pages/resident/NotificationsScreen';
 import MaintenanceScreen from '../../pages/resident/MaintenanceScreen';
 import ContactRAScreen from '../../pages/resident/ContactRAScreen';
+import './quick-add.css';
 
 function localDate(date: Date) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -39,6 +39,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const hasRoomiePet = user.role === 'resident';
   const { data, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const navigationTab = (activeTab === 'Notifications' || activeTab === 'Achievements' || activeTab === 'PetCheckIn') ? 'Home' : (activeTab === 'Maintenance' || activeTab === 'ContactRA' || activeTab === 'CustomizePet') ? 'Profile' : activeTab;
   useEffect(() => {
@@ -66,7 +67,6 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const unpaidExpenses = data.expenses.filter(expense => !expense.settled);
   const totalCents = unpaidExpenses.reduce((total, expense) => total + Math.round(expense.amount * 100), 0);
   const currency = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' });
-  const nextDue = unpaidExpenses.map(expense => expense.due).sort()[0];
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 18 ? 'Good afternoon' : 'Good evening';
   const petMood = getPetMood(data, now);
   const needsAttention = data.pet && (!data.pet.lastAttention || now.getTime() - new Date(data.pet.lastAttention).getTime() >= 86400000);
@@ -116,30 +116,50 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const isForm = ['Profile', 'Pet', 'Add chore', 'Split expense', 'Add event'].includes(panel || '');
   const datedForm = ['Add chore', 'Split expense', 'Add event'].includes(panel || '');
 
-  const residentHeader = <DashboardHeader household={data.household} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onAchievements={() => setActiveTab('Achievements')} />;
+  const residentHeader = <DashboardHeader household={data.household} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => setActiveTab('CustomizePet')} />;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.shell}>
         <ScrollView ref={pageScroll} contentContainerStyle={styles.page}>
-          {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'CustomizePet' && hasRoomiePet ? <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Chores' ? <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} storageError={storageError} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} storageError={storageError} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} header={residentHeader} user={user} data={data} setData={setData} storageError={storageError} onOpenPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
+          {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'CustomizePet' && hasRoomiePet ? <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Chores' ? <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} storageError={storageError} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} storageError={storageError} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} header={residentHeader} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
           {residentHeader}
           <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
-          <Text style={styles.date}>{now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
           <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
           <View style={styles.stats}>
-            <DashboardStatCard icon="chores" value={todayCount + (todayCount === 1 ? ' chore' : ' chores')} caption="on your list today" onPress={() => openPanel('Chores')} style={styles.choreStat} />
-            <DashboardStatCard icon="expenses" value={currency.format(totalCents / 100)} caption={nextDue ? 'you owe ? due ' + displayDate(nextDue) : 'No outstanding expenses'} onPress={() => openPanel('Expenses')} style={styles.expenseStat} />
+            <DashboardStatCard icon="chores" value={todayCount + (todayCount === 1 ? ' chore' : ' chores')} onPress={() => openPanel('Chores')} style={styles.choreStat} />
+            <DashboardStatCard icon="expenses" value={currency.format(totalCents / 100)} onPress={() => openPanel('Expenses')} style={styles.expenseStat} />
           </View>
           <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Coming up</Text></View>
           <View style={styles.upcoming}>
             {!upcoming.length && <Text style={styles.emptyText}>No upcoming chores or events. Add one below.</Text>}
             {upcoming.map(item => <Pressable key={item.id} accessibilityRole={item.kind === 'chore' ? 'checkbox' : 'button'} accessibilityState={item.kind === 'chore' ? { checked: false } : undefined} accessibilityLabel={item.title} onPress={() => item.kind === 'chore' ? toggleChore(item.id) : openPanel('Calendar')} style={({ pressed }) => [styles.event, pressed && styles.pressed]}>{item.kind === 'chore' ? <ChoreBadge look={item.look} title={item.title} /> : <View style={[styles.eventIcon, styles.dinnerIcon]}><Icon name="calendar" size={19} /></View>}<View style={styles.eventCopy}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>{item.kind === 'chore' ? <View style={styles.checkbox} /> : <Text style={styles.chevron}>{'\u203A'}</Text>}</Pressable>)}
           </View>
-          {hasRoomiePet && <RoomiePetCard pet={data.pet} mood={petMood} onOpen={() => data.pet && petMood !== 'Happy' ? setActiveTab('PetCheckIn') : openPanel('Pet')} />}
           </>}
         </ScrollView>
+        <View style={styles.quickAddContainer}>
+          <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
+          <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>
+            {([
+              ['Chores', 'Add chore', 'chores'],
+              ['Expenses', 'Add expense', 'expenses'],
+              ['Calendar', 'Add event', 'calendar'],
+            ] as const).map(([tab, label, icon]) => (
+              <div key={tab} className="quick-add-option">
+              <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => { setActiveTab(tab); setQuickAddOpen(false); }} style={({ pressed }) => [styles.quickAddOption, pressed && styles.pressed]}>
+                <Icon name={icon} color="#657EEA" size={21} />
+              </Pressable>
+              </div>
+            ))}
+          </View>
+          </div>
+          <div className={`quick-add-button${quickAddOpen ? ' is-open' : ''}`}>
+          <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={() => setQuickAddOpen(open => !open)} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+            <Icon name="add" color="#FFFFFF" size={25} />
+          </Pressable>
+          </div>
+        </View>
         <DashboardNavigation activeTab={navigationTab} onNavigate={setActiveTab} />
       </View>
       <Modal visible={panel === 'Household'} transparent animationType="slide" onRequestClose={() => setPanel(null)}>

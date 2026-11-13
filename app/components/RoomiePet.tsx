@@ -39,7 +39,7 @@ const sprites: Record<SpriteMood | RoomieRole, { body: string; details: string }
   'property-manager': { body: propertyManager3dBody, details: propertyManager3dDetails },
 };
 
-const accessoryImages = import.meta.glob('../../assets/roomie-pet-kit/roomie-pet-kit/accessories/*.png', {
+export const ROOMIE_ACCESSORY_IMAGES = import.meta.glob('../../assets/roomie-pet-kit/roomie-pet-kit/accessories/*.png', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -86,7 +86,7 @@ export default function RoomiePet({ mood = 'happy', color, accessories = [], acc
 
   function renderAccessory(id: RoomieAccessoryId) {
     const [left, top, width, height] = ROOMIE_ACCESSORY_PLACEMENTS[id].map(value => value * size);
-    const original = accessoryImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/${id}.png`];
+    const original = ROOMIE_ACCESSORY_IMAGES[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/${id}.png`];
     const base = accessoryLayerImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/layers/${id}-base.png`];
     const details = accessoryLayerImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/layers/${id}-details.png`];
     const accessoryColor = accessoryColors[id];
