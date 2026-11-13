@@ -1,16 +1,16 @@
 import { backNavigationText } from './BackNavigation.styles';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
-  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: 26, paddingBottom: 30 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 16 },
+  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: Platform.select({ native: 14, default: 26 }), paddingBottom: Platform.select({ native: 16, default: 30 }) },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Platform.select({ native: 14, default: 24 }), gap: 16 },
   backButton: { minHeight: 44, justifyContent: 'center', paddingRight: 8, borderRadius: 8 },
   backText: backNavigationText,
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logo: { width: 38, height: 38 },
   wordmark: { fontSize: 25, fontWeight: '800', letterSpacing: -0.7, color: '#292B35' },
-  title: { fontSize: 30, lineHeight: 42, fontWeight: '800', letterSpacing: -0.6, color: '#292B35', paddingBottom: 10, marginBottom: 20 },
+  title: { fontSize: 30, lineHeight: 42, fontWeight: '800', letterSpacing: -0.6, color: '#292B35', paddingBottom: 10, marginBottom: Platform.select({ native: 12, default: 20 }) },
   subtitle: { fontSize: 14, lineHeight: 21, color: '#7B7D87', marginTop: 6, marginBottom: 22 },
   form: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, gap: 12 },
   label: { fontSize: 13, fontWeight: '600', color: '#292B35', marginBottom: 7 },

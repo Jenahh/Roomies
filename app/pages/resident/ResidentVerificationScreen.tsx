@@ -1,8 +1,7 @@
 import { Pressable, SafeAreaView, Text, View } from 'react-native';
-import RoomiePet from '../../components/RoomiePet';
 import SignupProgress from '../../components/auth/SignupProgress';
+import VerificationPet from '../../components/auth/VerificationPet';
 import { styles as s } from '../../styles/ResidentVerificationScreen.styles';
-import '../../styles/ResidentVerificationScreen.css';
 
 export default function ResidentVerificationScreen({ onBack, onContinueAdmin }: { onBack: () => void; onContinueAdmin: () => void }) {
   return <SafeAreaView style={s.safeArea}><View style={s.page}>
@@ -10,10 +9,7 @@ export default function ResidentVerificationScreen({ onBack, onContinueAdmin }: 
     <SignupProgress step={4} />
     <View style={s.content}>
       <Text accessibilityRole="header" style={s.title}>Your request is in.</Text>
-      <div className="verification-pet" role="status" aria-label="Awaiting property manager approval">
-        <RoomiePet className="verification-pet-image" size={160} accessibilityLabel="Roomie Pet" />
-        <div className="verification-dots" aria-hidden="true"><span /><span /><span /></div>
-      </div>
+      <VerificationPet label="Awaiting property manager approval" mood="happy" />
       <Text style={s.note}>You must be approved by your property manager before you can access your household.</Text>
     </View>
     <Pressable accessibilityRole="button" onPress={onContinueAdmin} style={({ pressed }) => [s.continueButton, pressed && s.pressed]}><Text style={s.continueText}>Continue (Admin)</Text></Pressable>

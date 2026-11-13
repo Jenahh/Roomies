@@ -4,6 +4,7 @@ import roomiesLogo from '../../assets/Roomies Logo.png';
 import RoomiePet from '../components/RoomiePet';
 import SignupProgress from '../components/auth/SignupProgress';
 import { styles } from '../styles/RegistrationScreen.styles';
+import { getImageSource } from '../utils/imageSource';
 
 const roles = [
   { id: 'resident', title: 'Resident', description: 'Manage your shared home', color: '#EDF0FF', label: 'Resident' },
@@ -28,7 +29,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={styles.backButton}>
             <Text style={styles.backArrow}>{'<'}</Text>
           </Pressable>
-          <Image source={{ uri: roomiesLogo }} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
+          <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
           <Text style={styles.wordmark}>Roomies</Text>
         </View>
 

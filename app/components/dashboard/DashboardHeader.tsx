@@ -20,7 +20,7 @@ export default function DashboardHeader({ household, pet, mood, onHousehold, onN
             <Pressable accessibilityRole="button" onPress={onHousehold} style={({ pressed }) => [styles.household, pressed && styles.pressed]}>
               <Icon name="home" color="#657EEA" size={15} />
               <Text style={styles.householdName}>{household || 'Set up household'}</Text>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#606675" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="m6 9 6 6 6-6" /></svg>
+              <Text accessible={false} style={{ color: '#606675', fontSize: 14, lineHeight: 16 }}>⌄</Text>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Notifications" onPress={onNotifications} style={styles.notification}><Icon name="bell" size={18} /></Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel="Customize Roomie Pet" onPress={onPet} style={({ pressed }) => [styles.headerPet, pressed && styles.pressed]}>

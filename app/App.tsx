@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import WelcomeScreen from './pages/WelcomeScreen';
 import RegistrationScreen from './pages/RegistrationScreen';
 import LoginScreen from './pages/LoginScreen';
@@ -14,26 +15,31 @@ import ResidentAssistantJoinScreen from './pages/resident-assistant/ResidentAssi
 import ResidentAssistantVerificationScreen from './pages/resident-assistant/ResidentAssistantVerificationScreen';
 
 export default function App() {
-  const [path, setPath] = useState(window.location.pathname);
+  const [path, setPath] = useState(() => Platform.OS === 'web' ? window.location.pathname : '/');
   const [user, setUser] = useState<ResidentUser | null>(demoResident);
 
   useEffect(() => {
+    if (Platform.OS !== 'web') return;
     const onPopState = () => setPath(window.location.pathname);
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   function navigate(nextPath: string) {
-    window.history.pushState(null, '', nextPath);
+    if (Platform.OS === 'web') {
+      window.history.pushState(null, '', nextPath);
+      window.scrollTo(0, 0);
+    }
     setPath(nextPath);
-    window.scrollTo(0, 0);
   }
 
   function signOut() {
     setUser(null);
-    window.history.replaceState(null, '', '/');
+    if (Platform.OS === 'web') {
+      window.history.replaceState(null, '', '/');
+      window.scrollTo(0, 0);
+    }
     setPath('/');
-    window.scrollTo(0, 0);
   }
 
   if (path === '/property-manager' && user?.role === 'property-manager') {

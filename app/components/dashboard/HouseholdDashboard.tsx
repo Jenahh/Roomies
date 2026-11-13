@@ -9,7 +9,7 @@ import DashboardHeader from './DashboardHeader';
 import DashboardNavigation from './DashboardNavigation';
 import HouseholdProgressCard from './HouseholdProgressCard';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Modal, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
 
 import RoomieCustomizationScreen from '../../pages/resident/RoomieCustomizationScreen';
 import { styles } from '../../styles/ResidentDashboard.styles';
@@ -46,7 +46,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const navigationTab = (activeTab === 'Notifications' || activeTab === 'Achievements' || activeTab === 'PetCheckIn') ? 'Home' : (activeTab === 'Maintenance' || activeTab === 'ContactRA' || activeTab === 'CustomizePet') ? 'Profile' : activeTab;
   useEffect(() => {
     pageScroll.current?.scrollTo({ y: 0, animated: false });
-    window.scrollTo(0, 0);
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   }, [activeTab]);
   const [now, setNow] = useState(() => new Date());
   const [panel, setPanel] = useState<string | null>(null);
@@ -55,8 +55,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60000);
-    return () => window.clearInterval(timer);
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
   }, []);
   const today = localDate(now);
   const weekStart = new Date(now);
@@ -117,6 +117,22 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
 
   const isForm = ['Profile', 'Pet', 'Add chore', 'Split expense', 'Add event'].includes(panel || '');
   const datedForm = ['Add chore', 'Split expense', 'Add event'].includes(panel || '');
+  const quickAddOptions = ([
+    ['Chores', 'Add chore', 'chores'],
+    ['Expenses', 'Add expense', 'expenses'],
+    ['Calendar', 'Add event', 'calendar'],
+  ] as const).map(([tab, label, action], index) => {
+    const option = (
+      <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => { setQuickAddTarget(tab); setActiveTab(tab); setQuickAddOpen(false); }} style={({ pressed }) => [styles.quickAddOption, pressed && styles.pressed]}>
+        <View style={styles.quickAddOptionContent}>
+          <RoomiePet action={action} color={data.pet?.color} mood={petMood} size={72} />
+        </View>
+      </Pressable>
+    );
+    if (Platform.OS === 'web') return <div key={tab} className="quick-add-option">{option}</div>;
+    const positions = [{ right: 8, bottom: 132 }, { right: 88, bottom: 78 }, { right: 132, bottom: 8 }];
+    return <View key={tab} pointerEvents={quickAddOpen ? 'auto' : 'none'} style={[styles.quickAddOptionWrapper, positions[index], !quickAddOpen && styles.quickAddOptionHidden]}>{option}</View>;
+  });
 
   const residentHeader = <DashboardHeader household={data.household} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => setActiveTab('CustomizePet')} />;
   function handleQuickAdd() {
@@ -152,28 +168,26 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
           </>}
         </ScrollView>
         <View pointerEvents="box-none" style={styles.quickAddContainer}>
-          <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
-          <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>
-            {([
-              ['Chores', 'Add chore', 'chores'],
-              ['Expenses', 'Add expense', 'expenses'],
-              ['Calendar', 'Add event', 'calendar'],
-            ] as const).map(([tab, label, action]) => (
-              <div key={tab} className="quick-add-option">
-              <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => { setQuickAddTarget(tab); setActiveTab(tab); setQuickAddOpen(false); }} style={({ pressed }) => [styles.quickAddOption, pressed && styles.pressed]}>
-                <View style={styles.quickAddOptionContent}>
-                  <RoomiePet action={action} color={data.pet?.color} mood={petMood} size={72} />
-                </View>
+          {Platform.OS === 'web' ? (
+            <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
+              <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>{quickAddOptions}</View>
+            </div>
+          ) : (
+            <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={[styles.quickAddMenu, !quickAddOpen && styles.quickAddMenuHidden]}>{quickAddOptions}</View>
+          )}
+          {Platform.OS === 'web' ? (
+            <div className={`quick-add-button${quickAddOpen ? ' is-open' : ''}`}>
+              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : activeTab === 'Chores' ? 'Add chore' : activeTab === 'Expenses' ? 'Add expense' : activeTab === 'Calendar' ? 'Add event' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+                <Icon name="add" color="#FFFFFF" size={25} />
               </Pressable>
-              </div>
-            ))}
-          </View>
-          </div>
-          <div className={`quick-add-button${quickAddOpen ? ' is-open' : ''}`}>
-          <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : activeTab === 'Chores' ? 'Add chore' : activeTab === 'Expenses' ? 'Add expense' : activeTab === 'Calendar' ? 'Add event' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
-            <Icon name="add" color="#FFFFFF" size={25} />
-          </Pressable>
-          </div>
+            </div>
+          ) : (
+            <View style={styles.quickAddButtonWrapper}>
+              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : activeTab === 'Chores' ? 'Add chore' : activeTab === 'Expenses' ? 'Add expense' : activeTab === 'Calendar' ? 'Add event' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+                <Icon name="add" color="#FFFFFF" size={25} />
+              </Pressable>
+            </View>
+          )}
         </View>
         <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab(tab); }} />
       </View>

@@ -4,6 +4,7 @@ import roomiesLogo from '../../assets/Roomies Logo.png';
 import { styles } from '../styles/LoginScreen.styles';
 import { demoAccounts, type ResidentUser } from '../data/demoAccount';
 import PasswordVisibilityIcon from '../components/auth/PasswordVisibilityIcon';
+import { getImageSource } from '../utils/imageSource';
 
 type LoginScreenProps = {
   onBack?: () => void;
@@ -40,7 +41,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
             <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
           <View style={styles.brand}>
-            <Image source={{ uri: roomiesLogo }} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
+            <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
             <Text style={styles.wordmark}>Roomies</Text>
           </View>
         </View>

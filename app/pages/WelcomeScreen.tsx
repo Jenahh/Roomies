@@ -12,6 +12,7 @@ import {
 import { styles } from '../styles/WelcomeScreen.styles';
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import roomiesWelcome from '../../assets/Roomies Welcome.png';
+import { getImageSource } from '../utils/imageSource';
 
 type WelcomeScreenProps = {
   onGetStarted?: () => void;
@@ -25,13 +26,13 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
       <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
-          <Image source={{ uri: roomiesLogo }} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Roomies logo" />
+          <Image source={getImageSource(roomiesLogo)} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Roomies logo" />
           <Text style={styles.wordmark}>Roomies</Text>
         </View>
 
         <View style={styles.main}>
           <View style={styles.illustrationFrame}>
-            <Image source={{ uri: roomiesWelcome }} style={styles.welcomeImage} resizeMode="contain" accessibilityLabel="Four roommates relaxing together on a sofa" />
+            <Image source={getImageSource(roomiesWelcome)} style={styles.welcomeImage} resizeMode="contain" accessibilityLabel="Four roommates relaxing together on a sofa" />
           </View>
 
           <View style={styles.copy}>

@@ -57,7 +57,7 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Enter a valid email address.'); return; }
     if (password.length < 8) { setError('Use a password with at least 8 characters.'); return; }
     if (password !== confirmPassword) { setError('Your passwords do not match.'); return; }
-    setError(''); setStep(2); window.scrollTo(0, 0);
+    setError(''); setStep(2); if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   }
   function join() {
     if (!code.trim()) { setError('Enter your ' + content.codeLabel.toLowerCase() + '.'); return; }

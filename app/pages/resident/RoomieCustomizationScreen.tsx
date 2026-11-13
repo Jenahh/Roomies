@@ -11,6 +11,7 @@ import {
   type RoomieAccessoryId,
 } from '../../data/roomiePetAccessories';
 import { styles as s } from '../../styles/RoomieCustomizationScreen.styles';
+import { getImageSource } from '../../utils/imageSource';
 
 const petColors = [
   ['Blue', ROOMIE_COLORS.blue],
@@ -77,7 +78,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
         const equipped = accessories.includes(id);
         const locked = id === 'sprout-hat' && !leafUnlocked && !equipped;
         return <Pressable key={id} accessibilityRole="checkbox" accessibilityLabel={`${ROOMIE_ACCESSORY_LABELS[id]}${locked ? ', locked, 210 points required' : ''}`} accessibilityState={{ checked: equipped, disabled: locked }} disabled={locked} onPress={() => chooseAccessory(id)} style={[s.accessory, equipped && s.selectedAccessory, locked && s.lockedAccessory]}>
-          <Image source={{ uri: ROOMIE_ACCESSORY_IMAGES[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/${id}.png`] }} style={s.accessoryImage} resizeMode="contain" accessibilityLabel={ROOMIE_ACCESSORY_LABELS[id]} />
+          <Image source={getImageSource(ROOMIE_ACCESSORY_IMAGES[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/${id}.png`])} style={s.accessoryImage} resizeMode="contain" accessibilityLabel={ROOMIE_ACCESSORY_LABELS[id]} />
           {equipped && <View style={s.equippedBadge}><Text style={s.check}>✓</Text></View>}
           {locked && <View style={s.lockBadge}><Text style={s.lockText}>🔒</Text></View>}
         </Pressable>;

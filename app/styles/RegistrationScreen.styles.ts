@@ -1,19 +1,19 @@
 import { backNavigationText } from './BackNavigation.styles';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
-  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: 26, paddingBottom: 32 },
+  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: Platform.select({ native: 14, default: 26 }), paddingBottom: Platform.select({ native: 16, default: 32 }) },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 24 },
   backButton: { minWidth: 24, minHeight: 44, justifyContent: 'center' },
   backArrow: backNavigationText,
   logo: { width: 36, height: 36 },
   wordmark: { fontSize: 24, fontWeight: '800', color: '#292B35', letterSpacing: -0.7 },
   headerCaption: { marginLeft: 'auto', fontSize: 10, color: '#52545D' },
-  title: { fontSize: 29, lineHeight: 32, fontWeight: '800', color: '#292B35', letterSpacing: -0.6, marginBottom: 20 },
+  title: { fontSize: 29, lineHeight: 32, fontWeight: '800', color: '#292B35', letterSpacing: -0.6, marginBottom: Platform.select({ native: 12, default: 20 }) },
   subtitle: { fontSize: 13, lineHeight: 19, color: '#7B7D87', marginTop: 8, marginBottom: 14 },
-  roles: { gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 104, padding: 12, borderRadius: 12, borderWidth: 2, borderColor: '#EAE9E6', backgroundColor: '#FFFFFF' },
+  roles: { gap: Platform.select({ native: 8, default: 12 }) },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: Platform.select({ native: 88, default: 104 }), padding: 12, borderRadius: 12, borderWidth: 2, borderColor: '#EAE9E6', backgroundColor: '#FFFFFF' },
   selectedCard: { borderColor: '#657EFF' },
   iconBox: { width: 68, height: 68, borderRadius: 12, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   icon: { fontSize: 34, color: '#485BE0' },
@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
   notice: { flexDirection: 'row', gap: 10, padding: 13, borderRadius: 15, backgroundColor: '#EDF0FF', marginTop: 12 },
   noticeIcon: { fontSize: 19, color: '#485BE0' },
   noticeText: { flex: 1, fontSize: 11, lineHeight: 15, color: '#393D49' },
-  continueButton: { minHeight: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#657EEA', borderRadius: 15, marginTop: 12, paddingVertical: 12, paddingHorizontal: 44 },
+  continueButton: { minHeight: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#657EEA', borderRadius: 15, marginTop: Platform.select({ native: 8, default: 12 }), paddingVertical: 12, paddingHorizontal: 44 },
   continueArrow: { position: 'absolute', right: 18, fontSize: 21, color: '#263350' },
   continueText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', textAlign: 'left' },
   pressed: { backgroundColor: '#8A9FFF' },

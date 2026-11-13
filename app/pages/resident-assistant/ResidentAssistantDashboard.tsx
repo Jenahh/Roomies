@@ -30,13 +30,13 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60000);
-    return () => window.clearInterval(timer);
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     pageScroll.current?.scrollTo({ y: 0, animated: false });
-    window.scrollTo(0, 0);
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   }, [activeTab]);
 
   return (

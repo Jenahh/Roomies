@@ -10,7 +10,7 @@ function dateKey(date: Date) { return `${date.getFullYear()}-${String(date.getMo
 export default function NotificationsScreen({ data, setData, mood, storageError, onBack }: { data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; mood: PetMood; storageError: string; onBack: () => void }) {
   const [now, setNow] = useState(() => new Date());
   const [message, setMessage] = useState('');
-  useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 30000); return () => window.clearInterval(timer); }, []);
+  useEffect(() => { const timer = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(timer); }, []);
   const preferences = data.notificationPreferences || { choresAndBills: true, events: true, quietHours: true };
   const today = dateKey(now);
   const end = new Date(now); end.setDate(end.getDate() + 7);
