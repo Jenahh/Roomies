@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
   wordmark: { fontSize: 25, fontWeight: '800', letterSpacing: -0.7, color: '#292B35' },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '800', letterSpacing: -0.6, color: '#292B35' },
   subtitle: { fontSize: 14, lineHeight: 21, color: '#7B7D87', marginTop: 6, marginBottom: 22 },
-  form: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 16 },
+  form: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16 },
   label: { fontSize: 13, fontWeight: '600', color: '#292B35', marginBottom: 7 },
   input: { minHeight: 48, borderWidth: 1, borderColor: '#E7E6E3', borderRadius: 12, paddingHorizontal: 12, fontSize: 14, color: '#292B35' },
   passwordLabel: { marginTop: 18 },
@@ -31,5 +31,5 @@ export const styles = StyleSheet.create({
   createAccount: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginTop: 24, gap: 3 },
   createPrompt: { fontSize: 14, color: '#7B7D87' },
   footer: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', paddingTop: 80 },
-  footerText: { fontSize: 11, color: '#7B7D87', textAlign: 'center' },
+  footerText: { fontSize: 11, color: '#7B7D87', textAlign: 'left' },
 });

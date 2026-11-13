@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
   submitText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
   section: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, marginBottom: 6 },
   sectionTitle: { fontSize: 15, fontWeight: '600', color: '#292B35' },
-  requests: { backgroundColor: '#FFFFFF', borderRadius: 18, padding: 12 },
+  requests: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 12 },
   request: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44 },
   requestTitle: { flex: 1, fontSize: 12, fontWeight: '500', color: '#292B35' },
   status: { alignSelf: 'flex-start', fontSize: 10, fontWeight: '500', backgroundColor: '#F2EDFF', color: '#514478', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 5 },

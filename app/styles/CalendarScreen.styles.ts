@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   subtitle: { fontSize: 11, lineHeight: 17, color: '#7B7D87' },
   add: { width: 40, height: 40, borderRadius: 14, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
   plus: { fontSize: 25, color: '#737783', fontWeight: '300' },
-  calendar: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 10 },
+  calendar: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 10 },
   monthHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   monthTitle: { fontSize: 14, color: '#292B35', fontWeight: '700' },
   arrow: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
