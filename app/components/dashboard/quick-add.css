@@ -1,0 +1,71 @@
+.quick-add-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 56px;
+  height: 56px;
+}
+
+.quick-add-button svg {
+  transition: transform 280ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.quick-add-button.is-open svg {
+  transform: rotate(135deg);
+}
+
+.quick-add-option {
+  position: absolute;
+  opacity: 0;
+  transform: translate(64px, 64px) scale(.65);
+  transition:
+    opacity 240ms ease,
+    transform 320ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.quick-add-option:nth-child(1) {
+  right: 8px;
+  bottom: 124px;
+}
+
+.quick-add-option:nth-child(2) {
+  right: 74px;
+  bottom: 76px;
+}
+
+.quick-add-option:nth-child(3) {
+  right: 116px;
+  bottom: 18px;
+}
+
+.quick-add-menu.is-open .quick-add-option {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+.quick-add-menu {
+  pointer-events: none;
+}
+
+.quick-add-menu.is-open {
+  pointer-events: auto;
+}
+
+.quick-add-menu.is-open .quick-add-option:nth-child(1) {
+  transition-delay: 40ms;
+}
+
+.quick-add-menu.is-open .quick-add-option:nth-child(2) {
+  transition-delay: 90ms;
+}
+
+.quick-add-menu.is-open .quick-add-option:nth-child(3) {
+  transition-delay: 140ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-add-button svg,
+  .quick-add-option {
+    transition: none;
+  }
+}
