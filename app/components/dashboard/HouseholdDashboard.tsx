@@ -90,7 +90,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
 
   function save() {
     if (!title.trim()) { setError('Enter a name or title.'); return; }
-    if (['Add chore', 'Split expense', 'Add event'].includes(panel || '')) {
+    if (['Split expense', 'Add event'].includes(panel || '')) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(new Date(date + 'T12:00:00').getTime()) || localDate(new Date(date + 'T12:00:00')) !== date) {
         setError('Enter a valid date in YYYY-MM-DD format.'); return;
       }
@@ -103,7 +103,6 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     setData(previous => {
       if (panel === 'Profile') return { ...previous, name: title.trim() };
       if (panel === 'Pet') return { ...previous, pet: { ...previous.pet, name: title.trim(), lastAttention: previous.pet?.lastAttention || null } };
-      if (panel === 'Add chore') return { ...previous, chores: [...previous.chores, { id, title: title.trim(), due: date, completed: false }] };
       if (panel === 'Split expense') return { ...previous, expenses: [...previous.expenses, { id, title: title.trim(), due: date, amount: numericAmount }] };
       if (panel === 'Add event') return { ...previous, events: [...previous.events, { id, title: title.trim(), date }] };
       return previous;
@@ -115,8 +114,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     setData(previous => ({ ...previous, chores: previous.chores.map(chore => chore.id === id ? { ...chore, completed: !chore.completed } : chore) }));
   }
 
-  const isForm = ['Profile', 'Pet', 'Add chore', 'Split expense', 'Add event'].includes(panel || '');
-  const datedForm = ['Add chore', 'Split expense', 'Add event'].includes(panel || '');
+  const isForm = ['Profile', 'Pet', 'Split expense', 'Add event'].includes(panel || '');
+  const datedForm = ['Split expense', 'Add event'].includes(panel || '');
   const quickAddOptions = ([
     ['Chores', 'Add chore', 'chores'],
     ['Expenses', 'Add expense', 'expenses'],
@@ -214,7 +213,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             <Pressable accessibilityRole="button" onPress={save} style={({ pressed }) => [styles.modalButton, pressed && styles.pressed]}><Text style={styles.linkText}>Save</Text></Pressable>
             {panel === 'Pet' && data.pet && <Pressable accessibilityRole="button" onPress={() => setData(previous => ({ ...previous, pet: previous.pet ? { ...previous.pet, lastAttention: new Date().toISOString() } : null }))} style={styles.modalButton}><Text style={styles.linkText}>{needsAttention ? 'Give attention' : 'Feeling happy'}</Text></Pressable>}
           </>}
-          {panel === 'Chores' && <>{!data.chores.length && <Text style={styles.emptyText}>No chores yet.</Text>}{data.chores.map(chore => <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} onPress={() => toggleChore(chore.id)} style={styles.listRow}><Text style={[styles.eventTitle, chore.completed && styles.completed]}>{chore.title}</Text><Text style={styles.eventDetail}>{displayDate(chore.due)} ? {chore.completed ? 'Completed' : 'Not completed'}</Text></Pressable>)}<Pressable accessibilityRole="button" onPress={() => openPanel('Add chore')} style={styles.modalButton}><Text style={styles.linkText}>Add chore</Text></Pressable></>}
+          {panel === 'Chores' && <>{!data.chores.length && <Text style={styles.emptyText}>No chores yet.</Text>}{data.chores.map(chore => <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} onPress={() => toggleChore(chore.id)} style={styles.listRow}><Text style={[styles.eventTitle, chore.completed && styles.completed]}>{chore.title}</Text><Text style={styles.eventDetail}>{displayDate(chore.due)} ? {chore.completed ? 'Completed' : 'Not completed'}</Text></Pressable>)}<Pressable accessibilityRole="button" onPress={() => { setPanel(null); setQuickAddTarget('Chores'); setActiveTab('Chores'); }} style={styles.modalButton}><Text style={styles.linkText}>Add chore</Text></Pressable></>}
           {panel === 'Expenses' && <>{!data.expenses.length && <Text style={styles.emptyText}>No outstanding expenses.</Text>}{data.expenses.map(expense => <View key={expense.id} style={styles.listRow}><Text style={styles.eventTitle}>{expense.title} ? {currency.format(expense.amount)}</Text><Text style={styles.eventDetail}>Due {displayDate(expense.due)}</Text><Pressable accessibilityRole="button" accessibilityLabel={'Mark ' + expense.title + ' paid'} onPress={() => setData(previous => ({ ...previous, expenses: previous.expenses.filter(item => item.id !== expense.id) }))} style={styles.modalButton}><Text style={styles.linkText}>Mark paid</Text></Pressable></View>)}<Pressable accessibilityRole="button" onPress={() => openPanel('Split expense')} style={styles.modalButton}><Text style={styles.linkText}>Add your expense share</Text></Pressable></>}
           {panel === 'Calendar' && <>{[...upcoming, ...unpaidExpenses.map(expense => ({ id: expense.id, title: expense.title + ' ? ' + currency.format(expense.amount), date: expense.due }))].sort((a, b) => a.date.localeCompare(b.date)).map(item => <View key={item.id} style={styles.listRow}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>)}{!upcoming.length && !unpaidExpenses.length && <Text style={styles.emptyText}>No scheduled items yet.</Text>}<Pressable accessibilityRole="button" onPress={() => openPanel('Add event')} style={styles.modalButton}><Text style={styles.linkText}>Add event</Text></Pressable></>}
           <Pressable accessibilityRole="button" onPress={() => setPanel(null)} style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}><Text style={styles.linkText}>Close</Text></Pressable>
