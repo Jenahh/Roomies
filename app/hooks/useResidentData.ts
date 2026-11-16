@@ -8,6 +8,7 @@ export type Expense = { id: string; title: string; amount: number; due: string; 
 export type HouseholdEvent = { id: string; title: string; date: string; time?: string; attendees?: string };
 export type SupportDraft = { id: string; kind: 'maintenance' | 'ra'; title: string; description: string; location: string; createdAt: string; category?: string; photo?: string };
 export type ResidentData = {
+  welcomeSeen?: { chores: string[]; expenses: string[] };
   scheduler?: { members: SchedulerMember[]; templates: ChoreTemplate[] };
   name: string;
   household: string;

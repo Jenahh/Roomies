@@ -1,3 +1,6 @@
+import { useContext } from 'react';
+import { RoomiePetContext } from './RoomiePetContext';
+import { getPetAccessoryIds } from '../data/roomiePetAccessories';
 import { Image, View } from 'react-native';
 import { getImageSource } from '../utils/imageSource';
 import type { PetMood } from '../data/roomiePetMood';
@@ -134,10 +137,13 @@ function normalizeMood(mood: PetMood | SpriteMood): 'happy' | 'annoyed' | 'stres
   return 'happy';
 }
 
-export default function RoomiePet({ mood = 'happy', color, accessories = [], accessoryColors = {}, size = 128, accessibilityLabel, role, action }: RoomiePetProps) {
+export default function RoomiePet({ mood = 'happy', color, accessories: accessoryOverride, accessoryColors: accessoryColorOverride, size = 128, accessibilityLabel, role, action }: RoomiePetProps) {
   const expression = normalizeMood(mood);
   const [body, details] = action ? actionAssets[action] : spriteAssets[role ?? expression];
   const face = action ? actionAssets[action][2][expression === 'happy' ? 0 : expression === 'annoyed' ? 1 : 2] : null;
+  const savedPet = useContext(RoomiePetContext);
+  const accessories = accessoryOverride ?? getPetAccessoryIds(savedPet);
+  const accessoryColors = accessoryColorOverride ?? savedPet?.accessoryColors ?? {};
   const equippedBySlot = new Map<RoomieAccessorySlot, RoomieAccessoryId>();
   accessories.forEach(id => equippedBySlot.set(ROOMIE_ACCESSORY_SLOTS[id], id));
   const selectedAccessories = [...equippedBySlot.values()];
@@ -164,11 +170,11 @@ export default function RoomiePet({ mood = 'happy', color, accessories = [], acc
       accessibilityLabel={accessibilityLabel ?? (action ? `Roomie ${ROOMIE_ACTIONS[action].label.toLowerCase()}` : role === 'assistant' ? 'Resident Assistant Roomie' : role === 'property-manager' ? 'Property Manager Roomie' : `Roomie Pet, ${expression}`)}
       style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
     >
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
+      {!role && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
       <Image source={getImageSource(body)} resizeMode="contain" style={{ width: '100%', height: '100%', tintColor: colorKey ? ROOMIE_COLORS[colorKey] : defaultColor }} />
       <Image source={getImageSource(details)} resizeMode="contain" style={accessoryLayer} />
       {face && <Image source={getImageSource(face)} resizeMode="contain" style={accessoryLayer} />}
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
+      {!role && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
     </View>
   );
 }

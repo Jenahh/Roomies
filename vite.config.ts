@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  // React Native Web's animation cleanup expects the Node-style global alias.
+  define: { global: 'globalThis' },
   test: {
     include: ['app/**/*.test.{ts,tsx}'],
   },

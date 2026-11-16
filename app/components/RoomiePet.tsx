@@ -1,3 +1,6 @@
+import { useContext } from 'react';
+import { RoomiePetContext } from './RoomiePetContext';
+import { getPetAccessoryIds } from '../data/roomiePetAccessories';
 import type { CSSProperties } from 'react';
 import type { PetMood } from '../data/roomiePetMood';
 import { ROOMIE_ACTIONS, type RoomieActionId } from '../data/roomieActions';
@@ -112,11 +115,14 @@ type RoomiePetProps = {
   action?: RoomieActionId;
 };
 
-export default function RoomiePet({ mood = 'happy', color, accessories = [], accessoryColors = {}, size = 128, accessibilityLabel, className, role, action }: RoomiePetProps) {
+export default function RoomiePet({ mood = 'happy', color, accessories: accessoryOverride, accessoryColors: accessoryColorOverride, size = 128, accessibilityLabel, className, role, action }: RoomiePetProps) {
   const spriteMood = getSpriteMood(mood);
   const sprite = action ? actionSprites[action] : sprites[role ?? spriteMood];
   const actionFace = action ? actionSprites[action].faces[getActionMood(mood)] : undefined;
   const dimensions: CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%' };
+  const savedPet = useContext(RoomiePetContext);
+  const accessories = accessoryOverride ?? getPetAccessoryIds(savedPet);
+  const accessoryColors = accessoryColorOverride ?? savedPet?.accessoryColors ?? {};
   const equippedBySlot = new Map<RoomieAccessorySlot, RoomieAccessoryId>();
   for (const id of accessories) equippedBySlot.set(ROOMIE_ACCESSORY_SLOTS[id], id);
   const selectedAccessories = [...equippedBySlot.values()];
@@ -176,11 +182,11 @@ export default function RoomiePet({ mood = 'happy', color, accessories = [], acc
       className={className}
       style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
     >
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
+      {!role && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
       <div aria-hidden="true" style={bodyStyle} />
       <img src={sprite.details} alt="" aria-hidden="true" draggable={false} style={detailsStyle} />
       {actionFace && <img src={actionFace} alt="" aria-hidden="true" draggable={false} style={detailsStyle} />}
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
+      {!role && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
     </div>
   );
 }

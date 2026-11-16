@@ -8,12 +8,14 @@ import Icon from './DashboardIcon';
 import DashboardHeader from './DashboardHeader';
 import DashboardNavigation from './DashboardNavigation';
 import HouseholdProgressCard from './HouseholdProgressCard';
+import RoomieWelcome from './RoomieWelcome';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
 
 import RoomieCustomizationScreen from '../../pages/resident/RoomieCustomizationScreen';
 import { styles } from '../../styles/ResidentDashboard.styles';
 import RoomiePet from '../RoomiePet';
+import { RoomiePetContext } from '../RoomiePetContext';
 import type { ResidentUser } from '../../data/demoAccount';
 import { useResidentData } from '../../hooks/useResidentData';
 import ChoresScreen from '../../pages/resident/ChoresScreen';
@@ -148,11 +150,15 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   }
 
   return (
+    <RoomiePetContext.Provider value={data.pet}>
     <SafeAreaView style={styles.safeArea}>
+      {hasRoomiePet && <RoomieWelcome data={data} setData={setData} onFinish={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('Home'); }} />}
       <View style={styles.shell}>
-        <ScrollView ref={pageScroll} contentContainerStyle={styles.page}>
+        {activeTab === 'CustomizePet' && hasRoomiePet ? (
+          <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
+        ) : <ScrollView ref={pageScroll} contentContainerStyle={styles.page}>
         {residentHeader}
-        {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'CustomizePet' && hasRoomiePet ? <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Chores' ? <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
+        {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Chores' ? <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
           <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
           <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
@@ -166,8 +172,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             {upcoming.map(item => <Pressable key={item.id} accessibilityRole={item.kind === 'chore' ? 'checkbox' : 'button'} accessibilityState={item.kind === 'chore' ? { checked: false } : undefined} accessibilityLabel={item.title} onPress={() => item.kind === 'chore' ? toggleChore(item.id) : openPanel('Calendar')} style={({ pressed }) => [styles.event, pressed && styles.pressed]}><RoomiePet action={item.kind === 'chore' ? 'chores' : 'calendar'} color={data.pet?.color} mood={petMood} size={50} /><View style={styles.eventCopy}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>{item.kind === 'chore' ? <View style={styles.checkbox} /> : <Text style={styles.chevron}>{'\u203A'}</Text>}</Pressable>)}
           </View>
           </>}
-        </ScrollView>
-        <View pointerEvents="box-none" style={styles.quickAddContainer}>
+        </ScrollView>}
+        {activeTab !== 'CustomizePet' && <View pointerEvents="box-none" style={styles.quickAddContainer}>
           {Platform.OS === 'web' ? (
             <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
               <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>{quickAddOptions}</View>
@@ -188,7 +194,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
               </Pressable>
             </View>
           )}
-        </View>
+        </View>}
         <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab(tab); }} />
       </View>
       <Modal visible={panel === 'Household'} transparent animationType="slide" onRequestClose={() => setPanel(null)}>
@@ -221,5 +227,6 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
         </ScrollView></View>
       </Modal>
     </SafeAreaView>
+    </RoomiePetContext.Provider>
   );
 }
