@@ -21,6 +21,7 @@ import ProfileScreen from '../../pages/resident/ProfileScreen';
 import NotificationsScreen from '../../pages/resident/NotificationsScreen';
 import MaintenanceScreen from '../../pages/resident/MaintenanceScreen';
 import ContactRAScreen from '../../pages/resident/ContactRAScreen';
+import { loadAnnouncements } from '../../data/householdAnnouncements';
 
 function localDate(date: Date) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -36,6 +37,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const hasRoomiePet = user.role === 'resident';
   const { data, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const [announcements] = useState(loadAnnouncements);
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const navigationTab = (activeTab === 'Notifications' || activeTab === 'Achievements' || activeTab === 'PetCheckIn') ? 'Home' : (activeTab === 'Maintenance' || activeTab === 'ContactRA' || activeTab === 'CustomizePet') ? 'Profile' : activeTab;
   useEffect(() => {
@@ -124,6 +126,19 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
           <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
           <Text style={styles.date}>{now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
+            <View style={styles.sectionHeading}>
+              <Text style={styles.sectionTitle}>Announcements</Text>
+            </View>
+            <View style={styles.upcoming}>
+              {announcements.length ? announcements.map(announcement => (
+                <View key={announcement.id} style={styles.event}>
+                  <View style={styles.eventCopy}>
+                    <Text style={styles.eventTitle}>{announcement.title}</Text>
+                    <Text style={styles.eventDetail}>{announcement.message}</Text>
+                  </View>
+                </View>
+               )) : <Text style={styles.emptyText}>No announcements right now.</Text>}
+            </View>
           <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
           <View style={styles.stats}>
             <DashboardStatCard icon="chores" value={todayCount + (todayCount === 1 ? ' chore' : ' chores')} caption="on your list today" onPress={() => openPanel('Chores')} style={styles.choreStat} />
