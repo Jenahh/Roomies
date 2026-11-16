@@ -129,7 +129,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
       </Pressable>
     );
     if (Platform.OS === 'web') return <div key={tab} className="quick-add-option">{option}</div>;
-    const positions = [{ right: 8, bottom: 132 }, { right: 88, bottom: 78 }, { right: 132, bottom: 8 }];
+    // Equal 45-degree steps on a 144px radius around the add button's center.
+    const positions = [{ right: -12, bottom: 132 }, { right: 90, bottom: 90 }, { right: 132, bottom: -12 }];
     return <View key={tab} pointerEvents={quickAddOpen ? 'auto' : 'none'} style={[styles.quickAddOptionWrapper, positions[index], !quickAddOpen && styles.quickAddOptionHidden]}>{option}</View>;
   });
 
