@@ -1,5 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('./useRoomieAssetBundle', () => ({
+  useRoomieAssetBundle: <T,>(bundle: { value: T }) => ({ value: bundle.value, ready: true, failed: false }),
+}));
 import RoomiePet from './RoomiePet';
 import { RoomiePetContext } from './RoomiePetContext';
 import type { ResidentData } from '../hooks/useResidentData';
