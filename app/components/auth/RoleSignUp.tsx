@@ -71,7 +71,7 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
     setPassword(''); setConfirmPassword(''); setError('');
     onRequestSubmitted();
   }
-  return <SafeAreaView style={s.safeArea}><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
+  return <SafeAreaView style={s.safeArea}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
     <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable><Text style={s.step}>{step} of 2</Text></View>
     <SignupProgress step={step === 1 ? 2 : 3} />
     <View style={[s.homeIcon, { backgroundColor: content.avatarBackground }]}>

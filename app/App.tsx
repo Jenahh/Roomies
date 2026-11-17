@@ -91,7 +91,7 @@ export default function App() {
 
   return (
     <View style={isLocalWebPreview ? previewStyles.stage : previewStyles.fill}>
-      <View style={isLocalWebPreview ? [previewStyles.phone, { width: phoneWidth, height: phoneHeight }] : previewStyles.fill}>
+      <View nativeID={isLocalWebPreview ? "roomies-phone-preview" : undefined} style={isLocalWebPreview ? [previewStyles.phone, { width: phoneWidth, height: phoneHeight }] : previewStyles.fill}>
         <AppContent />
       </View>
     </View>

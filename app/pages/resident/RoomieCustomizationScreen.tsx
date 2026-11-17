@@ -64,7 +64,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
     setSaved(true);
   }
 
-  return <View style={s.screen}><ScrollView contentContainerStyle={dashboardStyles.page}>{header}
+  return <View style={s.screen}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={dashboardStyles.page}>{header}
     <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
     <View style={s.preview}>
       <View style={s.petPreview}>

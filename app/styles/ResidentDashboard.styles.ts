@@ -3,6 +3,7 @@ import { Platform, StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
   shell: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center' },
+  pageScroll: { minWidth: 0, width: '100%' },
   page: { flexGrow: 1, paddingHorizontal: 20, paddingTop: Platform.select({ native: 12, default: 24 }), paddingBottom: Platform.select({ native: 16, default: 32 }) },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   logo: { width: 36, height: 36 },
@@ -54,6 +55,7 @@ export const styles = StyleSheet.create({
   petOpen: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 14, backgroundColor: '#FFFFFF' },
   petStatus: { fontSize: 10, color: '#292B35', backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 4, paddingHorizontal: 10 },
   quickActions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  choreAddDock: { height: 64, flexShrink: 0, marginRight: 18, marginBottom: 8 },
   quickAddContainer: { position: 'absolute', right: 18, bottom: 76, width: 250, height: 210, zIndex: 10 },
   quickAddButtonWrapper: { position: 'absolute', right: 0, bottom: 0, width: 56, height: 56 },
   quickAddButton: { position: 'absolute', right: 0, bottom: 0, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: '#657EEA', elevation: 5, shadowColor: '#292B35', shadowOpacity: 0.2, shadowRadius: 6, shadowOffset: { width: 0, height: 3 } },

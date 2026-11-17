@@ -2,11 +2,11 @@ import { Pressable, Text, View } from 'react-native';
 import DashboardIcon from '../../components/dashboard/DashboardIcon';
 import { choreLooks, chorePresets, getChoreLook, type ChoreLook } from '../../data/chorePresets';
 
-export function ChoreBadge({ look, title }: { look?: ChoreLook; title?: string }) {
+export function ChoreBadge({ look, title, muted = false }: { look?: ChoreLook; title?: string; muted?: boolean }) {
   const style = getChoreLook(look, title);
   return (
-    <View accessible={false} style={{ width: 36, height: 36, borderRadius: 12, flexShrink: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: style.tint }}>
-      <DashboardIcon name={style.icon} color={style.ink} size={18} />
+    <View accessible={false} style={{ width: 36, height: 36, borderRadius: 12, flexShrink: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: muted ? '#E2E2E2' : style.tint }}>
+      <DashboardIcon name={style.icon} color={muted ? '#626262' : style.ink} size={18} />
     </View>
   );
 }
