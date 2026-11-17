@@ -1,15 +1,10 @@
 import { useContext } from 'react';
 import { RoomiePetContext } from './RoomiePetContext';
-import { getPetAccessoryIds } from '../data/roomiePetAccessories';
+import { getPetAccessoryIds, getRoomieAccessoryFrame } from '../data/roomiePetAccessories';
 import type { CSSProperties } from 'react';
 import type { PetMood } from '../data/roomiePetMood';
 import { ROOMIE_ACTIONS, type RoomieActionId } from '../data/roomieActions';
-import {
-  ROOMIE_ACCESSORY_PLACEMENTS,
-  ROOMIE_ACCESSORY_SLOTS,
-  type RoomieAccessoryId,
-  type RoomieAccessorySlot,
-} from '../data/roomiePetAccessories';
+import { ROOMIE_ACCESSORY_SLOTS, type RoomieAccessoryId, type RoomieAccessorySlot } from '../data/roomiePetAccessories';
 import annoyed3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-body.png';
 import annoyed3dDetails from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-details.png';
 import happy3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/happy-3d-body.png';
@@ -128,14 +123,13 @@ export default function RoomiePet({ mood = 'happy', color, accessories: accessor
   const selectedAccessories = [...equippedBySlot.values()];
 
   function renderAccessory(id: RoomieAccessoryId) {
-    const [left, top, width, height] = ROOMIE_ACCESSORY_PLACEMENTS[id].map(value => value * size);
+    const [left, top, width, height] = getRoomieAccessoryFrame(id, size, getActionMood(mood), action);
     const original = ROOMIE_ACCESSORY_IMAGES[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/${id}.png`];
     const base = accessoryLayerImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/layers/${id}-base.png`];
     const details = accessoryLayerImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/layers/${id}-details.png`];
     const accessoryColor = accessoryColors[id];
-    const glassesOffset = id === 'round-glasses' && spriteMood !== 'happy-3d' ? size * 0.06 : 0;
     const bodyOffset = ROOMIE_ACCESSORY_SLOTS[id] === 'body' && spriteMood === 'stressed-3d' ? size * 0.03 : 0;
-    const position: CSSProperties = { position: 'absolute', left, top: top + glassesOffset + bodyOffset, width, height };
+    const position: CSSProperties = { position: 'absolute', left, top: top + bodyOffset, width, height };
 
     if (!accessoryColor) {
       return <img key={id} src={original} alt="" aria-hidden="true" draggable={false} style={{ ...position, objectFit: 'fill' }} />;

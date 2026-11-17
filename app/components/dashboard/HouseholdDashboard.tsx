@@ -72,6 +72,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const totalCents = unpaidExpenses.reduce((total, expense) => total + Math.round(expense.amount * 100), 0);
   const currency = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' });
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 18 ? 'Good afternoon' : 'Good evening';
+  const firstName = (data.name.trim() || user.name.trim() || 'Resident').split(/\s+/)[0];
   const petMood = getPetMood(data, now);
   const needsAttention = data.pet && (!data.pet.lastAttention || now.getTime() - new Date(data.pet.lastAttention).getTime() >= 86400000);
   const upcoming = [
@@ -178,7 +179,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             {quickAddTarget !== 'Calendar' && renderAddDock('Add event', true)}
           </View>} onCancel={() => setQuickAddTarget(null)} roommates={assignedHousehold?.roommates ?? []} onOpenSection={setActiveTab} /> : renderResidentPage(
           activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
-          <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
+          <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {firstName}!</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
           <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
           <View style={styles.stats}>
@@ -187,7 +188,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
           </View>
           <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Coming up</Text></View>
           <View style={styles.upcoming}>
-            {!upcoming.length && <Text style={styles.emptyText}>No upcoming chores or events. Add one below.</Text>}
+            {!upcoming.length && <Text style={styles.emptyText}>Nothing upcoming. Add a chore or event.</Text>}
             {upcoming.map(item => <Pressable key={item.id} accessibilityRole={item.kind === 'chore' ? 'checkbox' : 'button'} accessibilityState={item.kind === 'chore' ? { checked: false } : undefined} accessibilityLabel={item.title} onPress={() => item.kind === 'chore' ? toggleChore(item.id) : openPanel('Calendar')} style={({ pressed }) => [styles.event, pressed && styles.pressed]}><RoomiePet action={item.kind === 'chore' ? 'chores' : 'calendar'} color={data.pet?.color} mood={petMood} size={50} /><View style={styles.eventCopy}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>{item.kind === 'chore' ? <View style={styles.checkbox} /> : <Text style={styles.chevron}>{'\u203A'}</Text>}</Pressable>)}
           </View>
           </>
