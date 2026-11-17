@@ -4,14 +4,14 @@ import RoomiePet from '../../components/RoomiePet';
 import './ChorePet.css';
 
 const scenes = {
-  dishes: { action: 'washing dishes', line: 'Bubbles ready. Let’s get those dishes sparkling!', backdrop: '#edf6ff' },
-  counters: { action: 'wiping counters', line: 'I brought a sponge. Let’s give the counters a quick reset!', backdrop: '#fff7e8' },
-  trash: { action: 'taking out the trash', line: 'Bag packed! A quick trash run and we’re done.', backdrop: '#edf8ee' },
-  floors: { action: 'sweeping the floor', line: 'Tiny broom, big plans. Let’s sweep together!', backdrop: '#f5efff' },
-  laundry: { action: 'carrying laundry', line: 'Laundry basket ready. One load at a time!', backdrop: '#fff0f5' },
-  plants: { action: 'watering plants', line: 'My watering can is full. Let’s give the plants a drink!', backdrop: '#f1f8e7' },
-  custom: { action: 'checking the chore list', line: 'I’ve got the checklist. One little task at a time!', backdrop: '#fff7e8' },
-} satisfies Record<ChoreLook, { action: string; line: string; backdrop: string }>;
+  dishes: { action: 'washing dishes', line: 'Bubbles ready. Let’s get those dishes sparkling!' },
+  counters: { action: 'wiping counters', line: 'I brought a sponge. Let’s give the counters a quick reset!' },
+  trash: { action: 'taking out the trash', line: 'Bag packed! A quick trash run and we’re done.' },
+  floors: { action: 'sweeping the floor', line: 'Tiny broom, big plans. Let’s sweep together!' },
+  laundry: { action: 'carrying laundry', line: 'Laundry basket ready. One load at a time!' },
+  plants: { action: 'watering plants', line: 'My watering can is full. Let’s give the plants a drink!' },
+  custom: { action: 'checking the chore list', line: 'I’ve got the checklist. One little task at a time!' },
+} satisfies Record<ChoreLook, { action: string; line: string }>;
 
 export function chorePetPrompt(look: ChoreLook) { return scenes[look].line; }
 
@@ -43,15 +43,14 @@ export default function ChorePet({ name, color, accessory, accessories, accessor
   look?: ChoreLook;
 }) {
   const accessibilityLabel = celebrating ? `${name} celebrating${look ? ` by ${scenes[look].action}` : ' a finished chore'}` : look ? `${name} ${scenes[look].action}` : `${name} ready to help`;
-  return <div className={`chore-pet${celebrating ? ' chore-pet--celebrating' : ''}`} style={{ backgroundColor: look ? scenes[look].backdrop : undefined }}>
-    <span className="chore-pet-shadow" />
+  return <div className={`chore-pet${celebrating ? ' chore-pet--celebrating' : ''}`}>
     <div className="chore-pet-body">
       <RoomiePet
         mood="happy"
         color={color}
         accessories={getPetAccessoryIds({ accessory, accessories })}
         accessoryColors={accessoryColors}
-        size={78}
+        size={108}
         accessibilityLabel={accessibilityLabel}
       />
     </div>

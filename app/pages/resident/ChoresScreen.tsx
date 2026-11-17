@@ -1,10 +1,10 @@
 import { addDays, choreDates, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
 import { resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge, ChorePresets } from '../../features/scheduler/ChorePresets';
-import ChorePet, { chorePetPrompt } from './ChorePet';
+import ChorePet from './ChorePet';
 import RoomiePet from '../../components/RoomiePet';
-import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { Animated, Easing, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { ResidentData } from '../../hooks/useResidentData';
 import { styles as s } from '../../styles/ChoresScreen.styles';
@@ -13,7 +13,38 @@ function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function ChoresScreen({ data, setData, storageError, onPet, assignedHousehold, autoOpenAdd = false, onAddOpened }: {
+const confettiPieces = [
+  { dx: -19, dy: -12, backgroundColor: '#A35FEC' },
+  { dx: -8, dy: -23, backgroundColor: '#D28B25' },
+  { dx: 10, dy: -24, backgroundColor: '#3B9663' },
+  { dx: 23, dy: -10, backgroundColor: '#DF6598' },
+  { dx: 19, dy: 12, backgroundColor: '#D28B25' },
+  { dx: -16, dy: 14, backgroundColor: '#3B9663' },
+];
+
+function ChoreConfetti() {
+  const progress = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const animation = Animated.timing(progress, { toValue: 1, duration: 460, easing: Easing.out(Easing.ease), useNativeDriver: true });
+    animation.start();
+    return () => animation.stop();
+  }, [progress]);
+  const opacity = progress.interpolate({ inputRange: [0, 0.65, 1], outputRange: [1, 1, 0] });
+  const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
+  const rotation = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '75deg'] });
+
+  return <View pointerEvents="none" style={s.confetti}>{confettiPieces.map((piece, index) => <Animated.View key={index} style={[
+    s.confettiPiece,
+    { left: '50%', top: '50%', backgroundColor: piece.backgroundColor, opacity, transform: [
+      { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [0, piece.dx] }) },
+      { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, piece.dy] }) },
+      { scale },
+      { rotate: rotation },
+    ] },
+  ]} />)}</View>;
+}
+
+export default function ChoresScreen({ data, setData, storageError, assignedHousehold, autoOpenAdd = false, onAddOpened }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onPet?: () => void;
   assignedHousehold?: { name: string; roommates: { id: string; name: string }[] };
   autoOpenAdd?: boolean; onAddOpened?: () => void;
@@ -47,14 +78,12 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
   const end = new Date(start); end.setDate(start.getDate() + 6);
   const weekly = data.chores.filter(chore => chore.due >= dateKey(start) && chore.due <= dateKey(end));
   const completed = weekly.filter(chore => chore.completed).length;
-  const remaining = weekly.length - completed;
   const petName = data.pet?.name || 'Roomie';
   const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (!chore.assignee || chore.assignee === data.name);
   const upcomingChores = data.chores.filter(chore => !chore.completed).sort((a,b) => a.due.localeCompare(b.due));
   const nextChore = upcomingChores.find(mine) ?? upcomingChores[0];
   const featuredChore = celebration ?? nextChore;
   const petLook = featuredChore ? resolveChoreLook(featuredChore.look, featuredChore.title) : undefined;
-  const petCopy = celebration ? `${celebration.title} done! Look at us go.` : petLook ? chorePetPrompt(petLook) : weekly.length && !remaining ? 'We finished this week’s chores. High five!' : 'A little quiet time! I’m here when you’re ready for the next chore.';
   const workloads = weeklyWorkload(dateKey(start), members, data.chores, data.name);
   const candidates = suggestAssignee({ title, look, due, minutes: Number(minutes) }, members, data.chores, data.name);
   const suggested = candidates[0];
@@ -105,13 +134,8 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
     <View style={s.petHero}>
       <View style={s.petIntro}>
         <ChorePet key={celebration ? `done:${celebration.id}` : nextChore?.id ?? 'idle'} look={petLook} name={petName} color={data.pet?.color} accessory={data.pet?.accessory} accessories={data.pet?.accessories} accessoryColors={data.pet?.accessoryColors} celebrating={!!celebration} />
-        <View style={s.copy}>
-          <Text style={s.petEyebrow}>{celebration ? '✦ SMALL WIN' : 'YOUR CHORE BUDDY'}</Text>
-          <View style={s.row}><Text style={s.sectionTitle}>{petName}</Text><Text style={s.points} accessibilityLabel={`${points} Roomie points`}>{points} pts</Text></View>
-          <Text accessibilityLiveRegion="polite" style={s.caption}>{petCopy}</Text>
-          {!data.pet && onPet && <Pressable accessibilityRole="button" onPress={onPet}><Text style={s.upcoming}>Meet your pet →</Text></Pressable>}
-        </View>
       </View>
+      <Text style={[s.points, s.petPoints]} accessibilityLabel={`${points} Roomie points`}>{points} pts</Text>
       <View style={s.row}><Text style={s.cardTitle}>This week</Text><Text style={s.count}>{completed} / {weekly.length} done</Text></View>
       <View accessibilityRole="progressbar" accessibilityLabel="Chores completed this week" accessibilityValue={{ min: 0, max: weekly.length || 1, now: completed }} style={s.track}><View style={[s.fill, { width: `${weekly.length ? completed / weekly.length * 100 : 0}%` }]} /></View>
     </View>
@@ -123,7 +147,7 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
         const name = chore.unassigned ? 'Unassigned' : chore.assignee || data.name;
         const day = chore.due === dateKey(now) ? 'Today' : new Date(chore.due + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
         return <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} accessibilityLabel={`${chore.title}, ${name}, ${day}`} onPress={() => { setBurst(chore.completed ? null : chore.id); setCelebration(chore.completed ? null : chore); setData(previous => ({ ...previous, chores: previous.chores.map(item => item.id === chore.id ? { ...item, completed: !item.completed } : item) })); }} style={({ pressed }) => [s.chore, pressed && s.pressed]}>
-          <View style={[s.checkbox, (own || chore.completed) && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text style={s.check}>✓</Text>}{burst === chore.id && <span className="chore-confetti" aria-hidden="true">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</span>}</View>
+          <View style={[s.checkbox, (own || chore.completed) && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text style={s.check}>✓</Text>}{burst === chore.id && <ChoreConfetti key={burst} />}</View>
           <ChoreBadge look={chore.look} title={chore.title} />
           <View style={s.copy}><Text style={[s.choreTitle, chore.completed && s.completed]}>{chore.title}</Text><Text style={s.detailText}>{name}{own ? ' (you)' : ''} · {day}{chore.time ? `, ${chore.time}` : ''}</Text></View>
         </Pressable>;
@@ -138,31 +162,45 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
       <Text accessibilityRole="header" style={s.sectionTitle}>Add a chore</Text>
       <Text style={s.caption}>Pick a chore. {petName} helps split the work.</Text>
       <ChorePresets selected={title ? look : undefined} onPick={preset => { setTitle(preset.title); setLook(preset.look); setMinutes(String(preset.minutes)); setChoice(null); setError(''); }} />
-      <div className="chore-details chore-event-fields chore-quick-fields">
-        <label>When<select value={due} onChange={event => { setDue(event.target.value); setError(''); }}>{upcomingDates.map((date, index) => <option key={date} value={date}>{index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : new Date(date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</option>)}</select></label>
-        <label>Repeat<select value={repeat} onChange={event => {
-          const next = event.target.value as typeof repeat; setRepeat(next); setError('');
-          setRepeatCount(next === 'daily' ? 7 : 4);
-        }}><option value="once">Once</option><option value="weekly">Weekly</option><option value="daily">Daily</option></select></label>
-        <label>Effort<select value={minutes} onChange={event => { setMinutes(event.target.value); setError(''); }}>{[5, 10, 15, 20, 30, 45, 60].map(value => <option key={value} value={value}>{value} min</option>)}</select></label>
-        {repeat !== 'once' && <label className="chore-repeat-end">How many times?<select value={repeatCount} onChange={event => setRepeatCount(Number(event.target.value))}>{[2, 3, 4, 7, 8, 12].map(count => <option key={count} value={count}>{count} times</option>)}</select></label>}
-      </div>
+      <View style={s.formFields}>
+        <Text style={s.fieldLabel}>When</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.dateChoices}>
+          {upcomingDates.map((date, index) => {
+            const label = index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : new Date(date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            return <Pressable key={date} accessibilityRole="radio" accessibilityState={{ checked: due === date }} onPress={() => { setDue(date); setError(''); }} style={[s.fieldChoice, due === date && s.fieldChoiceSelected]}><Text style={s.fieldChoiceText}>{label}</Text></Pressable>;
+          })}
+        </ScrollView>
+        <Text style={s.fieldLabel}>Repeat</Text>
+        <View style={s.fieldChoices}>
+          {(['once', 'weekly', 'daily'] as const).map(item => <Pressable key={item} accessibilityRole="radio" accessibilityState={{ checked: repeat === item }} onPress={() => { setRepeat(item); setError(''); setRepeatCount(item === 'daily' ? 7 : 4); }} style={[s.fieldChoice, repeat === item && s.fieldChoiceSelected]}><Text style={s.fieldChoiceText}>{item === 'once' ? 'Once' : item === 'weekly' ? 'Weekly' : 'Daily'}</Text></Pressable>)}
+        </View>
+        <Text style={s.fieldLabel}>Effort</Text>
+        <View style={s.fieldChoices}>
+          {[5, 10, 15, 20, 30, 45, 60].map(value => <Pressable key={value} accessibilityRole="radio" accessibilityState={{ checked: Number(minutes) === value }} onPress={() => { setMinutes(String(value)); setError(''); }} style={[s.fieldChoice, Number(minutes) === value && s.fieldChoiceSelected]}><Text style={s.fieldChoiceText}>{value} min</Text></Pressable>)}
+        </View>
+        {repeat !== 'once' && <>
+          <Text style={s.fieldLabel}>How many times?</Text>
+          <View style={s.fieldChoices}>
+            {[2, 3, 4, 7, 8, 12].map(count => <Pressable key={count} accessibilityRole="radio" accessibilityState={{ checked: repeatCount === count }} onPress={() => setRepeatCount(count)} style={[s.fieldChoice, repeatCount === count && s.fieldChoiceSelected]}><Text style={s.fieldChoiceText}>{count} times</Text></Pressable>)}
+          </View>
+        </>}
+      </View>
       {repeat !== 'once' && dates.length > 0 && <Text style={s.caption}>{dates.length} {dates.length === 1 ? 'chore' : 'chores'}{repeatUntil ? ` through ${repeatUntil}` : ''}.</Text>}
       {!!title && <View style={s.suggestionCard}>
         <Text accessibilityLiveRegion="polite" style={s.cardTitle}>{unavailable ? 'Choose another assignee' : chosen ? `${choice === null ? 'Suggested' : 'Assigned to'}: ${chosen.member.name}` : 'Unassigned'}</Text>
         <Text style={s.caption}>{unavailable ? 'This roommate is unavailable or would exceed their weekly limit.' : chosen ? `${chosen.minutes ? `${chosen.minutes} min already assigned this week.` : 'No chores assigned this week yet.'}${choice === null && chosen.lastAssignee && !chosen.repeated ? ` ${chosen.lastAssignee} had this chore last time.` : ''}` : 'Nobody is available within their workload limit. Try another date, or add it without an assignee.'}</Text>
         {!!override && <Text accessibilityLiveRegion="polite" style={s.fairnessNote}>With this chore: {chosen.member.name} · {chosen.projected} min, {suggested.member.name} · {suggested.minutes} min. You can keep it or switch to spread the work.</Text>}
         {repeatPreview.length > 0 && <Text style={s.caption}>{unassignedCount > 0 ? `${unassignedCount} ${unassignedCount === 1 ? 'date needs' : 'dates need'} someone. The rest are assigned automatically.` : 'Roomies balances the later dates too.'}</Text>}
-        {candidates.length > 0 && <div className="chore-choices" role="group" aria-label={repeat === 'once' ? 'Choose assignee' : 'Choose first assignee'}>
+        {candidates.length > 0 && <View accessibilityRole="radiogroup" accessibilityLabel={repeat === 'once' ? 'Choose assignee' : 'Choose first assignee'} style={s.assigneeChoices}>
           {candidates.map(candidate => {
             const { member, minutes: assigned } = candidate;
             const recommended = suggested?.member.id === member.id;
             const selected = chosen?.member.id === member.id;
-            return <button type="button" key={member.id} aria-pressed={selected} onClick={() => { setChoice(recommended ? null : member.id); setError(''); }}>
-              <strong>{member.name}</strong><span>{assigned} min assigned</span>{recommended && <span className="chore-recommended">Suggested</span>}
-            </button>;
+            return <Pressable key={member.id} accessibilityRole="radio" accessibilityState={{ checked: selected }} onPress={() => { setChoice(recommended ? null : member.id); setError(''); }} style={[s.assigneeChoice, selected && s.fieldChoiceSelected]}>
+              <Text style={s.assigneeName}>{member.name}</Text><Text style={s.caption}>{assigned} min assigned</Text>{recommended && <Text style={s.upcoming}>Suggested</Text>}
+            </Pressable>;
           })}
-        </div>}
+        </View>}
         {members.length === 1 && <Text style={s.caption}>No other roommates are assigned to your household yet.</Text>}
       </View>}
       {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}

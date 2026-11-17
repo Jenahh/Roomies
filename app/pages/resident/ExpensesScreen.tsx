@@ -1,5 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import DashboardIcon, { type IconName } from '../../components/dashboard/DashboardIcon';
 
 import type { Expense, ResidentData } from '../../hooks/useResidentData';
 import type { PetMood } from '../../data/roomiePetMood';
@@ -15,7 +16,17 @@ const paths = {
   Other: 'M5 3h14v18l-3-2-4 2-4-2-3 2V3ZM8 8h8M8 12h8',
   repeat: 'm18 2 4 4-4 4M2 11V6h20M6 22l-4-4 4-4M22 13v5H2',
 } as const;
+const iconNames: Record<keyof typeof paths, IconName> = {
+  wallet: 'expenses',
+  Rent: 'home',
+  Electricity: 'flame',
+  Groceries: 'dinner',
+  Internet: 'messages',
+  Other: 'split',
+  repeat: 'calendar',
+};
 function Icon({ name, size = 20 }: { name: keyof typeof paths; size?: number }) {
+  if (Platform.OS !== 'web') return <DashboardIcon name={iconNames[name]} color="#737783" size={size} />;
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
