@@ -77,7 +77,7 @@ function AppContent() {
 
 const previewStyles = StyleSheet.create({
   stage: { flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8EAF0' },
-  fill: { flex: 1, width: '100%', height: '100%' },
+  fill: { flex: 1, width: '100%', height: '100%', backgroundColor: '#FFFFFF' },
   phone: { borderWidth: 8, borderColor: '#252631', borderRadius: 36, overflow: 'hidden', backgroundColor: '#FAF9F6' },
 });
 
@@ -91,7 +91,7 @@ export default function App() {
   const phoneHeight = phoneWidth * 844 / 390;
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={previewStyles.fill}>
       <View style={isLocalWebPreview ? previewStyles.stage : previewStyles.fill}>
         <View nativeID={isLocalWebPreview ? "roomies-phone-preview" : undefined} style={isLocalWebPreview ? [previewStyles.phone, { width: phoneWidth, height: phoneHeight }] : previewStyles.fill}>
           <AppContent />

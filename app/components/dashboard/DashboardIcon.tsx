@@ -32,11 +32,11 @@ const iconPaths = {
 } as const;
 export type IconName = keyof typeof iconPaths;
 
-export default function DashboardIcon({ name, color = '#555B69', size = 20, active = false }: { name: IconName; color?: string; size?: number; active?: boolean }) {
+export default function DashboardIcon({ name, color = '#555B69', size = 20, active = false, imageSize = 24 }: { name: IconName; color?: string; size?: number; active?: boolean; imageSize?: number }) {
   const mappedName = name === 'bell' ? 'notifications' : name;
   if (mappedName in ROOMIE_UI_ICONS) {
     const icon = ROOMIE_UI_ICONS[mappedName as keyof typeof ROOMIE_UI_ICONS];
-    return <Image source={getImageSource(icon[active ? 'active' : 'inactive'])} resizeMode="contain" style={{ width: 24, height: 24 }} accessible={false} />;
+    return <Image source={getImageSource(icon[active ? 'active' : 'inactive'])} resizeMode="contain" style={{ width: imageSize, height: imageSize }} accessible={false} />;
   }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={iconPaths[name]} /></svg>;
 }

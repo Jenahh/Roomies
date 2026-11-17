@@ -1,8 +1,8 @@
 import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
-  shell: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center' },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  shell: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center', backgroundColor: '#FAF9F6' },
   pageScroll: { minWidth: 0, width: '100%' },
   page: { flexGrow: 1, paddingHorizontal: 20, paddingTop: Platform.select({ native: 12, default: 24 }), paddingBottom: Platform.select({ native: 16, default: 32 }) },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
   quickAddOptionHidden: { display: 'none' },
   quickAddOption: { width: 80, height: 80, alignItems: 'center', justifyContent: 'center', borderRadius: 40, backgroundColor: '#FFFFFF', elevation: 4, shadowColor: '#292B35', shadowOpacity: 0.16, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
   quickAddOptionContent: { alignItems: 'center', justifyContent: 'center', gap: 1 },
-  navigation: { flexDirection: 'row', flexGrow: 0, flexShrink: 0, height: 56, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderColor: '#EAE9E6' },
+  navigation: { flexDirection: 'row', flexGrow: 0, flexShrink: 0, marginTop: 'auto', height: 56, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderColor: '#EAE9E6' },
   navigationWithLabels: { height: 68 },
   navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, borderRadius: 12 },
   navIcon: { width: 44, height: 30, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },

@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { demoResident, demoResidentHousehold } from '../../data/demoAccount';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
 import RoomieCheckInScreen from '../../pages/resident/RoomieCheckInScreen';
@@ -10,7 +11,7 @@ import DashboardNavigation from './DashboardNavigation';
 import HouseholdProgressCard from './HouseholdProgressCard';
 import RoomieWelcome from './RoomieWelcome';
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
-import { Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import RoomieCustomizationScreen from '../../pages/resident/RoomieCustomizationScreen';
 import { styles } from '../../styles/ResidentDashboard.styles';
@@ -159,7 +160,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
 
   return (
     <RoomiePetContext.Provider value={data.pet}>
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       {hasRoomiePet && <RoomieWelcome data={data} setData={setData} onFinish={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('Home'); }} />}
       <View style={styles.shell}>
         {activeTab === 'CustomizePet' && hasRoomiePet ? (

@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getHouseholdResidents, replaceHouseholdResidents } from '../../data/householdResidents';
 import PropertyManagerRequestsScreen from './PropertyManagerRequestsScreen';
 import PropertyManagerAnnouncementsScreen from './PropertyManagerAnnouncementsScreen';
@@ -7,7 +8,7 @@ import CreateAnnouncementScreen from './CreateAnnouncementScreen';
 import ManageResidentsScreen from './ManageResidentsScreen';
 import { useResidentData } from '../../hooks/useResidentData';
 import { useEffect, useRef, useState, type ComponentRef, type SetStateAction } from 'react';
-import { Modal, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import type { ResidentUser } from '../../data/demoAccount';
 import { demoManagedResidents, demoMaintenanceRequests, demoProperty, type Announcement, type MaintenanceRequest, type ManagedResident, type ManagedHousehold } from '../../data/demoPropertyManager';
 import DashboardNavigation, { type DashboardTab } from '../../components/dashboard/DashboardNavigation';
@@ -80,7 +81,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
   }
 
   return (
-    <SafeAreaView style={s.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={s.safeArea}>
       <View style={s.shell}>
         <ScrollView showsVerticalScrollIndicator={false} ref={pageScroll} contentContainerStyle={s.page}>
           <RoleDashboardHeader role="Property Manager" showLogo={false} showWordmark={false} />
