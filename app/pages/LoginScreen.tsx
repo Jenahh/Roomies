@@ -40,9 +40,8 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
             <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
-          <View style={styles.brand}>
+          <View pointerEvents="none" style={styles.logoCenter}>
             <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
-            <Text style={styles.wordmark}>Roomies</Text>
           </View>
         </View>
 
