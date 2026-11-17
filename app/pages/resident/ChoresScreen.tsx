@@ -1,6 +1,8 @@
-import { addDays, choreDates, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
+import { addDays, choreDates, isAssignedTo, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
 import { choreLooks, chorePresets, resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
+import { POINTS_PER_CHORE } from '../../data/choreRewards';
+import { ROOMIE_COLORS } from '../../components/RoomiePet';
 import ChorePet from './ChorePet';
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { Animated, Easing, Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
@@ -11,6 +13,14 @@ import { styles as s } from '../../styles/ChoresScreen.styles';
 function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
+
+const roommateColors = [
+  ROOMIE_COLORS.blue,
+  ROOMIE_COLORS.green,
+  ROOMIE_COLORS.purple,
+  ROOMIE_COLORS.yellow,
+  ROOMIE_COLORS.pink,
+];
 
 const confettiPieces = [
   { dx: -19, dy: -12, backgroundColor: '#A35FEC' },
@@ -61,9 +71,9 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     return () => clearTimeout(timer);
   }, [burst]);
   const [filter, setFilter] = useState('All Chores');
-  const [activeSheet, setActiveSheet] = useState<'add' | 'split' | null>(null);
+  const [activeSheet, setActiveSheet] = useState<'add' | 'split' | 'points' | null>(null);
   const adding = activeSheet === 'add';
-  const sheetTitle = adding ? 'Add a chore' : 'Roomies Split';
+  const sheetTitle = adding ? 'Add a chore' : activeSheet === 'points' ? 'Roomie points' : 'Roomies Split';
   const closeSheet = () => setActiveSheet(null);
   const webDialog = useRef<HTMLDivElement>(null);
 
@@ -92,6 +102,21 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   const end = new Date(start); end.setDate(start.getDate() + 6);
   const weekly = data.chores.filter(chore => chore.due >= dateKey(start) && chore.due <= dateKey(end));
   const completed = weekly.filter(chore => chore.completed).length;
+  const treeContributions = members.map((member, index) => ({
+    id: member.id,
+    name: member.id === self.id ? 'You' : member.name,
+    color: roommateColors[index % roommateColors.length],
+    total: 0,
+    done: 0,
+  }));
+  const otherChores = { id: 'other-chores', name: 'Other chores', color: '#6E7481', total: 0, done: 0 };
+  for (const chore of weekly) {
+    const index = members.findIndex(member => isAssignedTo(chore, member, members, data.name));
+    const contribution = treeContributions[index] ?? otherChores;
+    contribution.total++;
+    if (chore.completed) contribution.done++;
+  }
+  if (otherChores.total) treeContributions.push(otherChores);
   const petName = data.pet?.name || 'Roomie';
   const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (!chore.assignee || chore.assignee === data.name);
   const upcomingChores = data.chores.filter(chore => !chore.completed).sort((a,b) => a.due.localeCompare(b.due));
@@ -126,7 +151,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   }, [autoOpenAdd]);
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : (!chore.completed || chore.id === burst) && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
-  const points = data.chores.filter(chore => chore.completed && mine(chore)).length * 10;
+  const points = data.chores.filter(chore => chore.completed && mine(chore)).length * POINTS_PER_CHORE;
   function save() {
     const parsed = new Date(due + 'T12:00:00');
     if (!title.trim()) { setError('Pick a chore to get started.'); return; }
@@ -142,6 +167,14 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     closeSheet();
   }
 
+  const treeBar = (
+    <View accessibilityRole="progressbar" accessibilityLabel="Weekly tree" accessibilityValue={{ min: 0, max: weekly.length || 1, now: completed }} style={s.track}>
+      {treeContributions.filter(person => person.done > 0).map(person => (
+        <View key={person.id} style={[s.fill, { backgroundColor: person.color, width: `${person.done / weekly.length * 100}%` }]} />
+      ))}
+    </View>
+  );
+
   const page = renderPage(<>
     <View style={s.header}>
       <View style={s.copy}><Text numberOfLines={1} accessibilityRole="header" style={s.title}>Chores</Text></View>
@@ -151,13 +184,15 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
       <View style={s.petIntro}>
         <ChorePet key={celebration ? `done:${celebration.id}` : nextChore?.id ?? 'idle'} look={petLook} name={petName} color={data.pet?.color} accessory={data.pet?.accessory} accessories={data.pet?.accessories} accessoryColors={data.pet?.accessoryColors} celebrating={!!celebration} />
       </View>
-      <Text numberOfLines={1} style={[s.points, s.petPoints]} accessibilityLabel={`${points} Roomie points`}>{points} pts</Text>
-      <View style={s.row}><Text numberOfLines={1} style={s.cardTitle}>This week</Text><Text numberOfLines={1} style={s.count}>{completed} / {weekly.length} done</Text></View>
-      <View accessibilityRole="progressbar" accessibilityLabel="Chores completed this week" accessibilityValue={{ min: 0, max: weekly.length || 1, now: completed }} style={s.track}><View style={[s.fill, { width: `${weekly.length ? completed / weekly.length * 100 : 0}%` }]} /></View>
+      <Pressable accessibilityRole="button" accessibilityLabel={`Your points: ${points}. View points and tree rules`} onPress={() => setActiveSheet('points')} style={s.petPoints}>
+        <Text numberOfLines={1} style={s.points}>Your pts: {points} ›</Text>
+      </Pressable>
+      <View style={s.row}><Text numberOfLines={1} style={s.cardTitle}>Weekly tree</Text><Text numberOfLines={1} style={s.count}>{completed} / {weekly.length} chores</Text></View>
+      {treeBar}
     </View>
     <View accessibilityRole="tablist" accessibilityLabel="Chore filters" style={s.filters}>{['My Chores', 'All Chores', 'Completed'].map(item => <Pressable key={item} accessibilityRole="tab" accessibilityState={{ selected: filter === item }} onPress={() => setFilter(item)} style={[s.filter, filter === item && s.selectedFilter]}><Text numberOfLines={1} style={[s.filterText, filter === item && s.selectedText]}>{item}</Text></Pressable>)}</View>
     <View style={s.list}>
-      {!visible.length && <View style={s.empty}><Text numberOfLines={1} style={s.cardTitle}>{filter === 'Completed' ? 'No completed chores yet' : 'A little room to breathe'}</Text><Text numberOfLines={1} style={s.caption}>{filter === 'Completed' ? 'Finished chores show here.' : filter === 'My Chores' ? 'Nothing assigned to you.' : 'Use + to add a chore.'}</Text></View>}
+      {!visible.length && <View style={s.empty}><Text numberOfLines={1} style={s.cardTitle}>{filter === 'Completed' ? 'No completed chores yet' : 'Use + to add a chore.'}</Text></View>}
       {visible.map(chore => {
         const own = mine(chore);
         const name = chore.unassigned ? 'Unassigned' : chore.assignee || data.name;
@@ -274,7 +309,26 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
         <View style={s.formFooter}>
           <Pressable accessibilityRole="button" onPress={save} style={s.addButton}><Text numberOfLines={1} style={s.addText}>{repeat !== 'once' && dates.length > 1 ? `Add ${dates.length} chores` : 'Add chore'}</Text></Pressable>
         </View>
-      </> : (
+      </> : activeSheet === 'points' ? (
+        <ScrollView style={s.formScroll} contentContainerStyle={s.form} showsVerticalScrollIndicator>
+          <View style={s.row}>
+            <Text numberOfLines={1} style={s.cardTitle}>{points} pts all time</Text>
+            <Text numberOfLines={1} style={s.caption}>+{POINTS_PER_CHORE} per assigned chore</Text>
+          </View>
+          <View style={s.row}>
+            <Text numberOfLines={1} style={s.cardTitle}>Weekly tree</Text>
+            <Text numberOfLines={1} style={s.count}>{completed} / {weekly.length} chores</Text>
+          </View>
+          {treeBar}
+          <View style={s.splitList}>
+            {treeContributions.map(person => <View key={person.id} style={s.splitChip}>
+              <View style={[s.contributionDot, { backgroundColor: person.color }]} />
+              <Text numberOfLines={1} style={[s.splitName, s.splitLabel]}>{person.name}</Text>
+              <Text numberOfLines={1} style={s.splitMinutes}>{person.total ? `${person.done * POINTS_PER_CHORE} / ${person.total * POINTS_PER_CHORE} pts` : 'No chores due'}</Text>
+            </View>)}
+          </View>
+        </ScrollView>
+      ) : (
         <ScrollView style={s.formScroll} contentContainerStyle={s.form} showsVerticalScrollIndicator persistentScrollbar>
           <Text numberOfLines={1} style={s.caption}>Chore minutes this week</Text>
           <View style={s.splitList}>

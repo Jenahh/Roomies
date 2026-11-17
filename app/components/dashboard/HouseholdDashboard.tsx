@@ -49,7 +49,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   useEffect(() => {
     pageScroll.current?.scrollTo({ y: 0, animated: false });
     if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
-  }, [activeTab]);
+  }, [activeTab, quickAddTarget === 'Calendar']);
   const [now, setNow] = useState(() => new Date());
   const [panel, setPanel] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -138,10 +138,20 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
 
   const residentHeader = <DashboardHeader household={data.household} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => setActiveTab('CustomizePet')} />;
   function renderResidentPage(content: ReactNode) {
-    return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={styles.page} showsVerticalScrollIndicator={false}>
+    return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage]} showsVerticalScrollIndicator={false}>
       {residentHeader}
       {content}
     </ScrollView>;
+  }
+
+  function renderAddDock(label: string, overlay = false) {
+    return <View pointerEvents={overlay ? 'box-none' : 'auto'} style={[styles.quickAddDock, overlay && styles.calendarAddOverlay]}>
+      <View style={styles.quickAddButtonWrapper}>
+        <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+          <Icon name="add" color="#FFFFFF" size={25} />
+        </Pressable>
+      </View>
+    </View>;
   }
 
   function handleQuickAdd() {
@@ -163,8 +173,11 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
       <View style={styles.shell}>
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
-        ) : activeTab === 'Chores' ? <ChoresScreen renderPage={renderResidentPage} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : renderResidentPage(
-          activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
+        ) : activeTab === 'Chores' ? <ChoresScreen renderPage={renderResidentPage} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} editing={quickAddTarget === 'Calendar'} renderPage={content => <View style={styles.calendarPane}>
+            {renderResidentPage(content)}
+            {quickAddTarget !== 'Calendar' && renderAddDock('Add event', true)}
+          </View>} onCancel={() => setQuickAddTarget(null)} roommates={assignedHousehold?.roommates ?? []} onOpenSection={setActiveTab} /> : renderResidentPage(
+          activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
           <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
           <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
@@ -179,7 +192,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
           </View>
           </>
         )}
-        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && <View pointerEvents="box-none" style={styles.quickAddContainer}>
+        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && activeTab !== 'Calendar' && activeTab !== 'Expenses' && <View pointerEvents="box-none" style={styles.quickAddContainer}>
           {Platform.OS === 'web' ? (
             <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
               <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>{quickAddOptions}</View>
@@ -189,25 +202,20 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
           )}
           {Platform.OS === 'web' ? (
             <div className={`quick-add-button${quickAddOpen ? ' is-open' : ''}`}>
-              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : activeTab === 'Expenses' ? 'Add expense' : activeTab === 'Calendar' ? 'Add event' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
                 <Icon name="add" color="#FFFFFF" size={25} />
               </Pressable>
             </div>
           ) : (
             <View style={styles.quickAddButtonWrapper}>
-              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : activeTab === 'Expenses' ? 'Add expense' : activeTab === 'Calendar' ? 'Add event' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
                 <Icon name="add" color="#FFFFFF" size={25} />
               </Pressable>
             </View>
           )}
         </View>}
-        {activeTab === 'Chores' && <View style={styles.choreAddDock}>
-          <View style={styles.quickAddButtonWrapper}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Add chore" onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
-              <Icon name="add" color="#FFFFFF" size={25} />
-            </Pressable>
-          </View>
-        </View>}
+        {activeTab === 'Chores' && renderAddDock('Add chore')}
+        {activeTab === 'Expenses' && renderAddDock('Add expense')}
         <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab(tab); }} />
       </View>
       <Modal visible={panel === 'Household'} transparent animationType="slide" onRequestClose={() => setPanel(null)}>
