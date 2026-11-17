@@ -21,11 +21,11 @@ type DashboardNavigationProps = {
 
 export default function DashboardNavigation({ activeTab, onNavigate, tabs = defaultTabs, showLabels = false, style, iconStyle }: DashboardNavigationProps) {
   return (
-    <View accessibilityRole="tablist" accessibilityLabel="Main navigation" style={[styles.navigation, style]}>
+    <View accessibilityRole="tablist" accessibilityLabel="Main navigation" style={[styles.navigation, showLabels && styles.navigationWithLabels, style]}>
       {tabs.map(tab => (
         <Pressable key={tab.label} accessibilityRole="tab" accessibilityLabel={tab.label} accessibilityState={{ selected: tab.label === activeTab }} onPress={() => onNavigate(tab.label)} style={({ pressed }) => [styles.navItem, pressed && styles.pressed]}>
           <View style={[styles.navIcon, tab.label === activeTab && styles.activeNav, iconStyle]}>
-            <Icon name={tab.icon} color={tab.label === activeTab ? '#657EEA' : '#737783'} size={20} />
+            <Icon name={tab.icon} active={tab.label === activeTab} color={tab.label === activeTab ? '#657EEA' : '#737783'} size={20} />
           </View>
           {showLabels && <Text style={[styles.navLabel, tab.label === activeTab && styles.activeLabel]}>{tab.label}</Text>}
         </Pressable>
