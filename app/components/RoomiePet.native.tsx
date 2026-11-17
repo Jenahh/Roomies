@@ -1,16 +1,11 @@
 import { useContext } from 'react';
 import { RoomiePetContext } from './RoomiePetContext';
-import { getPetAccessoryIds } from '../data/roomiePetAccessories';
+import { getPetAccessoryIds, getRoomieAccessoryFrame } from '../data/roomiePetAccessories';
 import { Image, View } from 'react-native';
 import { getImageSource } from '../utils/imageSource';
 import type { PetMood } from '../data/roomiePetMood';
 import { ROOMIE_ACTIONS, type RoomieActionId } from '../data/roomieActions';
-import {
-  ROOMIE_ACCESSORY_PLACEMENTS,
-  ROOMIE_ACCESSORY_SLOTS,
-  type RoomieAccessoryId,
-  type RoomieAccessorySlot,
-} from '../data/roomiePetAccessories';
+import { ROOMIE_ACCESSORY_SLOTS, type RoomieAccessoryId, type RoomieAccessorySlot } from '../data/roomiePetAccessories';
 import annoyed3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-body.png';
 import annoyed3dDetails from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-details.png';
 import happy3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/happy-3d-body.png';
@@ -150,12 +145,11 @@ export default function RoomiePet({ mood = 'happy', color, accessories: accessor
 
   function renderAccessory(id: RoomieAccessoryId) {
     const [original, base, extra] = accessoryAssets[id];
-    const [left, top, width, height] = ROOMIE_ACCESSORY_PLACEMENTS[id].map(value => value * size);
+    const [left, top, width, height] = getRoomieAccessoryFrame(id, size, expression, action);
     const accessoryColor = accessoryColors[id];
-    const glassesOffset = id === 'round-glasses' && expression !== 'happy' ? size * 0.06 : 0;
     const bodyOffset = ROOMIE_ACCESSORY_SLOTS[id] === 'body' && expression === 'stressed' ? size * 0.03 : 0;
     return (
-      <View key={id} pointerEvents="none" style={{ position: 'absolute', left, top: top + glassesOffset + bodyOffset, width, height }}>
+      <View key={id} pointerEvents="none" style={{ position: 'absolute', left, top: top + bodyOffset, width, height }}>
         <Image source={getImageSource(accessoryColor && base ? base : original)} resizeMode="stretch" style={{ width: '100%', height: '100%', tintColor: accessoryColor && base ? accessoryColor : undefined }} />
         {accessoryColor && extra && <Image source={getImageSource(extra)} resizeMode="stretch" style={accessoryLayer} />}
       </View>
