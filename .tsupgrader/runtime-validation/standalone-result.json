@@ -1,0 +1,111 @@
+{
+  "planHash": "ac310a2db1bbfc5366cd1e6ecdf59018e5295da63cca9033efc9e3512d520a9f",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-11-13T02:47:08.3149097Z",
+  "retryCount": 2,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 31266,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "production-build",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "npm notice run roomies@0.1.0 build\r\nnpm notice run tsc --noEmit \u0026\u0026 vite build\r\n\u001B[36mvite v7.3.7 \u001B[32mbuilding client environment for production...\u001B[36m\u001B[39m\r\ntransforming...\r\n\u001B[32m\u2713\u001B[39m 476 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\n\u001B[2mdist/\u001B[22m\u001B[32mindex.html                                       \u001B[39m\u001B[1m\u001B[2m    0.46 kB\u001B[22m\u001B[1m\u001B[22m\u001B[2m \u2502 gzip:   0.29 kB\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/bow-details-B6I8Ida0.png                  \u001B[39m\u001B[1m\u001B[2m    6.18 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/annoyed-3d-body-Bz9PWXcD.png              \u001B[39m\u001B[1m\u001B[2m   57.65 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/stressed-3d-body-BB56M7xY.png             \u001B[39m\u001B[1m\u001B[2m   58.00 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/ra-3d-body-DT_5AJwb.png                   \u001B[39m\u001B[1m\u001B[2m   59.56 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/property-manager-3d-body-Cpf2YN5X.png     \u001B[39m\u001B[1m\u001B[2m   64.63 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/backpack-details-Cgaen8Vj.png             \u001B[39m\u001B[1m\u001B[2m   71.30 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/happy-3d-body-BomlyLvq.png                \u001B[39m\u001B[1m\u001B[2m   75.27 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/broom-mood-body-BhtWNwGQ.png              \u001B[39m\u001B[1m\u001B[2m   78.71 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/receipt-mood-body-BO7wLljF.png            \u001B[39m\u001B[1m\u001B[2m   80.69 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/food-mood-body-Dd27b2hg.png               \u001B[39m\u001B[1m\u001B[2m   84.88 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/calendar-mood-body-BbmUjSMH.png           \u001B[39m\u001B[1m\u001B[2m   87.40 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/round-glasses-base-CqG_lkom.png           \u001B[39m\u001B[1m\u001B[2m  160.98 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/food-face-annoyed-Cu0PHwge.png            \u001B[39m\u001B[1m\u001B[2m  184.22 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/bow-tie-base-C0xn_AkZ.png                 \u001B[39m\u001B[1m\u001B[2m  184.41 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/food-face-stressed-Da5feLd_.png           \u001B[39m\u001B[1m\u001B[2m  189.64 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/bucket-hat-base-nOZaxOYN.png              \u001B[39m\u001B[1m\u001B[2m  192.59 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/food-face-happy-EwrPCqnN.png              \u001B[39m\u001B[1m\u001B[2m  200.90 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/sprout-hat-base-4qrXF5TX.png              \u001B[39m\u001B[1m\u001B[2m  216.16 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/broom-face-annoyed-CKr_zsq4.png           \u001B[39m\u001B[1m\u001B[2m  220.85 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/broom-face-stressed-CYyMCeoy.png          \u001B[39m\u001B[1m\u001B[2m  228.27 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/receipt-face-annoyed-DoATllZX.png         \u001B[39m\u001B[1m\u001B[2m  232.65 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/receipt-face-stressed-Dv3pdkWU.png        \u001B[39m\u001B[1m\u001B[2m  238.56 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/broom-face-happy-CMzHbv1k.png             \u001B[39m\u001B[1m\u001B[2m  240.93 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/star-pin-base-CHLjkdVT.png                \u001B[39m\u001B[1m\u001B[2m  244.10 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/calendar-face-annoyed-DRwWEkNE.png        \u001B[39m\u001B[1m\u001B[2m  245.96 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/calendar-face-stressed-CJfGNNHj.png       \u001B[39m\u001B[1m\u001B[2m  250.16 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/receipt-face-happy-DJb2ZawW.png           \u001B[39m\u001B[1m\u001B[2m  252.72 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/beanie-base-CzjH9us_.png                  \u001B[39m\u001B[1m\u001B[2m  256.36 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/Roomies Welcome-DIlHbTAH.png              \u001B[39m\u001B[1m\u001B[2m  258.87 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/calendar-face-happy-DNMSw10Z.png          \u001B[39m\u001B[1m\u001B[2m  266.84 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/bandana-base-DKyME9qb.png                 \u001B[39m\u001B[1m\u001B[2m  280.51 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/round-glasses-Ds8nrj6z.png                \u001B[39m\u001B[1m\u001B[2m  287.18 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/bow-base-BnpSxYaE.png                     \u001B[39m\u001B[1m\u001B[2m  315.77 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/broom-YW0lLPZp.png                        \u001B[39m\u001B[1m\u001B[2m  334.00 kB\u001B[22m\u001B[1m\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[32massets/bow-t\n\u2026[truncated]",
+        "durationMs": 8333
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "npm notice run roomies@0.1.0 test\r\nnpm notice run vitest run \u0026\u0026 node tests/scheduler.test.mjs\r\n\r\n RUN  v4.1.12 C:/Users/jenah/Documents/GitHub/Roomies\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  13 passed (13)\r\n   Start at  20:47:05\r\n   Duration  689ms (transform 260ms, setup 0ms, import 421ms, tests 24ms, environment 0ms)\r\n\r\nPASS balanced feasible weekly schedule\r\nPASS respects available days and separates recurring occurrences\r\nPASS reports impossible schedule without exceeding capacity\r\nPASS rotates repeated chore away from recent assignee\r\nPASS counts existing manual chores against capacity\r\nPASS rejects manual edits on unavailable days\r\nPASS publishes once and preserves history\r\nPASS rejects invalid dates, empty settings, duplicate names\r\nPASS rejects draft overload and duplicate recurring day\r\nPASS preserves the selected chore look through publishing\r\nPASS quick assignment accounts for current workload and prior rotation\r\nPASS quick assignment excludes unavailable and overloaded roommates\r\nPASS weekly workload includes legacy chores but excludes unassigned and out-of-week work\r\nPASS repeat uses an inclusive end date and caps series size\r\nPASS repeat rotates eligible roommates and keeps each occurrence independent\r\nPASS repeat leaves occurrences unassigned when they exceed weekly capacity\r\nPASS preassigned roster counts older chores saved with a previous member ID\r\nPASS exact workload ties rotate across weeks regardless of roster order\r\n18 scheduler checks passed.\r\n",
+        "durationMs": 2502,
+        "testResults": {
+          "testFramework": "vitest",
+          "runnerDetectedFrom": "package_json",
+          "testsTotal": 13,
+          "testsPassed": 13,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": false
+        }
+      },
+      {
+        "name": "dev-server-serves-home",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 200\n\u003C!doctype html\u003E\r\n\u003Chtml lang=\u0022en\u0022\u003E\r\n  \u003Chead\u003E\n    \u003Cscript type=\u0022module\u0022\u003Eimport { injectIntoGlobalHook } from \u0022/@react-refresh\u0022;\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () =\u003E {};\nwindow.$RefreshSig$ = () =\u003E (type) =\u003E type;\u003C/script\u003E\n\n    \u003Cscript type=\u0022module\u0022 src=\u0022/@vite/client\u0022\u003E\u003C/script\u003E\n\r\n    \u003Cmeta charset=\u0022UTF-8\u0022 /\u003E\r\n    \u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022 /\u003E\r\n    \u003Cmeta name=\u0022theme-color\u0022 content=\u0022#FAF9F6\u0022 /\u003E\r\n    \u003Ctitle\u003ERoomies\u003C/title\u003E\r\n  \u003C/head\u003E\r\n  \u003Cbody\u003E\r\n    \u003Cdiv id=\u0022root\u0022\u003E\u003C/div\u003E\r\n    \u003Cscript type=\u0022module\u0022 src=\u0022/app/main.tsx\u0022\u003E\u003C/script\u003E\r\n  \u003C/body\u003E\r\n\u003C/html\u003E\r\n\n--- server output ---\nnpm notice run roomies@0.1.0 dev\r\nnpm notice run vite --host 127.0.0.1\r\n\r\n  \u001B[32m\u001B[1mVITE\u001B[22m v7.3.7\u001B[39m  \u001B[2mready in \u001B[0m\u001B[1m434\u001B[22m\u001B[2m\u001B[0m ms\u001B[22m\r\n\r\n  \u001B[32m\u279C\u001B[39m  \u001B[1mLocal\u001B[22m:   \u001B[36mhttp://127.0.0.1:\u001B[1m5173\u001B[22m/\u001B[39m\r\n",
+        "durationMs": 1085
+      }
+    ],
+    "executions": [
+      {
+        "source": "setup[0]",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "ci"
+        ],
+        "cwd": "C:\\Users\\jenah\\Documents\\GitHub\\Roomies",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "production-build",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "build"
+        ],
+        "cwd": "C:\\Users\\jenah\\Documents\\GitHub\\Roomies",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "test"
+        ],
+        "cwd": "C:\\Users\\jenah\\Documents\\GitHub\\Roomies",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "dev-server-serves-home",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "dev",
+          "--",
+          "--host",
+          "127.0.0.1"
+        ],
+        "cwd": "C:\\Users\\jenah\\Documents\\GitHub\\Roomies",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}
