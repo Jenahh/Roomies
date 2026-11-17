@@ -9,7 +9,7 @@ export default function HouseholdProgressCard({ total, completed }: { total: num
   return (
           <View style={styles.treeCard}>
             <View style={styles.treeHeading}>
-              <Text style={styles.rewardText}>Complete your chores to grow together.</Text>
+              <Text style={styles.rewardText}>Complete chores. Grow together</Text>
               <Icon name="tree" color="#657EEA" size={28} />
             </View>
             <View accessibilityRole="progressbar" accessibilityLabel="Weekly chores" accessibilityValue={{ min: 0, max: total || 1, now: completed }} style={styles.progressTrack}>
