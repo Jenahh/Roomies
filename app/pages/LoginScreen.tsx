@@ -46,7 +46,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           </View>
         </View>
 
-        <Text accessibilityRole="header" style={styles.title}>Welcome back.</Text>
+        <Text accessibilityRole="header" numberOfLines={1} style={styles.title}>Welcome back.</Text>
         <View style={styles.form}>
           <TextInput accessibilityLabel="Email" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
           <View style={styles.passwordField}>
@@ -73,7 +73,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           </Pressable>
         </View>
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Your home. Your people. A private space.</Text>
+          <Text numberOfLines={1} style={styles.footerText}>A private space for roommates.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

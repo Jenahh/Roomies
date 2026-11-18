@@ -3,7 +3,6 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
-  StatusBar,
   Image,
   Text,
   View,
@@ -23,7 +22,6 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.page} showsVerticalScrollIndicator={false} bounces={false}>
         <View style={styles.header}>
           <Image source={getImageSource(roomiesLogo)} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Roomies logo" />
@@ -36,8 +34,8 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
           </View>
 
           <View style={styles.copy}>
-            <Text style={styles.title}>Better living,{'\n'}together.</Text>
-            <Text style={styles.subtitle}>Share the chores, split the bills, and make room{'\n'}for the good stuff.</Text>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.title}>Better living, together.</Text>
+            <Text style={styles.subtitle}>Share the chores, split the bills, and make room for the good stuff.</Text>
           </View>
         </View>
 

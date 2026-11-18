@@ -3,9 +3,11 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import type { ResidentData } from '../../hooks/useResidentData';
 import type { PetMood } from '../../data/roomiePetMood';
+import { styles as dashboardStyles } from '../../styles/ResidentDashboard.styles';
 import { styles as s } from '../../styles/CalendarScreen.styles';
 import Icon, { type IconName } from '../../components/dashboard/DashboardIcon';
-import { getChoreLook } from '../../data/chorePresets';
+import type { ChoreLook } from '../../data/chorePresets';
+import { ChoreBadge } from '../../features/scheduler/ChoreBadge';
 import RoomiePet from '../../components/RoomiePet';
 
 function dateKey(date: Date) {
@@ -45,7 +47,7 @@ const eventTimes = [null, ...Array.from({ length: 48 }, (_, index) => (index + 1
 const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const formatTime = (slot: number) => `${hours[Math.floor(slot / 2) % 12]}:${slot % 2 ? '30' : '00'} ${slot < 24 ? 'AM' : 'PM'}`;
 type CalendarItem = { id: string; title: string; date: string; detail: string } & (
-  { kind: 'event'; custom?: boolean } | { kind: 'chore' | 'bill'; icon: IconName }
+  { kind: 'event'; custom?: boolean } | { kind: 'chore'; look?: ChoreLook } | { kind: 'bill' }
 );
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
@@ -93,9 +95,9 @@ function MonthCard({ month, selected, today, itemsByDay, onMonth, onDay }: {
   </View>;
 }
 
-export default function CalendarScreen({ data, setData, mood, storageError, editing = false, renderPage, onCancel, roommates = [], onOpenSection }: {
+export default function CalendarScreen({ data, setData, mood, storageError, editing = false, renderPage, onAdd, onCancel, roommates = [], onOpenSection }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; mood: PetMood; storageError: string;
-  editing?: boolean; renderPage?: (content: ReactNode) => ReactNode; onCancel?: () => void; roommates?: { id: string; name: string }[];
+  editing?: boolean; renderPage?: (content: ReactNode) => ReactNode; onAdd?: () => void; onCancel?: () => void; roommates?: { id: string; name: string }[];
   onOpenSection?: (section: 'Chores' | 'Expenses') => void;
 }) {
   const today = dateKey(new Date());
@@ -114,8 +116,8 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
   const [picker, setPicker] = useState<'type' | 'date' | 'time' | 'people' | null>(null);
   const [detail, setDetail] = useState<CalendarItem | null>(null);
   const items: CalendarItem[] = [
-    ...data.chores.filter(item => !item.completed).map(item => ({ id: item.id, title: item.title, date: item.due, detail: [item.time, item.unassigned ? 'Unassigned' : item.assignee || data.name].filter(Boolean).join(' · '), icon: getChoreLook(item.look, item.title).icon, kind: 'chore' as const })),
-    ...data.expenses.filter(item => !item.settled).map(item => ({ id: item.id, title: item.title, date: item.due, detail: `Your share ${currency.format(item.amount)}`, icon: 'expenses' as const, kind: 'bill' as const })),
+    ...data.chores.filter(item => !item.completed).map(item => ({ id: item.id, title: item.title, date: item.due, detail: [item.time, item.unassigned ? 'Unassigned' : item.assignee || data.name].filter(Boolean).join(' · '), look: item.look, kind: 'chore' as const })),
+    ...data.expenses.filter(item => !item.settled).map(item => ({ id: item.id, title: item.title, date: item.due, detail: `Your share ${currency.format(item.amount)}`, kind: 'bill' as const })),
     ...data.events.map(item => ({ id: item.id, title: item.title, date: item.date, detail: [item.time || 'All day', item.attendees || 'Everyone'].join(' · '), custom: item.custom, kind: 'event' as const })),
   ].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
   const itemsByDay = new Map<string, CalendarItem[]>();
@@ -165,10 +167,10 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
     const category = categories[item.kind];
     const look = item.kind === 'event'
       ? item.custom ? customEvent : eventPresets.find(preset => preset.title === item.title) ?? householdEvent
-      : { icon: item.icon, tint: category.background, ink: category.dot };
+      : { icon: 'expenses' as const, tint: category.background, ink: category.dot };
     return <View key={`${item.kind}-${item.id}`} style={index > 0 && s.itemDivider}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={() => setDetail(expanded ? null : item)} style={s.item}>
-        <AgendaIcon icon={look.icon} tint={look.tint} ink={look.ink} />
+        {item.kind === 'chore' ? <ChoreBadge look={item.look} title={item.title} /> : <AgendaIcon icon={look.icon} tint={look.tint} ink={look.ink} />}
         <View style={s.copy}>
           <Text numberOfLines={1} style={s.itemTitle}>{item.title}</Text>
         </View>
@@ -238,7 +240,12 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
   const agendaHeading = (
     <View style={[s.header, s.agendaHeader]}>
       <Text numberOfLines={1} accessibilityRole="header" style={s.sectionTitle}>{selected ? dayLabel(readDate(selected)) : 'Roomies Plans'}</Text>
-      {selected && <Pressable accessibilityRole="button" onPress={() => { setSelected(null); setDetail(null); }} style={s.action}><Text style={s.link}>All plans</Text></Pressable>}
+      <View style={s.agendaActions}>
+        {selected && <Pressable accessibilityRole="button" onPress={() => { setSelected(null); setDetail(null); }} style={s.action}><Text style={s.link}>All plans</Text></Pressable>}
+        {onAdd && <Pressable accessibilityRole="button" accessibilityLabel="Add event" onPress={onAdd} style={({ pressed }) => [dashboardStyles.quickAddButton, s.agendaAdd, pressed && dashboardStyles.pressed]}>
+          <Icon name="add" color="#FFFFFF" size={25} />
+        </Pressable>}
+      </View>
     </View>
   );
   const agendaItems = <>
@@ -253,11 +260,6 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
     </Pressable>}
   </>;
 
-  const page = <>{calendar}
-    <View style={renderPage && s.agendaLane}>
-      {agendaHeading}
-      {agendaItems}
-    </View>
-  </>;
+  const page = <>{calendar}{agendaHeading}{agendaItems}</>;
   return renderPage ? renderPage(page) : page;
 }

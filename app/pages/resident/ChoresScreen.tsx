@@ -5,7 +5,9 @@ import { POINTS_PER_CHORE } from '../../data/choreRewards';
 import { ROOMIE_COLORS } from '../../components/RoomiePet';
 import ChorePet from './ChorePet';
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
-import { Animated, Easing, Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Animated, Easing, Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+
+import PhoneSafeArea from '../../components/PhoneSafeArea';
 
 import type { ResidentData } from '../../hooks/useResidentData';
 import { styles as s } from '../../styles/ChoresScreen.styles';
@@ -374,7 +376,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
       </div>
     ) : (
       <Modal transparent animationType="slide" onRequestClose={closeSheet}>
-        <SafeAreaView style={s.backdrop}>{sheet}</SafeAreaView>
+        <PhoneSafeArea style={s.backdrop}>{sheet}</PhoneSafeArea>
       </Modal>
     )}
   </>;

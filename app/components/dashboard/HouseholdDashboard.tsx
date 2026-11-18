@@ -145,8 +145,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     </ScrollView>;
   }
 
-  function renderAddDock(label: string, overlay = false) {
-    return <View pointerEvents={overlay ? 'box-none' : 'auto'} style={[styles.quickAddDock, overlay && styles.calendarAddOverlay]}>
+  function renderAddDock(label: string) {
+    return <View style={styles.quickAddDock}>
       <View style={styles.quickAddButtonWrapper}>
         <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
           <Icon name="add" color="#FFFFFF" size={25} />
@@ -174,10 +174,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
       <View style={styles.shell}>
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
-        ) : activeTab === 'Chores' ? <ChoresScreen renderPage={renderResidentPage} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} editing={quickAddTarget === 'Calendar'} renderPage={content => <View style={styles.calendarPane}>
-            {renderResidentPage(content)}
-            {quickAddTarget !== 'Calendar' && renderAddDock('Add event', true)}
-          </View>} onCancel={() => setQuickAddTarget(null)} roommates={assignedHousehold?.roommates ?? []} onOpenSection={setActiveTab} /> : renderResidentPage(
+        ) : activeTab === 'Chores' ? <ChoresScreen renderPage={renderResidentPage} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} editing={quickAddTarget === 'Calendar'} renderPage={renderResidentPage} onAdd={handleQuickAdd} onCancel={() => setQuickAddTarget(null)} roommates={assignedHousehold?.roommates ?? []} onOpenSection={setActiveTab} /> : renderResidentPage(
           activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
           <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {firstName}!</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}

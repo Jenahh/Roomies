@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, useWindowDimensions } from 'react-native';
+import PhoneSafeArea from './components/PhoneSafeArea';
 import WelcomeScreen from './pages/WelcomeScreen';
 import RegistrationScreen from './pages/RegistrationScreen';
 import LoginScreen from './pages/LoginScreen';
@@ -75,6 +76,7 @@ function AppContent() {
 }
 
 const previewStyles = StyleSheet.create({
+  nativeSafeArea: { flex: 1, backgroundColor: '#FAF9F6' },
   stage: { flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8EAF0' },
   fill: { flex: 1, width: '100%', height: '100%' },
   phone: { borderWidth: 8, borderColor: '#252631', borderRadius: 36, overflow: 'hidden', backgroundColor: '#FAF9F6' },
@@ -82,8 +84,14 @@ const previewStyles = StyleSheet.create({
 
 export default function App() {
   const { width, height } = useWindowDimensions();
-  const isLocalWebPreview = Platform.OS === 'web'
-    && typeof window !== 'undefined'
+  if (Platform.OS !== 'web') {
+    return <PhoneSafeArea initial style={previewStyles.nativeSafeArea}>
+      <StatusBar barStyle="dark-content" />
+      <AppContent />
+    </PhoneSafeArea>;
+  }
+
+  const isLocalWebPreview = typeof window !== 'undefined'
     && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     && width > 430;
   const phoneWidth = Math.max(0, Math.min(390, width - 48, (height - 48) * 390 / 844));

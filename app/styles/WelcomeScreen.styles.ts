@@ -1,19 +1,19 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
-  page: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 24, maxWidth: 480, width: '100%', alignSelf: 'center' },
+  page: { flexGrow: 1, paddingHorizontal: Platform.select({ native: 24, default: 20 }), paddingTop: 18, paddingBottom: 24, maxWidth: 480, width: '100%', alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   logoImage: { width: 44, height: 44 },
   wordmark: { fontSize: 24, fontWeight: '800', color: '#2B2D38', letterSpacing: -0.7 },
-  main: { flex: 1, justifyContent: 'center', paddingTop: 42, paddingBottom: 22 },
-  illustrationFrame: { alignItems: 'center', justifyContent: 'center', marginBottom: 36 },
-  welcomeImage: { width: '100%', maxWidth: 372, aspectRatio: 690 / 570 },
-  copy: { alignItems: 'center' },
+  main: { flex: 1, justifyContent: 'center', paddingTop: Platform.select({ native: 22, default: 42 }), paddingBottom: 20 },
+  illustrationFrame: { alignItems: 'center', justifyContent: 'center', marginBottom: Platform.select({ native: 20, default: 36 }) },
+  welcomeImage: { width: '100%', maxWidth: Platform.select({ native: 320, default: 372 }), aspectRatio: 690 / 570 },
+  copy: { alignItems: 'stretch' },
   badge: { backgroundColor: '#EAF5EF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, marginBottom: 19 },
   badgeText: { fontSize: 10, fontWeight: '600', color: '#394147' },
-  title: { fontSize: 35, lineHeight: 38, fontWeight: '800', letterSpacing: -0.8, textAlign: 'left', color: '#292B35', marginBottom: 20 },
-  subtitle: { fontSize: 14, lineHeight: 20, textAlign: 'left', color: '#7B7D87' },
+  title: { fontSize: Platform.select({ native: 31, default: 35 }), lineHeight: Platform.select({ native: 35, default: 38 }), fontWeight: '800', letterSpacing: -0.8, textAlign: 'center', color: '#292B35', marginBottom: 20 },
+  subtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center', color: '#7B7D87' },
   footer: { gap: 10 },
   button: { minHeight: 49, paddingHorizontal: 44, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   primaryButton: { backgroundColor: '#657EEA' },
