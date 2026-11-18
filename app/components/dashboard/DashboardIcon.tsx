@@ -1,3 +1,7 @@
+import { Image } from 'react-native';
+import { ROOMIE_UI_ICONS } from '../../../assets/roomie-ui-icons/roomie-ui-icons/icons';
+import { getImageSource } from '../../utils/imageSource';
+
 const iconPaths = {
   group: 'M16 21v-2a4 4 0 0 0-8 0v2M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6M5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M19 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M2 19v-3a3 3 0 0 1 4-2.8M22 19v-3a3 3 0 0 0-4-2.8',
   star: 'm12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
@@ -17,14 +21,26 @@ const iconPaths = {
   profile: 'M20 21v-2a7 7 0 0 0-14 0v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8',
   bell: 'M6 8a6 6 0 0 1 12 0c0 8 3 8 3 10H3c0-2 3-2 3-10M10 22h4',
   tree: 'M12 22V10M12 16C3 17 2 11 3 8c6-1 10 2 9 8ZM12 11c-1-7 3-10 8-9 1 6-2 10-8 9M5 22h14',
+  dishes: 'M3 12h18a9 9 0 0 1-18 0ZM8 22h8M7 8c-2-2 2-3 0-5M12 8c-2-2 2-3 0-5M17 8c-2-2 2-3 0-5',
+  sparkles: 'M10 3l1.7 5.3L17 10l-5.3 1.7L10 17l-1.7-5.3L3 10l5.3-1.7L10 3ZM18 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z',
+  broom: 'm14 10 6-7M10 9l5 4-3 4-6-5 4-3ZM6 12l-4 7 7 3 3-5M5 18l3 2',
+  laundry: 'M4 3h16v18H4zM4 7h16M7 5h.01M10 5h.01M12 18a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
   trash: 'M3 5h18M9 5V2h6v3M6 5l1 17h10l1-17M10 9v9M14 9v9',
   dinner: 'M3 20 9 3c7 2 11 8 12 15L3 20ZM7 15l11-1M11 9h.01M10 17h.01',
+  study: 'M12 6v15M12 6C9 3 6 3 3 4v15c3-1 6-1 9 2 3-3 6-3 9-2V4c-3-1-6-1-9 2Z',
+  game: 'M8 8h8c3 0 4 2 5 6l1 3a2 2 0 0 1-3 2l-4-3H9l-4 3a2 2 0 0 1-3-2l1-3c1-4 2-6 5-6ZM7 10v4M5 12h4M16 11h.01M19 13h.01',
+  basket: 'M3 10h18l-2 10H5L3 10ZM7 10l3-6M17 10l-3-6M9 14v3M15 14v3',
   add: 'M12 4v16M4 12h16',
   split: 'M5 3h14v18l-3-2-4 2-4-2-3 2V3ZM15 7H10a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H9M12 5v12',
 } as const;
 export type IconName = keyof typeof iconPaths;
 
-export default function DashboardIcon({ name, color = '#555B69', size = 20 }: { name: IconName; color?: string; size?: number }) {
+export default function DashboardIcon({ name, color = '#555B69', size = 20, active = false, imageSize = 24 }: { name: IconName; color?: string; size?: number; active?: boolean; imageSize?: number }) {
+  const mappedName = name === 'bell' ? 'notifications' : name;
+  if (mappedName in ROOMIE_UI_ICONS) {
+    const icon = ROOMIE_UI_ICONS[mappedName as keyof typeof ROOMIE_UI_ICONS];
+    return <Image source={getImageSource(icon[active ? 'active' : 'inactive'])} resizeMode="contain" style={{ width: imageSize, height: imageSize }} accessible={false} />;
+  }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={iconPaths[name]} /></svg>;
 }
 

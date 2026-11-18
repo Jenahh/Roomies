@@ -7,9 +7,20 @@ body,
 body {
   margin: 0;
   background: #FAF9F6;
+  text-align: left;
 }
 
 #root {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+}
+
+#roomies-phone-preview {
+  overflow: clip;
+}
+
+/* Preserve scrolling in the browser when the page itself overflows. */
+html {
+  scrollbar-width: none;
 }

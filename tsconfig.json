@@ -10,5 +10,9 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["app/**/*.ts", "app/**/*.tsx"]
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx"
+  ],
+  "extends": "expo/tsconfig.base"
 }

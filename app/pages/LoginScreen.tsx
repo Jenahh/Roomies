@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Image, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import { styles } from '../styles/LoginScreen.styles';
 import { demoAccounts, type ResidentUser } from '../data/demoAccount';
+import PasswordVisibilityIcon from '../components/auth/PasswordVisibilityIcon';
+import { getImageSource } from '../utils/imageSource';
 
 type LoginScreenProps = {
   onBack?: () => void;
@@ -33,29 +36,23 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
             <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
-          <View style={styles.brand}>
-            <Image source={{ uri: roomiesLogo }} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
-            <Text style={styles.wordmark}>Roomies</Text>
+          <View pointerEvents="none" style={styles.logoCenter}>
+            <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
           </View>
         </View>
 
-        <Text accessibilityRole="header" style={styles.title}>Welcome back.</Text>
-        <Text style={styles.subtitle}>Log in to get back to your people and your space.</Text>
-
+        <Text accessibilityRole="header" numberOfLines={1} style={styles.title}>Welcome back.</Text>
         <View style={styles.form}>
-          <Text nativeID="email-label" style={styles.label}>Email</Text>
-          <TextInput accessibilityLabel="Email" aria-labelledby="email-label" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
-
-          <Text nativeID="password-label" style={[styles.label, styles.passwordLabel]}>Password</Text>
+          <TextInput accessibilityLabel="Email" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
           <View style={styles.passwordField}>
-            <TextInput accessibilityLabel="Password" aria-labelledby="password-label" value={password} onChangeText={setPassword} placeholder="Enter your password" placeholderTextColor="#7B7D87" secureTextEntry={!showPassword} autoCapitalize="none" autoCorrect={false} autoComplete="current-password" onSubmitEditing={logIn} style={styles.passwordInput} />
+            <TextInput accessibilityLabel="Password" value={password} onChangeText={setPassword} placeholder="Enter your password" placeholderTextColor="#7B7D87" secureTextEntry={!showPassword} autoCapitalize="none" autoCorrect={false} autoComplete="current-password" onSubmitEditing={logIn} style={styles.passwordInput} />
             <Pressable accessibilityRole="button" accessibilityLabel={showPassword ? 'Hide password' : 'Show password'} accessibilityState={{ expanded: showPassword }} onPress={() => setShowPassword(value => !value)} style={({ pressed }) => [styles.visibilityButton, pressed && styles.linkPressed]}>
-              <Text style={styles.visibilityText}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <PasswordVisibilityIcon visible={showPassword} />
             </Pressable>
           </View>
 
@@ -76,7 +73,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           </Pressable>
         </View>
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Your home. Your people. A private space.</Text>
+          <Text numberOfLines={1} style={styles.footerText}>A private space for roommates.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

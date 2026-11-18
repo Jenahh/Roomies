@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles as s } from '../../styles/ResidentSignUp.styles';
+import roomiesLogo from '../../../assets/Roomies Logo.png';
 import { demoJoinCodes } from '../../data/demoJoinCodes';
 import { matchesResidentInvitation } from '../../data/residentInvitations';
-import DashboardIcon from '../dashboard/DashboardIcon';
 import type { ResidentUser } from '../../data/demoAccount';
 import AccountDetailsFields from './AccountDetailsFields';
+import SignupProgress from './SignupProgress';
+import RoomiePet from '../RoomiePet';
+import { getImageSource } from '../../utils/imageSource';
 
 export type SignUpNavigationProps = {
   onBack: () => void;
@@ -15,7 +19,7 @@ export type SignUpNavigationProps = {
 
 const roleContent = {
   resident: {
-    label: 'Resident', icon: 'profile',
+    label: 'Resident', avatarBackground: '#EDF0FF',
     title: 'Your shared home\nstarts here.', joinTitle: 'Join your\nhousehold.',
     subtitle: 'Create your resident account to get started.',
     codeLabel: 'Property manager join code',
@@ -23,7 +27,7 @@ const roleContent = {
     submit: 'Create account & join household',
   },
   assistant: {
-    label: 'Resident Assistant', icon: 'group',
+    label: 'Resident Assistant', avatarBackground: '#F2EEFF',
     title: 'Support your\ncommunity.', joinTitle: 'Join as a\nResident Assistant.',
     subtitle: 'Create your Resident Assistant account to get started.',
     codeLabel: 'RA join code',
@@ -31,7 +35,7 @@ const roleContent = {
     submit: 'Create account & request RA access',
   },
   'property-manager': {
-    label: 'Property Manager', icon: 'home',
+    label: 'Property Manager', avatarBackground: '#EAF6F0',
     title: 'Manage your\ncommunity.', joinTitle: 'Join as a\nProperty Manager.',
     subtitle: 'Create your Property Manager account to get started.',
     codeLabel: 'Property manager join code',
@@ -56,7 +60,7 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Enter a valid email address.'); return; }
     if (password.length < 8) { setError('Use a password with at least 8 characters.'); return; }
     if (password !== confirmPassword) { setError('Your passwords do not match.'); return; }
-    setError(''); setStep(2); window.scrollTo(0, 0);
+    setError(''); setStep(2); if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   }
   function join() {
     if (!code.trim()) { setError('Enter your ' + content.codeLabel.toLowerCase() + '.'); return; }
@@ -70,9 +74,20 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
     setPassword(''); setConfirmPassword(''); setError('');
     onRequestSubmitted();
   }
-  return <SafeAreaView style={s.safeArea}><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
-    <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable><Text style={s.step}>{step} of 2</Text></View>
-    <View style={s.homeIcon}><DashboardIcon name={content.icon} color="#55516D" size={25} /></View>
+  return <SafeAreaView style={s.safeArea}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
+    <View style={s.header}>
+      <Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+      <View pointerEvents="none" style={s.logoCenter}><Image source={getImageSource(roomiesLogo)} style={s.logo} resizeMode="contain" accessibilityLabel="Roomies logo" /></View>
+      <Text style={s.step}>{step} of 2</Text>
+    </View>
+    <SignupProgress step={step === 1 ? 2 : 3} />
+    <View style={[s.homeIcon, { backgroundColor: content.avatarBackground }]}>
+      {role === 'assistant'
+        ? <RoomiePet role="assistant" size={72} accessibilityLabel="Resident Assistant Roomie" />
+        : role === 'property-manager'
+          ? <RoomiePet role="property-manager" size={72} accessibilityLabel="Property Manager Roomie" />
+          : <RoomiePet mood="happy-3d" size={72} accessibilityLabel="Resident Roomie Pet" />}
+    </View>
     <Text accessibilityRole="header" style={s.title}>{step === 1 ? content.title : content.joinTitle}</Text>{step === 1 && <Text style={s.subtitle}>{content.subtitle}</Text>}
     <View style={[s.card, step === 2 && s.joinCard]}>
       {step === 1 && <Text accessibilityRole="header" style={s.cardTitle}>{content.label} Sign Up</Text>}

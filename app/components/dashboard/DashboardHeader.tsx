@@ -1,23 +1,33 @@
 import { Pressable, Text, View } from 'react-native';
 import { styles } from '../../styles/ResidentDashboard.styles';
 import Icon from './DashboardIcon';
+import RoomiePet from '../RoomiePet';
+import { getPetAccessoryIds } from '../../data/roomiePetAccessories';
+import type { PetMood } from '../../data/roomiePetMood';
+import type { ResidentData } from '../../hooks/useResidentData';
 
-export default function DashboardHeader({ household, onHousehold, onNotifications, onAchievements }: {
+export default function DashboardHeader({ household, pet, mood, onHousehold, onNotifications, onPet, notificationsActive = false }: {
   household: string;
+  pet: ResidentData['pet'];
+  mood: PetMood;
   onHousehold: () => void;
   onNotifications: () => void;
-  onAchievements: () => void;
+  notificationsActive?: boolean;
+  onPet: () => void;
 }) {
   return (
-<View style={styles.header}>
-
-            <Pressable accessibilityRole="button" onPress={onHousehold} style={({ pressed }) => [styles.household, pressed && styles.pressed]}>
-              <Icon name="home" color="#657EEA" size={15} />
-              <Text style={styles.householdName}>{household || 'Set up household'}</Text>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#606675" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><path d="m6 9 6 6 6-6" /></svg>
-            </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Notifications" onPress={onNotifications} style={styles.notification}><Icon name="bell" size={18} /></Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Achievements" onPress={onAchievements} style={styles.notification}><Icon name="star" color="#657EEA" size={21} /></Pressable>
-          </View>
+    <View style={styles.header}>
+      <Pressable accessibilityRole="button" accessibilityLabel={household || 'Set up household'} onPress={onHousehold} style={({ pressed }) => [styles.household, pressed && styles.pressed]}>
+        <Icon name="home" color="#657EEA" size={18} />
+        <Text numberOfLines={1} style={styles.householdName}>{household || 'Set up household'}</Text>
+        <Text accessible={false} style={styles.chevron}>{'\u2304'}</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Notifications" onPress={onNotifications} style={({ pressed }) => [styles.notification, pressed && styles.pressed]}>
+        <Icon name="bell" size={20} active={notificationsActive} />
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Customize Roomie" onPress={onPet} style={({ pressed }) => [styles.headerPet, pressed && styles.pressed]}>
+        <RoomiePet color={pet?.color} mood={mood} accessories={getPetAccessoryIds(pet)} accessoryColors={pet?.accessoryColors} size={40} accessibilityLabel="Roomie Pet" />
+      </Pressable>
+    </View>
   );
 }

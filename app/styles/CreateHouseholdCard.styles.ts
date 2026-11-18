@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  card: { backgroundColor: '#FFFFFF', borderRadius: 22, padding: 18, gap: 10, marginBottom: 20 },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 18, gap: 10, marginBottom: 20 },
   heading: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   plus: { width: 20, height: 20, borderWidth: 1, borderColor: '#657EEA', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 17, lineHeight: 24, fontWeight: '600', color: '#292B35' },

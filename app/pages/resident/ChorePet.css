@@ -1,0 +1,29 @@
+.chore-pet { position: relative; flex: 0 0 auto; width: 132px; height: 120px; overflow: hidden; }
+.chore-pet-body, .chore-pet-prop, .chore-pet-sparkles { position: absolute; pointer-events: none; }
+.chore-pet-body { width: 108px; height: 108px; left: 8px; bottom: 5px; }
+.chore-pet-prop { right: 0; bottom: 8px; }
+.chore-pet-broom { right: 1px; bottom: 7px; transform-origin: 60% 45%; animation: roomie-sweep .8s ease-in-out 2; }
+.chore-pet-sparkles { inset: 0; opacity: .75; }
+.chore-pet--celebrating .chore-pet-body { animation: roomie-hop .55s ease-out; }
+.chore-pet--celebrating .chore-pet-sparkles { animation: roomie-sparkle .6s ease-out; }
+@keyframes roomie-sweep { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-14deg); } }
+@keyframes roomie-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+@keyframes roomie-sparkle { 0%, 100% { transform: scale(1); opacity: .75; } 50% { transform: scale(1.14); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .chore-pet * { animation: none !important; } }
+.chore-pet-water { opacity: 0; }
+.chore-pet--celebrating .chore-pet-broom { animation: roomie-brush .55s ease-in-out 3; }
+.chore-pet--celebrating .chore-pet-prop--counters { animation: roomie-wipe .55s ease-in-out 3; }
+.chore-pet--celebrating .chore-pet-prop--plants { transform-origin: 60% 70%; animation: roomie-pour 1.35s ease-in-out; }
+.chore-pet--celebrating .chore-pet-water { animation: roomie-water .38s ease-out .3s 2; }
+.chore-pet--celebrating .chore-pet-bubble { transform-box: fill-box; transform-origin: center; animation: roomie-bubble .85s ease-out 2; }
+.chore-pet--celebrating .chore-pet-prop--trash { animation: roomie-carry .9s ease-in-out 2; }
+.chore-pet--celebrating .chore-pet-prop--laundry { animation: roomie-lift .8s ease-in-out 2; }
+.chore-pet--celebrating .chore-pet-prop--custom { animation: roomie-hop .55s ease-out; }
+@keyframes roomie-brush { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-20deg); } 75% { transform: rotate(14deg); } }
+@keyframes roomie-wipe { 0%,100% { transform: translateX(0); } 35% { transform: translateX(-9px); } 70% { transform: translateX(2px); } }
+@keyframes roomie-pour { 0%,100% { transform: rotate(0); } 25%,75% { transform: rotate(-24deg); } }
+@keyframes roomie-water { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-1px, 3px); } }
+@keyframes roomie-bubble { 0% { opacity: 0; transform: translateY(4px) scale(.75); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px) scale(1.2); } }
+@keyframes roomie-carry { 0%,100% { transform: translate(0); } 50% { transform: translate(-7px,-5px) rotate(-8deg); } }
+@keyframes roomie-lift { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-9px); } }
+@media (prefers-reduced-motion: reduce) { .chore-pet--celebrating * { animation: none !important; } }

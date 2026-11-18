@@ -1,3 +1,4 @@
+import { POINTS_PER_CHORE } from '../../data/choreRewards';
 import AchievementProgressBar from '../../components/dashboard/AchievementProgressBar';
 import { Pressable, Text, View } from 'react-native';
 import type { ResidentData } from '../../hooks/useResidentData';
@@ -12,7 +13,7 @@ function weekKey(value: Date) {
 }
 
 export default function AchievementsScreen({ data, now, onBack }: { data: ResidentData; now: Date; onBack: () => void }) {
-  const personalCompleted = data.chores.filter(chore => chore.completed && (!chore.assignee || chore.assignee === data.name));
+  const personalCompleted = data.chores.filter(chore => chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name)));
   const currentWeek = weekKey(now);
   const weeks = [2, 1, 0].map(offset => {
     const date = new Date(now);
@@ -44,11 +45,11 @@ export default function AchievementsScreen({ data, now, onBack }: { data: Reside
       <View style={s.points}>
         <View style={s.pointsCopy}>
           <Text style={s.sectionTitle}>Roomie points</Text>
-          <Text style={s.detail}>Earn 10 points for every assigned chore you complete.</Text>
-          <AchievementProgressBar label="Points toward Cleaning Champion" value={personalCompleted.length * 10} target={200} />
-          <Text style={s.detail}>{Math.min(personalCompleted.length * 10, 200)} / 200 pts</Text>
+          <Text style={s.detail}>Earn {POINTS_PER_CHORE} points for every assigned chore you complete.</Text>
+          <AchievementProgressBar label="Points toward Cleaning Champion" value={personalCompleted.length * POINTS_PER_CHORE} target={200} />
+          <Text style={s.detail}>{Math.min(personalCompleted.length * POINTS_PER_CHORE, 200)} / 200 pts</Text>
         </View>
-        <View style={s.pill}><Text style={s.pointsText}>{personalCompleted.length * 10} pts</Text></View>
+        <View style={s.pill}><Text style={s.pointsText}>{personalCompleted.length * POINTS_PER_CHORE} pts</Text></View>
       </View>
       <View style={s.streak}>
         <Text style={s.sectionTitle}>{streak ? `${streak}-week streak` : 'Start your household streak'}</Text>

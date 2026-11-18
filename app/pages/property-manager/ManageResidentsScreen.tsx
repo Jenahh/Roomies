@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { ManagedHousehold, ManagedResident } from '../../data/demoPropertyManager';
@@ -52,7 +53,7 @@ export default function ManageResidentsScreen({ propertyName, household, residen
     let joinCode: string;
     try { joinCode = createResidentJoinCode(normalizedEmail, unitLabel); }
     catch { setError('Could not save the invitation. Allow browser storage and try again.'); return; }
-    setResidents(previous => [...previous, { id: crypto.randomUUID(), name: name.trim(), email: normalizedEmail, unit, householdId: household?.id, joinCode, access: 'Invited' }]);
+    setResidents(previous => [...previous, { id: randomUUID(), name: name.trim(), email: normalizedEmail, unit, householdId: household?.id, joinCode, access: 'Invited' }]);
     setDialog(null); setNotice(`Invitation created for ${name.trim()}. Resident join code: ${joinCode}. No email was sent.`);
   }
 
@@ -104,7 +105,7 @@ export default function ManageResidentsScreen({ propertyName, household, residen
       <Text style={s.notice}>Demo roster. Changes stay in this session and do not affect real resident access.</Text>
       <Modal visible={dialog !== null} transparent animationType="fade" onRequestClose={() => setDialog(null)}>
         <View style={shared.backdrop}>
-          <ScrollView style={shared.modal} contentContainerStyle={shared.modalContent} keyboardShouldPersistTaps="handled">
+          <ScrollView showsVerticalScrollIndicator={false} style={shared.modal} contentContainerStyle={shared.modalContent} keyboardShouldPersistTaps="handled">
             <Pressable accessibilityRole="button" accessibilityLabel="Back to resident roster" onPress={() => setDialog(null)} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
             {dialog === 'invite' && <>
               <Text accessibilityRole="header" style={shared.sectionTitle}>Invite resident to {unitLabel}</Text>

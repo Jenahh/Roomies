@@ -7,11 +7,17 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run && node tests/scheduler.test.mjs"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "^58.0.25",
+    "expo-asset": "~58.0.21",
+    "expo-crypto": "~58.0.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-native-safe-area-context": "~5.11.1",
     "react-native-web": "^0.21.4"
   },
   "devDependencies": {
@@ -20,6 +26,7 @@
     "@types/react-native-web": "^0.19.3",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "^5.0.0",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "vitest": "^4.0.0"
   }
 }
