@@ -29,8 +29,9 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={styles.backButton}>
             <Text style={styles.backArrow}>{'<'}</Text>
           </Pressable>
-          <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
-          <Text style={styles.wordmark}>Roomies</Text>
+          <View pointerEvents="none" style={styles.logoCenter}>
+            <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
+          </View>
         </View>
 
         <SignupProgress step={1} />

@@ -5,7 +5,7 @@ import ConcernDetailsScreen from './ConcernDetailsScreen';
 import ResidentAssistantProfileScreen from './ResidentAssistantProfileScreen';
 import { useResidentData } from '../../hooks/useResidentData';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Modal, SafeAreaView, ScrollView, View } from 'react-native';
+import { Modal, ScrollView, View } from 'react-native';
 import type { ResidentUser } from '../../data/demoAccount';
 import { demoConcerns, demoHall, demoHallUpdates, type ResidentConcern } from '../../data/demoResidentAssistant';
 import DashboardNavigation, { type DashboardTab } from '../../components/dashboard/DashboardNavigation';
@@ -41,7 +41,7 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
   }, [activeTab]);
 
   return (
-    <SafeAreaView style={s.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={s.safeArea}>
       <View style={s.shell}>
         <ScrollView showsVerticalScrollIndicator={false} ref={pageScroll} contentContainerStyle={s.page}>
           <ResidentAssistantHeader />

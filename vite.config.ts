@@ -16,7 +16,12 @@ export default defineConfig({
       ignored: ['**/.tsupgrader/**'],
     },
   },
+  // Prefer web implementations for React Native packages in both Vite and its dependency optimizer.
+  optimizeDeps: {
+    esbuildOptions: { resolveExtensions: ['.web.mjs', '.mjs', '.web.js', '.js', '.web.ts', '.ts', '.web.tsx', '.tsx', '.json'] },
+  },
   resolve: {
+    extensions: ['.web.mjs', '.mjs', '.web.js', '.js', '.web.ts', '.ts', '.web.tsx', '.tsx', '.json'],
     alias: {
       'react-native': 'react-native-web',
     },

@@ -4,11 +4,11 @@ import { Platform, StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
   page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: Platform.select({ native: 14, default: 26 }), paddingBottom: Platform.select({ native: 16, default: 32 }) },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 24 },
+  header: { position: 'relative', flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   backButton: { minWidth: 24, minHeight: 44, justifyContent: 'center' },
   backArrow: backNavigationText,
+  logoCenter: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
   logo: { width: 36, height: 36 },
-  wordmark: { fontSize: 24, fontWeight: '800', color: '#292B35', letterSpacing: -0.7 },
   headerCaption: { marginLeft: 'auto', fontSize: 10, color: '#52545D' },
   title: { fontSize: 29, lineHeight: 32, fontWeight: '800', color: '#292B35', letterSpacing: -0.6, marginBottom: Platform.select({ native: 12, default: 20 }) },
   subtitle: { fontSize: 13, lineHeight: 19, color: '#7B7D87', marginTop: 8, marginBottom: 14 },
