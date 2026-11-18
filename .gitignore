@@ -2,3 +2,6 @@ node_modules/
 dist/
 .expo/
 *.tsbuildinfo
+
+database/demo-local.sqlite3*
+database/__pycache__/

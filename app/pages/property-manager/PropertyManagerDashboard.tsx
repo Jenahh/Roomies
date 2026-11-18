@@ -1,3 +1,4 @@
+import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
 import { getHouseholdResidents, replaceHouseholdResidents } from '../../data/householdResidents';
 import PropertyManagerRequestsScreen from './PropertyManagerRequestsScreen';
 import PropertyManagerAnnouncementsScreen from './PropertyManagerAnnouncementsScreen';
@@ -27,7 +28,7 @@ const tabs: DashboardTab[] = [
 export default function PropertyManagerDashboard({ user, onSignOut }: { user: ResidentUser; onSignOut: () => void }) {
   const { data, setData, storageError } = useResidentData(user.email, user.name);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState('Home');
+  const [activeTab, setActiveTab] = useState(user.databaseDemoStaff ? 'Requests' : 'Home');
   const [now, setNow] = useState(() => new Date());
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const [residents, setResidents] = useState<ManagedResident[]>(demoManagedResidents);
@@ -84,8 +85,8 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
       <View style={s.shell}>
         <ScrollView ref={pageScroll} contentContainerStyle={s.page}>
           <RoleDashboardHeader role="Property Manager" showLogo={false} showWordmark={false} />
-          {activeTab === 'Home' && <PropertyManagerHomeScreen name={data.name} now={now} property={demoProperty} requests={demoMaintenanceRequests} onCreateAnnouncement={openAnnouncement} onAllRequests={() => setActiveTab('Requests')} onRequest={setSelectedRequest} onManageResidents={() => openResidents()} />}
-          {activeTab === 'Requests' && <PropertyManagerRequestsScreen property={demoProperty} requests={demoMaintenanceRequests} onSelect={setSelectedRequest} />}
+          {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerHomeScreen name={data.name} now={now} property={demoProperty} requests={demoMaintenanceRequests} onCreateAnnouncement={openAnnouncement} onAllRequests={() => setActiveTab('Requests')} onRequest={setSelectedRequest} onManageResidents={() => openResidents()} />)}
+          {activeTab === 'Requests' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerRequestsScreen property={demoProperty} requests={demoMaintenanceRequests} onSelect={setSelectedRequest} />)}
           {activeTab === 'Announcements' && <PropertyManagerAnnouncementsScreen property={demoProperty} announcements={announcements} onCreate={openAnnouncement} />}
           {activeTab === 'Properties' && <PropertyManagerPropertiesScreen property={demoProperty} households={households} residents={residents} onManageHousehold={openResidents} onCreateHousehold={name => setHouseholds(previous => [...previous, { id: crypto.randomUUID(), propertyName: demoProperty.name, name }])} />}
           {activeTab === 'ManageResidents' && <ManageResidentsScreen key={selectedHouseholdId || 'property'} propertyName={demoProperty.name} household={selectedHousehold} residents={getHouseholdResidents(residents, selectedHouseholdId)} setResidents={updateHouseholdResidents} onBack={() => setActiveTab('Properties')} />}

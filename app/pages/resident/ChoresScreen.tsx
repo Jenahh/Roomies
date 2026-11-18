@@ -6,6 +6,7 @@ import RoomiePet from '../../components/RoomiePet';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
+import type { useSharedChores } from '../../hooks/useSharedChores';
 import type { ResidentData } from '../../hooks/useResidentData';
 import { styles as s } from '../../styles/ChoresScreen.styles';
 
@@ -13,9 +14,10 @@ function dateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function ChoresScreen({ data, setData, storageError, onPet, assignedHousehold, autoOpenAdd = false, onAddOpened }: {
+export default function ChoresScreen({ data, setData, storageError, onPet, assignedHousehold, autoOpenAdd = false, onAddOpened, shared }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onPet?: () => void;
   assignedHousehold?: { name: string; roommates: { id: string; name: string }[] };
+  shared?: ReturnType<typeof useSharedChores>;
   autoOpenAdd?: boolean; onAddOpened?: () => void;
 }) {
   const [celebration, setCelebration] = useState<ResidentData['chores'][number] | null>(null);
@@ -43,7 +45,7 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
   const completed = weekly.filter(chore => chore.completed).length;
   const remaining = weekly.length - completed;
   const petName = data.pet?.name || 'Roomie';
-  const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (!chore.assignee || chore.assignee === data.name);
+  const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (shared ? chore.memberId === 'resident-self' : !chore.assignee || chore.assignee === data.name);
   const upcomingChores = data.chores.filter(chore => !chore.completed).sort((a,b) => a.due.localeCompare(b.due));
   const nextChore = upcomingChores.find(mine) ?? upcomingChores[0];
   const featuredChore = celebration ?? nextChore;
@@ -74,7 +76,7 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : !chore.completed && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
   const points = data.chores.filter(chore => chore.completed && mine(chore)).length * 10;
-  function save() {
+  async function save() {
     const parsed = new Date(due + 'T12:00:00');
     if (!title.trim()) { setError('Enter a chore title.'); return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || !Number.isFinite(parsed.getTime()) || dateKey(parsed) !== due) { setError('Enter a valid date in YYYY-MM-DD format.'); return; }
@@ -83,8 +85,13 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
     if (unavailable) { setError('Use the updated suggestion or choose another available roommate.'); return; }
     if (!dates.length) { setError('Choose a repeat end date on or after the first date, with at most 52 occurrences.'); return; }
     const id = crypto.randomUUID();
-    setData(previous => ({ ...previous,
-      chores: [...previous.chores, ...planChoreOccurrences(input, dates, members, previous.chores, previous.name, choice, id)] }));
+    if (shared) {
+      const chores = planChoreOccurrences(input, dates, members, data.chores, data.name, choice, id);
+      if (!await shared.add(chores)) return;
+    } else {
+      setData(previous => ({ ...previous,
+        chores: [...previous.chores, ...planChoreOccurrences(input, dates, members, previous.chores, previous.name, choice, id)] }));
+    }
     setFilter('All Chores');
     setAdding(false);
   }
@@ -122,7 +129,14 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
         const name = chore.unassigned ? 'Unassigned' : chore.assignee || data.name;
         const initials = name.trim().split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase();
         const day = chore.due === dateKey(now) ? 'Today' : new Date(chore.due + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-        return <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} accessibilityLabel={`${chore.title}, ${name}, ${day}`} onPress={() => { setCelebration(chore.completed ? null : chore); setData(previous => ({ ...previous, chores: previous.chores.map(item => item.id === chore.id ? { ...item, completed: !item.completed } : item) })); }} style={({ pressed }) => [s.chore, pressed && s.pressed]}>
+        return <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} accessibilityLabel={`${chore.title}, ${name}, ${day}`} disabled={shared?.busy} onPress={async () => {
+          if (shared) {
+            if (!await shared.complete(chore)) return;
+          } else {
+            setData(previous => ({ ...previous, chores: previous.chores.map(item => item.id === chore.id ? { ...item, completed: !item.completed } : item) }));
+          }
+          setCelebration(chore.completed ? null : chore);
+        }} style={({ pressed }) => [s.chore, pressed && s.pressed]}>
           <View style={[s.checkbox, (own || chore.completed) && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text style={s.check}>✓</Text>}</View>
           <ChoreBadge look={chore.look} title={chore.title} />
           <View style={s.copy}><Text style={[s.choreTitle, chore.completed && s.completed]}>{chore.title}</Text><View style={s.details}><View style={[s.avatar, { backgroundColor: ['#F1EBFF', '#FFF2DC', '#EAF6EF'][index % 3] }]}><Text style={s.initials}>{initials}</Text></View><Text style={s.detailText}>{name}{own ? ' (you)' : ''} · {day}{chore.time ? `, ${chore.time}` : ''}</Text></View></View>
@@ -166,8 +180,8 @@ export default function ChoresScreen({ data, setData, storageError, onPet, assig
         </div>}
         {members.length === 1 && <Text style={s.caption}>No other roommates are assigned to your household yet.</Text>}
       </View>
-      {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
-      <Pressable accessibilityRole="button" onPress={save} style={s.addButton}><Text style={s.addText}>{repeat !== 'once' && dates.length > 1 ? `Add ${dates.length} chores` : 'Add chore'}</Text></Pressable>
+      {(error || shared?.error) && <Text accessibilityRole="alert" style={s.error}>{error || shared?.error}</Text>}
+      <Pressable accessibilityRole="button" onPress={save} disabled={shared?.busy} style={s.addButton}><Text style={s.addText}>{repeat !== 'once' && dates.length > 1 ? `Add ${dates.length} chores` : 'Add chore'}</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={() => setAdding(false)} style={s.cancel}><Text style={s.upcoming}>Cancel</Text></Pressable>
     </ScrollView></View></Modal>
   </>;

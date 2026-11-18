@@ -16,6 +16,8 @@ import { styles } from '../../styles/ResidentDashboard.styles';
 import RoomiePet from '../RoomiePet';
 import type { ResidentUser } from '../../data/demoAccount';
 import { useResidentData } from '../../hooks/useResidentData';
+import { useSharedChores } from '../../hooks/useSharedChores';
+import DatabaseRequests from './DatabaseRequests';
 import ChoresScreen from '../../pages/resident/ChoresScreen';
 import ExpensesScreen from '../../pages/resident/ExpensesScreen';
 import CalendarScreen from '../../pages/resident/CalendarScreen';
@@ -36,10 +38,15 @@ function displayDate(value: string) {
 export type HouseholdDashboardProps = { user: ResidentUser; onSignOut: () => void };
 
 export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboardProps) {
-  const assignedHousehold = user.email.toLowerCase() === demoResident.email ? demoResidentHousehold : undefined;
   const hasRoomiePet = user.role === 'resident';
-  const { data, setData, storageError } = useResidentData(user.email, user.name);
+  const { data: localData, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const databaseDemo = user.demoHouseholdId !== undefined;
+  const shared = useSharedChores(user.email, user.demoHouseholdId, activeTab);
+  const data = databaseDemo ? { ...localData, chores: shared.snapshot?.chores ?? [] } : localData;
+  const assignedHousehold = databaseDemo
+    ? { name: 'Demo household ' + user.demoHouseholdId, roommates: shared.snapshot?.roommates ?? [] }
+    : user.email.toLowerCase() === demoResident.email ? demoResidentHousehold : undefined;
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddTarget, setQuickAddTarget] = useState<'Chores' | 'Expenses' | 'Calendar' | null>(null);
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -88,7 +95,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     setPanel(next);
   }
 
-  function save() {
+  async function save() {
     if (!title.trim()) { setError('Enter a name or title.'); return; }
     if (['Add chore', 'Split expense', 'Add event'].includes(panel || '')) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(new Date(date + 'T12:00:00').getTime()) || localDate(new Date(date + 'T12:00:00')) !== date) {
@@ -100,6 +107,10 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
       setError('Enter your share as a positive amount with up to two decimal places.'); return;
     }
     const id = crypto.randomUUID();
+    if (databaseDemo && panel === 'Add chore') {
+      if (await shared.add([{ id, title: title.trim(), due: date, completed: false }])) setPanel(null);
+      return;
+    }
     setData(previous => {
       if (panel === 'Profile') return { ...previous, name: title.trim() };
       if (panel === 'Pet') return { ...previous, pet: { ...previous.pet, name: title.trim(), lastAttention: previous.pet?.lastAttention || null } };
@@ -112,6 +123,11 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   }
 
   function toggleChore(id: string) {
+    if (databaseDemo) {
+      const chore = data.chores.find(item => item.id === id);
+      if (chore) void shared.complete(chore);
+      return;
+    }
     setData(previous => ({ ...previous, chores: previous.chores.map(chore => chore.id === id ? { ...chore, completed: !chore.completed } : chore) }));
   }
 
@@ -152,7 +168,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
       <View style={styles.shell}>
         <ScrollView ref={pageScroll} contentContainerStyle={styles.page}>
         {residentHeader}
-        {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'CustomizePet' && hasRoomiePet ? <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Chores' ? <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
+        {databaseDemo && shared.error && <Text accessibilityRole="alert">{shared.error}</Text>}
+        {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'CustomizePet' && hasRoomiePet ? <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? (databaseDemo ? <DatabaseRequests user={user} type="RA Concern" onBack={() => setActiveTab('Profile')} /> : <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Maintenance' ? (databaseDemo ? <DatabaseRequests user={user} type="Maintenance" onBack={() => setActiveTab('Profile')} /> : <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Chores' ? <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
           <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
           {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
           <HouseholdProgressCard total={weeklyChores.length} completed={completed} />

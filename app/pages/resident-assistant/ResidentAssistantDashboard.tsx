@@ -1,3 +1,4 @@
+import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
 import ResidentAssistantConcernsScreen from './ResidentAssistantConcernsScreen';
 import ResidentAssistantMessagesScreen from './ResidentAssistantMessagesScreen';
 import ConcernDetailsScreen from './ConcernDetailsScreen';
@@ -23,7 +24,7 @@ const tabs: DashboardTab[] = [
 
 export default function ResidentAssistantDashboard({ user, onSignOut }: { user: ResidentUser; onSignOut: () => void }) {
   const { data, setData, storageError } = useResidentData(user.email, user.name);
-  const [activeTab, setActiveTab] = useState('Home');
+  const [activeTab, setActiveTab] = useState(user.databaseDemoStaff ? 'Concerns' : 'Home');
   const [selectedConcern, setSelectedConcern] = useState<ResidentConcern | null>(null);
   const [now, setNow] = useState(() => new Date());
   const petMood = getPetMood(data, now);
@@ -44,11 +45,11 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
       <View style={s.shell}>
         <ScrollView ref={pageScroll} contentContainerStyle={s.page}>
           <ResidentAssistantHeader />
-          {activeTab === 'Home' && <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />}
+          {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="RA Concern" /> : <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />)}
           {activeTab === 'Calendar' && (
             <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} />
           )} 
-          {activeTab === 'Concerns' && <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />}
+          {activeTab === 'Concerns' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="RA Concern" /> : <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />)}
           {activeTab === 'Messages' && <ResidentAssistantMessagesScreen />}
           {activeTab === 'Profile' && <ResidentAssistantProfileScreen user={user} name={data.name} hall={demoHall} color={data.pet?.color} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
         </ScrollView>
