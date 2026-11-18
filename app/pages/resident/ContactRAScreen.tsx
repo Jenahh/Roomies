@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import DashboardIcon from '../../components/dashboard/DashboardIcon';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -15,7 +16,7 @@ export default function ContactRAScreen({ data, setData, storageError, onBack }:
   const requests = [...(data.supportDrafts || [])].filter(item => item.kind === 'ra').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   function save() {
     if (!title.trim() || !description.trim()) { setError('Enter a subject and describe the support you need.'); return; }
-    setData(previous => ({ ...previous, supportDrafts: [...(previous.supportDrafts || []), { id: crypto.randomUUID(), kind: 'ra', title: title.trim(), description: description.trim(), category, location: previous.household, createdAt: new Date().toISOString() }] }));
+    setData(previous => ({ ...previous, supportDrafts: [...(previous.supportDrafts || []), { id: randomUUID(), kind: 'ra', title: title.trim(), description: description.trim(), category, location: previous.household, createdAt: new Date().toISOString() }] }));
     setTitle(''); setDescription(''); setError(''); setSaved(true);
   }
   return <>

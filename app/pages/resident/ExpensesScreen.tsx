@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import DashboardIcon, { type IconName } from '../../components/dashboard/DashboardIcon';
@@ -67,7 +68,7 @@ export default function ExpensesScreen({ data, setData, mood, storageError, auto
     const parsed = new Date(due + 'T12:00:00');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || !Number.isFinite(parsed.getTime()) || parsed.getFullYear() !== Number(due.slice(0, 4)) || parsed.getMonth() + 1 !== Number(due.slice(5, 7)) || parsed.getDate() !== Number(due.slice(8))) { setError('Enter a valid date in YYYY-MM-DD format.'); return; }
     if (cents(Number(amount)) < count) { setError('The total must allow at least one cent per person.'); return; }
-    setData(previous => ({ ...previous, expenses: [...previous.expenses, { id: crypto.randomUUID(), title: title.trim(), amount: Math.round(cents(Number(amount)) / count) / 100, totalAmount: Number(amount), splitCount: count, paidBy: paidBy.trim() || 'Household', due, category, recurring, settled: false }] }));
+    setData(previous => ({ ...previous, expenses: [...previous.expenses, { id: randomUUID(), title: title.trim(), amount: Math.round(cents(Number(amount)) / count) / 100, totalAmount: Number(amount), splitCount: count, paidBy: paidBy.trim() || 'Household', due, category, recurring, settled: false }] }));
     setPanel(null);
   }
   function settle(item: Expense) { setData(previous => ({ ...previous, expenses: previous.expenses.map(expense => expense.id === item.id ? { ...expense, settled: !expense.settled } : expense) })); setSelected(null); }

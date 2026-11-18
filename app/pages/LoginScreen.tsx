@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import { styles } from '../styles/LoginScreen.styles';
 import { demoAccounts, type ResidentUser } from '../data/demoAccount';
@@ -40,9 +41,8 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
             <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
-          <View style={styles.brand}>
+          <View pointerEvents="none" style={styles.logoCenter}>
             <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
-            <Text style={styles.wordmark}>Roomies</Text>
           </View>
         </View>
 

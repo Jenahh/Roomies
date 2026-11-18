@@ -14,6 +14,9 @@ import {
 import { styles as s } from '../../styles/RoomieCustomizationScreen.styles';
 import { getImageSource } from '../../utils/imageSource';
 
+const unavailableAccessories = new Set<RoomieAccessoryId>(['star-pin', 'backpack', 'bandana']);
+const customizableAccessories = ROOMIE_ACCESSORY_IDS.filter(id => !unavailableAccessories.has(id));
+
 const petColors = [
   ['Blue', ROOMIE_COLORS.blue],
   ['Green', ROOMIE_COLORS.green],
@@ -23,7 +26,7 @@ const petColors = [
 ] as const;
 
 function initialAccessories(data: ResidentData): RoomieAccessoryId[] {
-  const savedAccessories = getPetAccessoryIds(data.pet);
+  const savedAccessories = getPetAccessoryIds(data.pet).filter(id => !unavailableAccessories.has(id));
   if (savedAccessories.length || data.pet?.accessories || data.pet?.accessory === 'None') return savedAccessories;
   return ['bow'];
 }
@@ -75,7 +78,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
       </View>
     </View>
     <View accessibilityRole="group" accessibilityLabel="Pet accessories" style={s.accessories}>
-      {ROOMIE_ACCESSORY_IDS.map(id => {
+      {customizableAccessories.map(id => {
         const equipped = accessories.includes(id);
         const locked = id === 'sprout-hat' && !leafUnlocked && !equipped;
         return <Pressable key={id} accessibilityRole="checkbox" accessibilityLabel={`${ROOMIE_ACCESSORY_LABELS[id]}${locked ? ', locked, 210 points required' : ''}`} accessibilityState={{ checked: equipped, disabled: locked }} disabled={locked} onPress={() => chooseAccessory(id)} style={[s.accessory, equipped && s.selectedAccessory, locked && s.lockedAccessory]}>

@@ -1,3 +1,5 @@
+import { randomUUID } from '../../utils/randomUUID';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { demoResident, demoResidentHousehold } from '../../data/demoAccount';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
 import RoomieCheckInScreen from '../../pages/resident/RoomieCheckInScreen';
@@ -8,9 +10,10 @@ import Icon from './DashboardIcon';
 import DashboardHeader from './DashboardHeader';
 import DashboardNavigation from './DashboardNavigation';
 import HouseholdProgressCard from './HouseholdProgressCard';
+import { countCompletedChores } from '../../data/householdTree';
 import RoomieWelcome from './RoomieWelcome';
 import { useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
-import { Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import RoomieCustomizationScreen from '../../pages/resident/RoomieCustomizationScreen';
 import { styles } from '../../styles/ResidentDashboard.styles';
@@ -18,6 +21,8 @@ import RoomiePet from '../RoomiePet';
 import { RoomiePetContext } from '../RoomiePetContext';
 import type { ResidentUser } from '../../data/demoAccount';
 import { useResidentData } from '../../hooks/useResidentData';
+import { useSharedChores } from '../../hooks/useSharedChores';
+import DatabaseRequests from './DatabaseRequests';
 import ChoresScreen from '../../pages/resident/ChoresScreen';
 import ExpensesScreen from '../../pages/resident/ExpensesScreen';
 import CalendarScreen from '../../pages/resident/CalendarScreen';
@@ -38,10 +43,18 @@ function displayDate(value: string) {
 export type HouseholdDashboardProps = { user: ResidentUser; onSignOut: () => void };
 
 export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboardProps) {
-  const assignedHousehold = user.email.toLowerCase() === demoResident.email ? demoResidentHousehold : undefined;
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const hasRoomiePet = user.role === 'resident';
-  const { data, setData, storageError } = useResidentData(user.email, user.name);
+  const { data: localData, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const databaseDemo = user.demoHouseholdId !== undefined;
+  const shared = useSharedChores(user.email, user.demoHouseholdId, activeTab);
+  const data = databaseDemo ? { ...localData, chores: shared.snapshot?.chores ?? [] } : localData;
+  const assignedHousehold = databaseDemo
+    ? { name: 'Demo household ' + user.demoHouseholdId, roommates: shared.snapshot?.roommates ?? [] }
+    : user.email.toLowerCase() === demoResident.email ? demoResidentHousehold : undefined;
+  const [updatesOpen, setUpdatesOpen] = useState(true);
+  const [setupProfile, setSetupProfile] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddTarget, setQuickAddTarget] = useState<'Chores' | 'Expenses' | 'Calendar' | null>(null);
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -61,19 +74,17 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     return () => clearInterval(timer);
   }, []);
   const today = localDate(now);
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - (now.getDay() + 6) % 7);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
-  const weeklyChores = data.chores.filter(chore => chore.due >= localDate(weekStart) && chore.due < localDate(weekEnd));
-  const completed = weeklyChores.filter(chore => chore.completed).length;
+  const completed = countCompletedChores(data.chores);
   const todayCount = data.chores.filter(chore => !chore.completed && chore.due === today).length;
+  const overdueCount = data.chores.filter(chore => !chore.completed && chore.due < today).length;
   const unpaidExpenses = data.expenses.filter(expense => !expense.settled);
   const totalCents = unpaidExpenses.reduce((total, expense) => total + Math.round(expense.amount * 100), 0);
   const currency = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' });
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 18 ? 'Good afternoon' : 'Good evening';
-  const firstName = (data.name.trim() || user.name.trim() || 'Resident').split(/\s+/)[0];
+  const firstName = (data.name.trim() || user.name.trim()).split(/\s+/)[0];
   const petMood = getPetMood(data, now);
+  const householdName = data.household || assignedHousehold?.name || '';
+  const status = data.chores.some(chore => !chore.completed && chore.due <= today) ? 'There are chores ready for your household.' : unpaidExpenses.length ? 'Your household has expenses to review.' : '';
   const needsAttention = data.pet && (!data.pet.lastAttention || now.getTime() - new Date(data.pet.lastAttention).getTime() >= 86400000);
   const upcoming = [
     ...data.chores.filter(chore => !chore.completed).map(chore => ({ ...chore, date: chore.due, kind: 'chore' as const })),
@@ -91,7 +102,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     setPanel(next);
   }
 
-  function save() {
+  async function save() {
     if (!title.trim()) { setError('Enter a name or title.'); return; }
     if (['Split expense', 'Add event'].includes(panel || '')) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(new Date(date + 'T12:00:00').getTime()) || localDate(new Date(date + 'T12:00:00')) !== date) {
@@ -102,7 +113,11 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     if (panel === 'Split expense' && (!/^\d+(\.\d{1,2})?$/.test(amount) || !Number.isFinite(numericAmount) || numericAmount <= 0)) {
       setError('Enter your share as a positive amount with up to two decimal places.'); return;
     }
-    const id = crypto.randomUUID();
+    const id = randomUUID();
+    if (databaseDemo && panel === 'Add chore') {
+      if (await shared.add([{ id, title: title.trim(), due: date, completed: false }])) setPanel(null);
+      return;
+    }
     setData(previous => {
       if (panel === 'Profile') return { ...previous, name: title.trim() };
       if (panel === 'Pet') return { ...previous, pet: { ...previous.pet, name: title.trim(), lastAttention: previous.pet?.lastAttention || null } };
@@ -114,6 +129,11 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   }
 
   function toggleChore(id: string) {
+    if (databaseDemo) {
+      const chore = data.chores.find(item => item.id === id);
+      if (chore) void shared.complete(chore);
+      return;
+    }
     setData(previous => ({ ...previous, chores: previous.chores.map(chore => chore.id === id ? { ...chore, completed: !chore.completed } : chore) }));
   }
 
@@ -137,7 +157,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     return <View key={tab} pointerEvents={quickAddOpen ? 'auto' : 'none'} style={[styles.quickAddOptionWrapper, positions[index], !quickAddOpen && styles.quickAddOptionHidden]}>{option}</View>;
   });
 
-  const residentHeader = <DashboardHeader household={data.household} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => setActiveTab('CustomizePet')} />;
+  const residentHeader = <DashboardHeader notificationsActive={activeTab === 'Notifications'} household={householdName} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('CustomizePet'); }} />;
   function renderResidentPage(content: ReactNode) {
     return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage]} showsVerticalScrollIndicator={false}>
       {residentHeader}
@@ -169,28 +189,48 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
 
   return (
     <RoomiePetContext.Provider value={data.pet}>
-    <SafeAreaView style={styles.safeArea}>
-      {hasRoomiePet && <RoomieWelcome data={data} setData={setData} onFinish={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('Home'); }} />}
+    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
+      {hasRoomiePet && updatesOpen && <RoomieWelcome data={data} setData={setData} onFinish={() => setUpdatesOpen(false)} />}
       <View style={styles.shell}>
+        {databaseDemo && shared.error && <Text accessibilityRole="alert">{shared.error}</Text>}
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
-        ) : activeTab === 'Chores' ? <ChoresScreen renderPage={renderResidentPage} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} editing={quickAddTarget === 'Calendar'} renderPage={renderResidentPage} onAdd={handleQuickAdd} onCancel={() => setQuickAddTarget(null)} roommates={assignedHousehold?.roommates ?? []} onOpenSection={setActiveTab} /> : renderResidentPage(
-          activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
-          <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {firstName}!</Text>
-          {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
-          <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
-          <View style={styles.stats}>
-            <DashboardStatCard action="chores" color={data.pet?.color} mood={petMood} value={todayCount + (todayCount === 1 ? ' chore' : ' chores')} onPress={() => openPanel('Chores')} style={styles.choreStat} />
-            <DashboardStatCard action="expenses" color={data.pet?.color} mood={petMood} value={currency.format(totalCents / 100)} onPress={() => openPanel('Expenses')} style={styles.expenseStat} />
-          </View>
-          <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Coming up</Text></View>
-          <View style={styles.upcoming}>
-            {!upcoming.length && <Text style={styles.emptyText}>Nothing upcoming. Add a chore or event.</Text>}
-            {upcoming.map(item => <Pressable key={item.id} accessibilityRole={item.kind === 'chore' ? 'checkbox' : 'button'} accessibilityState={item.kind === 'chore' ? { checked: false } : undefined} accessibilityLabel={item.title} onPress={() => item.kind === 'chore' ? toggleChore(item.id) : openPanel('Calendar')} style={({ pressed }) => [styles.event, pressed && styles.pressed]}><RoomiePet action={item.kind === 'chore' ? 'chores' : 'calendar'} color={data.pet?.color} mood={petMood} size={50} /><View style={styles.eventCopy}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>{item.kind === 'chore' ? <View style={styles.checkbox} /> : <Text style={styles.chevron}>{'\u203A'}</Text>}</Pressable>)}
-          </View>
-          </>
+        ) : activeTab === 'Chores' ? (
+          <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={renderResidentPage} />
+        ) : activeTab === 'Calendar' ? (
+          <CalendarScreen
+            data={data}
+            setData={setData}
+            mood={petMood}
+            storageError={storageError}
+            editing={quickAddTarget === 'Calendar'}
+            onCancel={() => setQuickAddTarget(null)}
+            roommates={assignedHousehold?.roommates}
+            onOpenSection={setActiveTab}
+            renderPage={renderResidentPage}
+            onAdd={handleQuickAdd}
+          />
+        ) : (
+          <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Home' && styles.homePage]} showsVerticalScrollIndicator={false}>
+            {residentHeader}
+            {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? (databaseDemo ? <DatabaseRequests user={user} type="RA Concern" onBack={() => setActiveTab('Profile')} /> : <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Maintenance' ? (databaseDemo ? <DatabaseRequests user={user} type="Maintenance" onBack={() => setActiveTab('Profile')} /> : <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen initialEditing={setupProfile} onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
+              <Text accessibilityRole="header" numberOfLines={2} style={styles.greeting}>{firstName ? `${greeting}, ${firstName}!` : greeting}</Text>
+              {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
+              {!!status && <Text style={styles.dashboardStatus}>{status}</Text>}
+              {!householdName && <Pressable accessibilityRole="button" onPress={() => { setSetupProfile(true); setActiveTab('Profile'); }} style={styles.setupCard}><Text style={styles.cardTitle}>Set up your household</Text><Text style={styles.statCaption}>Add a household name in your profile</Text></Pressable>}
+              <HouseholdProgressCard completed={completed} />
+              <View style={styles.stats}>
+                <DashboardStatCard action="chores" color={data.pet?.color} mood={petMood} value={String(todayCount)} label="Chores due" status={overdueCount ? `${overdueCount} overdue` : todayCount ? `${todayCount} due today` : 'All caught up'} onPress={() => openPanel('Chores')} style={styles.choreStat} />
+                <DashboardStatCard action="expenses" color={data.pet?.color} mood={petMood} value={currency.format(totalCents / 100)} label="You owe" status={unpaidExpenses.length ? `${unpaidExpenses.length} unpaid ${unpaidExpenses.length === 1 ? 'expense' : 'expenses'}` : 'All settled'} onPress={() => openPanel('Expenses')} style={styles.expenseStat} />
+              </View>
+              <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Coming up</Text></View>
+              {!upcoming.length ? <Pressable accessibilityRole="button" accessibilityLabel="Add a chore or event" onPress={() => setPanel('Add chore or event')} style={({ pressed }) => [styles.upcoming, styles.emptyUpcoming, pressed && styles.pressed]}><RoomiePet action="calendar" color={data.pet?.color} mood={petMood} size={36} /><Text style={styles.emptyAction}>Add a chore or event</Text><Text accessible={false} style={styles.chevron}>{'\u203A'}</Text></Pressable> : <View style={styles.upcoming}>
+                {upcoming.slice(0, 3).map(item => <Pressable key={item.id} accessibilityRole={item.kind === 'chore' ? 'checkbox' : 'button'} accessibilityState={item.kind === 'chore' ? { checked: false } : undefined} accessibilityLabel={`${item.title}, ${displayDate(item.date)}`} onPress={() => item.kind === 'chore' ? toggleChore(item.id) : openPanel('Calendar')} style={({ pressed }) => [styles.event, pressed && styles.pressed]}><RoomiePet action={item.kind === 'chore' ? 'chores' : 'calendar'} color={data.pet?.color} mood={petMood} size={36} /><View style={styles.eventCopy}><Text numberOfLines={2} style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>{item.kind === 'chore' ? <View style={styles.checkbox} /> : <Text style={styles.chevron}>{'\u203A'}</Text>}</Pressable>)}
+              </View>}
+            </>}
+          </ScrollView>
         )}
-        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && activeTab !== 'Calendar' && activeTab !== 'Expenses' && <View pointerEvents="box-none" style={styles.quickAddContainer}>
+        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && activeTab !== 'Calendar' && activeTab !== 'Expenses' && <View pointerEvents="box-none" style={[styles.quickAddContainer, { bottom: 72 + bottomInset }]}>
           {Platform.OS === 'web' ? (
             <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
               <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>{quickAddOptions}</View>
@@ -213,8 +253,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
           )}
         </View>}
         {activeTab === 'Chores' && renderAddDock('Add chore')}
-        {activeTab === 'Expenses' && renderAddDock('Add expense')}
-        <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab(tab); }} />
+        <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setSetupProfile(false); setActiveTab(tab); }} />
       </View>
       <Modal visible={panel === 'Household'} transparent animationType="slide" onRequestClose={() => setPanel(null)}>
         <View style={styles.sheetBackdrop}>
@@ -239,6 +278,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             <Pressable accessibilityRole="button" onPress={save} style={({ pressed }) => [styles.modalButton, pressed && styles.pressed]}><Text style={styles.linkText}>Save</Text></Pressable>
             {panel === 'Pet' && data.pet && <Pressable accessibilityRole="button" onPress={() => setData(previous => ({ ...previous, pet: previous.pet ? { ...previous.pet, lastAttention: new Date().toISOString() } : null }))} style={styles.modalButton}><Text style={styles.linkText}>{needsAttention ? 'Give attention' : 'Feeling happy'}</Text></Pressable>}
           </>}
+          {panel === 'Add chore or event' && <><Pressable accessibilityRole="button" onPress={() => { setPanel(null); setQuickAddTarget('Chores'); setActiveTab('Chores'); }} style={styles.modalButton}><Text style={styles.linkText}>Add chore</Text></Pressable><Pressable accessibilityRole="button" onPress={() => { setPanel(null); setQuickAddTarget('Calendar'); setActiveTab('Calendar'); }} style={styles.modalButton}><Text style={styles.linkText}>Add event</Text></Pressable></>}
           {panel === 'Chores' && <>{!data.chores.length && <Text style={styles.emptyText}>No chores yet.</Text>}{data.chores.map(chore => <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} onPress={() => toggleChore(chore.id)} style={styles.listRow}><Text style={[styles.eventTitle, chore.completed && styles.completed]}>{chore.title}</Text><Text style={styles.eventDetail}>{displayDate(chore.due)} ? {chore.completed ? 'Completed' : 'Not completed'}</Text></Pressable>)}<Pressable accessibilityRole="button" onPress={() => { setPanel(null); setQuickAddTarget('Chores'); setActiveTab('Chores'); }} style={styles.modalButton}><Text style={styles.linkText}>Add chore</Text></Pressable></>}
           {panel === 'Expenses' && <>{!data.expenses.length && <Text style={styles.emptyText}>No outstanding expenses.</Text>}{data.expenses.map(expense => <View key={expense.id} style={styles.listRow}><Text style={styles.eventTitle}>{expense.title} ? {currency.format(expense.amount)}</Text><Text style={styles.eventDetail}>Due {displayDate(expense.due)}</Text><Pressable accessibilityRole="button" accessibilityLabel={'Mark ' + expense.title + ' paid'} onPress={() => setData(previous => ({ ...previous, expenses: previous.expenses.filter(item => item.id !== expense.id) }))} style={styles.modalButton}><Text style={styles.linkText}>Mark paid</Text></Pressable></View>)}<Pressable accessibilityRole="button" onPress={() => openPanel('Split expense')} style={styles.modalButton}><Text style={styles.linkText}>Add your expense share</Text></Pressable></>}
           {panel === 'Calendar' && <>{[...upcoming, ...unpaidExpenses.map(expense => ({ id: expense.id, title: expense.title + ' ? ' + currency.format(expense.amount), date: expense.due }))].sort((a, b) => a.date.localeCompare(b.date)).map(item => <View key={item.id} style={styles.listRow}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>)}{!upcoming.length && !unpaidExpenses.length && <Text style={styles.emptyText}>No scheduled items yet.</Text>}<Pressable accessibilityRole="button" onPress={() => openPanel('Add event')} style={styles.modalButton}><Text style={styles.linkText}>Add event</Text></Pressable></>}

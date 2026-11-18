@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform, StatusBar, StyleSheet, View, useWindowDimensions } from 'react-native';
-import PhoneSafeArea from './components/PhoneSafeArea';
+import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import WelcomeScreen from './pages/WelcomeScreen';
 import RegistrationScreen from './pages/RegistrationScreen';
 import LoginScreen from './pages/LoginScreen';
@@ -76,32 +76,27 @@ function AppContent() {
 }
 
 const previewStyles = StyleSheet.create({
-  nativeSafeArea: { flex: 1, backgroundColor: '#FAF9F6' },
   stage: { flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8EAF0' },
-  fill: { flex: 1, width: '100%', height: '100%' },
+  fill: { flex: 1, width: '100%', height: '100%', backgroundColor: '#FFFFFF' },
   phone: { borderWidth: 8, borderColor: '#252631', borderRadius: 36, overflow: 'hidden', backgroundColor: '#FAF9F6' },
 });
 
 export default function App() {
   const { width, height } = useWindowDimensions();
-  if (Platform.OS !== 'web') {
-    return <PhoneSafeArea initial style={previewStyles.nativeSafeArea}>
-      <StatusBar barStyle="dark-content" />
-      <AppContent />
-    </PhoneSafeArea>;
-  }
-
-  const isLocalWebPreview = typeof window !== 'undefined'
+  const isLocalWebPreview = Platform.OS === 'web'
+    && typeof window !== 'undefined'
     && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     && width > 430;
   const phoneWidth = Math.max(0, Math.min(390, width - 48, (height - 48) * 390 / 844));
   const phoneHeight = phoneWidth * 844 / 390;
 
   return (
-    <View style={isLocalWebPreview ? previewStyles.stage : previewStyles.fill}>
-      <View nativeID={isLocalWebPreview ? "roomies-phone-preview" : undefined} style={isLocalWebPreview ? [previewStyles.phone, { width: phoneWidth, height: phoneHeight }] : previewStyles.fill}>
-        <AppContent />
+    <SafeAreaProvider style={previewStyles.fill}>
+      <View style={isLocalWebPreview ? previewStyles.stage : previewStyles.fill}>
+        <View nativeID={isLocalWebPreview ? "roomies-phone-preview" : undefined} style={isLocalWebPreview ? [previewStyles.phone, { width: phoneWidth, height: phoneHeight }] : previewStyles.fill}>
+          <AppContent />
+        </View>
       </View>
-    </View>
+    </SafeAreaProvider>
   );
 }

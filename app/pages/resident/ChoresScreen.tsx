@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { addDays, choreDates, isAssignedTo, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
 import { choreLooks, chorePresets, resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
@@ -6,9 +7,9 @@ import { ROOMIE_COLORS } from '../../components/RoomiePet';
 import ChorePet from './ChorePet';
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { Animated, Easing, Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import PhoneSafeArea from '../../components/PhoneSafeArea';
-
+import type { useSharedChores } from '../../hooks/useSharedChores';
 import type { ResidentData } from '../../hooks/useResidentData';
 import { styles as s } from '../../styles/ChoresScreen.styles';
 
@@ -55,9 +56,10 @@ function ChoreConfetti() {
   ]} />)}</View>;
 }
 
-export default function ChoresScreen({ data, setData, storageError, assignedHousehold, autoOpenAdd = false, onAddOpened, renderPage }: {
+export default function ChoresScreen({ data, setData, storageError, assignedHousehold, autoOpenAdd = false, onAddOpened, renderPage, shared }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onPet?: () => void;
   assignedHousehold?: { name: string; roommates: { id: string; name: string }[] };
+  shared?: ReturnType<typeof useSharedChores>;
   autoOpenAdd?: boolean; onAddOpened?: () => void; renderPage: (content: ReactNode) => ReactNode;
 }) {
   const [celebration, setCelebration] = useState<ResidentData['chores'][number] | null>(null);
@@ -120,7 +122,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   }
   if (otherChores.total) treeContributions.push(otherChores);
   const petName = data.pet?.name || 'Roomie';
-  const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (!chore.assignee || chore.assignee === data.name);
+  const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (shared ? chore.memberId === 'resident-self' : !chore.assignee || chore.assignee === data.name);
   const upcomingChores = data.chores.filter(chore => !chore.completed).sort((a,b) => a.due.localeCompare(b.due));
   const nextChore = upcomingChores.find(mine) ?? upcomingChores[0];
   const featuredChore = celebration ?? nextChore;
@@ -154,7 +156,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : (!chore.completed || chore.id === burst) && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
   const points = data.chores.filter(chore => chore.completed && mine(chore)).length * POINTS_PER_CHORE;
-  function save() {
+  async function save() {
     const parsed = new Date(due + 'T12:00:00');
     if (!title.trim()) { setError('Pick a chore to get started.'); return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(due) || !Number.isFinite(parsed.getTime()) || dateKey(parsed) !== due) { setError('Choose a valid date.'); return; }
@@ -162,9 +164,14 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     if (!Number.isInteger(effort) || effort < 1 || effort > 1440) { setError('Choose an effort estimate.'); return; }
     if (unavailable) { setError('Choose an available roommate.'); return; }
     if (!dates.length) { setError('Choose when the chore should repeat.'); return; }
-    const id = crypto.randomUUID();
-    setData(previous => ({ ...previous,
-      chores: [...previous.chores, ...planChoreOccurrences(input, dates, members, previous.chores, previous.name, choice, id)] }));
+    const id = randomUUID();
+    if (shared) {
+      const chores = planChoreOccurrences(input, dates, members, data.chores, data.name, choice, id);
+      if (!await shared.add(chores)) return;
+    } else {
+      setData(previous => ({ ...previous,
+        chores: [...previous.chores, ...planChoreOccurrences(input, dates, members, previous.chores, previous.name, choice, id)] }));
+    }
     setFilter('All Chores');
     closeSheet();
   }
@@ -199,7 +206,15 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
         const own = mine(chore);
         const name = chore.unassigned ? 'Unassigned' : chore.assignee || data.name;
         const day = chore.due === dateKey(now) ? 'Today' : new Date(chore.due + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-        return <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} accessibilityLabel={`${chore.title}, ${name}, ${day}`} onPress={() => { setBurst(chore.completed ? null : chore.id); setCelebration(chore.completed ? null : chore); setData(previous => ({ ...previous, chores: previous.chores.map(item => item.id === chore.id ? { ...item, completed: !item.completed } : item) })); }} style={({ pressed }) => [s.chore, chore.completed && s.completedRow, pressed && s.pressed]}>
+        return <Pressable key={chore.id} accessibilityRole="checkbox" accessibilityState={{ checked: chore.completed }} accessibilityLabel={`${chore.title}, ${name}, ${day}`} disabled={shared?.busy} onPress={async () => {
+          if (shared) {
+            if (!await shared.complete(chore)) return;
+          } else {
+            setData(previous => ({ ...previous, chores: previous.chores.map(item => item.id === chore.id ? { ...item, completed: !item.completed } : item) }));
+          }
+          setBurst(chore.completed ? null : chore.id);
+          setCelebration(chore.completed ? null : chore);
+        }} style={({ pressed }) => [s.chore, chore.completed && s.completedRow, pressed && s.pressed]}>
           <View style={[s.checkbox, own && !chore.completed && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text numberOfLines={1} style={s.check}>✓</Text>}{burst === chore.id && <ChoreConfetti key={burst} />}</View>
           <ChoreBadge look={chore.look} title={chore.title} muted={chore.completed} />
           <View style={s.copy}><Text numberOfLines={1} style={[s.choreTitle, chore.completed && s.completed]}>{chore.title}</Text><Text numberOfLines={1} style={s.detailText}>{name}{own ? ' (you)' : ''} · {day}{chore.time ? `, ${chore.time}` : ''}</Text></View>
@@ -306,10 +321,10 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
             </View>}
             {members.length === 1 && <Text numberOfLines={1} style={s.caption}>No roommates in this household yet.</Text>}
           </View>}
-          {!!error && <Text numberOfLines={1} accessibilityRole="alert" style={s.error}>{error}</Text>}
+          {(error || shared?.error) && <Text numberOfLines={1} accessibilityRole="alert" style={s.error}>{error || shared?.error}</Text>}
         </ScrollView>
         <View style={s.formFooter}>
-          <Pressable accessibilityRole="button" onPress={save} style={s.addButton}><Text numberOfLines={1} style={s.addText}>{repeat !== 'once' && dates.length > 1 ? `Add ${dates.length} chores` : 'Add chore'}</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={save} disabled={shared?.busy} style={s.addButton}><Text numberOfLines={1} style={s.addText}>{repeat !== 'once' && dates.length > 1 ? `Add ${dates.length} chores` : 'Add chore'}</Text></Pressable>
         </View>
       </> : activeSheet === 'points' ? (
         <ScrollView style={s.formScroll} contentContainerStyle={s.form} showsVerticalScrollIndicator>
@@ -376,7 +391,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
       </div>
     ) : (
       <Modal transparent animationType="slide" onRequestClose={closeSheet}>
-        <PhoneSafeArea style={s.backdrop}>{sheet}</PhoneSafeArea>
+        <SafeAreaProvider><SafeAreaView style={s.backdrop}>{sheet}</SafeAreaView></SafeAreaProvider>
       </Modal>
     )}
   </>;

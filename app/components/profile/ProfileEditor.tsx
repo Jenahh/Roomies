@@ -8,6 +8,7 @@ import SignOutButton from './SignOutButton';
 
 type ProfileValues = { name: string; location: string };
 type ProfileEditorProps = {
+  initialEditing?: boolean;
   name: string;
   email: string;
   role: ResidentUser['role'];
@@ -21,8 +22,8 @@ type ProfileEditorProps = {
   children?: ReactNode;
 };
 
-export default function ProfileEditor({ name, email, role, color, locationLabel, location, locationEditable = false, storageError, onSave, onSignOut, children }: ProfileEditorProps) {
-  const [editing, setEditing] = useState(false);
+export default function ProfileEditor({ initialEditing = false, name, email, role, color, locationLabel, location, locationEditable = false, storageError, onSave, onSignOut, children }: ProfileEditorProps) {
+  const [editing, setEditing] = useState(initialEditing);
   const [draftName, setDraftName] = useState(name);
   const [draftLocation, setDraftLocation] = useState(location);
   const [error, setError] = useState('');

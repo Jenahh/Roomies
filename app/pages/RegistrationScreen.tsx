@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import RoomiePet from '../components/RoomiePet';
 import SignupProgress from '../components/auth/SignupProgress';
@@ -29,8 +30,9 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={styles.backButton}>
             <Text style={styles.backArrow}>{'<'}</Text>
           </Pressable>
-          <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
-          <Text style={styles.wordmark}>Roomies</Text>
+          <View pointerEvents="none" style={styles.logoCenter}>
+            <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
+          </View>
         </View>
 
         <SignupProgress step={1} />

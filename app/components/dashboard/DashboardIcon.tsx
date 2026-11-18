@@ -1,3 +1,7 @@
+import { Image } from 'react-native';
+import { ROOMIE_UI_ICONS } from '../../../assets/roomie-ui-icons/roomie-ui-icons/icons';
+import { getImageSource } from '../../utils/imageSource';
+
 const iconPaths = {
   group: 'M16 21v-2a4 4 0 0 0-8 0v2M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6M5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M19 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5M2 19v-3a3 3 0 0 1 4-2.8M22 19v-3a3 3 0 0 0-4-2.8',
   star: 'm12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
@@ -31,7 +35,12 @@ const iconPaths = {
 } as const;
 export type IconName = keyof typeof iconPaths;
 
-export default function DashboardIcon({ name, color = '#555B69', size = 20 }: { name: IconName; color?: string; size?: number }) {
+export default function DashboardIcon({ name, color = '#555B69', size = 20, active = false, imageSize = 24 }: { name: IconName; color?: string; size?: number; active?: boolean; imageSize?: number }) {
+  const mappedName = name === 'bell' ? 'notifications' : name;
+  if (mappedName in ROOMIE_UI_ICONS) {
+    const icon = ROOMIE_UI_ICONS[mappedName as keyof typeof ROOMIE_UI_ICONS];
+    return <Image source={getImageSource(icon[active ? 'active' : 'inactive'])} resizeMode="contain" style={{ width: imageSize, height: imageSize }} accessible={false} />;
+  }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={iconPaths[name]} /></svg>;
 }
 
