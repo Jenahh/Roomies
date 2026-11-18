@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
 import ResidentAssistantConcernsScreen from './ResidentAssistantConcernsScreen';
 import ResidentAssistantMessagesScreen from './ResidentAssistantMessagesScreen';

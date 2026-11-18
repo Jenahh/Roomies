@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -151,7 +152,7 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
 
   function save() {
     if (!title) return;
-    const event = { id: crypto.randomUUID(), title, date, time, custom: isCustom, attendees: attendees === 'Just me' ? data.name : attendees };
+    const event = { id: randomUUID(), title, date, time, custom: isCustom, attendees: attendees === 'Just me' ? data.name : attendees };
     setData(previous => ({ ...previous, events: [...previous.events, event] }));
     chooseDay(date);
     onCancel?.();

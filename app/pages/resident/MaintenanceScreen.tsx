@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { Image, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import DashboardIcon from '../../components/dashboard/DashboardIcon';
@@ -19,7 +20,7 @@ export default function MaintenanceScreen({ data, setData, storageError, onBack 
   const requests = [...(data.supportDrafts || [])].filter(item => item.kind === 'maintenance').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   function save() {
     if (!title.trim() || !description.trim()) { setError('Enter an issue title and description.'); return; }
-    setData(previous => ({ ...previous, supportDrafts: [...(previous.supportDrafts || []), { id: crypto.randomUUID(), kind: 'maintenance', title: title.trim(), description: description.trim(), category, photo: photo || undefined, location: previous.household, createdAt: new Date().toISOString() }] }));
+    setData(previous => ({ ...previous, supportDrafts: [...(previous.supportDrafts || []), { id: randomUUID(), kind: 'maintenance', title: title.trim(), description: description.trim(), category, photo: photo || undefined, location: previous.household, createdAt: new Date().toISOString() }] }));
     setTitle(''); setDescription(''); setPhoto(''); setPhotoName(''); setError(''); setSaved(true);
     if (fileInput.current) fileInput.current.value = '';
   }

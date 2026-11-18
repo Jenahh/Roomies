@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { demoResident, demoResidentHousehold } from '../../data/demoAccount';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
@@ -43,10 +44,15 @@ export type HouseholdDashboardProps = { user: ResidentUser; onSignOut: () => voi
 
 export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboardProps) {
   const { bottom: bottomInset } = useSafeAreaInsets();
-  const assignedHousehold = user.email.toLowerCase() === demoResident.email ? demoResidentHousehold : undefined;
   const hasRoomiePet = user.role === 'resident';
   const { data: localData, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const databaseDemo = user.demoHouseholdId !== undefined;
+  const shared = useSharedChores(user.email, user.demoHouseholdId, activeTab);
+  const data = databaseDemo ? { ...localData, chores: shared.snapshot?.chores ?? [] } : localData;
+  const assignedHousehold = databaseDemo
+    ? { name: 'Demo household ' + user.demoHouseholdId, roommates: shared.snapshot?.roommates ?? [] }
+    : user.email.toLowerCase() === demoResident.email ? demoResidentHousehold : undefined;
   const [updatesOpen, setUpdatesOpen] = useState(true);
   const [setupProfile, setSetupProfile] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -107,7 +113,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     if (panel === 'Split expense' && (!/^\d+(\.\d{1,2})?$/.test(amount) || !Number.isFinite(numericAmount) || numericAmount <= 0)) {
       setError('Enter your share as a positive amount with up to two decimal places.'); return;
     }
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     if (databaseDemo && panel === 'Add chore') {
       if (await shared.add([{ id, title: title.trim(), due: date, completed: false }])) setPanel(null);
       return;
@@ -190,11 +196,28 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
         ) : activeTab === 'Chores' ? (
-          <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={renderResidentPage} />
+          <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={renderResidentPage} />
+        ) : activeTab === 'Calendar' ? (
+          <CalendarScreen
+            data={data}
+            setData={setData}
+            mood={petMood}
+            storageError={storageError}
+            editing={quickAddTarget === 'Calendar'}
+            onCancel={() => setQuickAddTarget(null)}
+            roommates={assignedHousehold?.roommates}
+            onOpenSection={setActiveTab}
+            renderPage={content => (
+              <View style={styles.calendarPane}>
+                {renderResidentPage(content)}
+                {quickAddTarget !== 'Calendar' && renderAddDock('Add event', true)}
+              </View>
+            )}
+          />
         ) : (
           <ScrollView ref={pageScroll} contentContainerStyle={[styles.page, activeTab === 'Home' && styles.homePage]}>
             {residentHeader}
-            {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen initialEditing={setupProfile} onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
+            {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'ContactRA' ? (databaseDemo ? <DatabaseRequests user={user} type="RA Concern" onBack={() => setActiveTab('Profile')} /> : <ContactRAScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Maintenance' ? (databaseDemo ? <DatabaseRequests user={user} type="Maintenance" onBack={() => setActiveTab('Profile')} /> : <MaintenanceScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen initialEditing={setupProfile} onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={() => setActiveTab('Maintenance')} onContactRA={() => setActiveTab('ContactRA')} /> : <>
               <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {firstName}!</Text>
               {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
               {!!status && <Text style={styles.dashboardStatus}>{status}</Text>}
@@ -211,7 +234,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             </>}
           </ScrollView>
         )}
-        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && <View pointerEvents="box-none" style={[styles.quickAddContainer, { bottom: 76 + bottomInset }]}>
+        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && activeTab !== 'Calendar' && <View pointerEvents="box-none" style={[styles.quickAddContainer, { bottom: 76 + bottomInset }]}>
           {Platform.OS === 'web' ? (
             <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
               <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>{quickAddOptions}</View>
@@ -233,13 +256,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             </View>
           )}
         </View>}
-        {activeTab === 'Chores' && <View style={styles.choreAddDock}>
-          <View style={styles.quickAddButtonWrapper}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Add chore" onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
-              <Icon name="add" color="#FFFFFF" size={25} />
-            </Pressable>
-          </View>
-        </View>}
+        {activeTab === 'Chores' && renderAddDock('Add chore')}
         <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setSetupProfile(false); setActiveTab(tab); }} />
       </View>
       <Modal visible={panel === 'Household'} transparent animationType="slide" onRequestClose={() => setPanel(null)}>

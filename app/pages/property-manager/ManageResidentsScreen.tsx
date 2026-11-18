@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { ManagedHousehold, ManagedResident } from '../../data/demoPropertyManager';
@@ -52,7 +53,7 @@ export default function ManageResidentsScreen({ propertyName, household, residen
     let joinCode: string;
     try { joinCode = createResidentJoinCode(normalizedEmail, unitLabel); }
     catch { setError('Could not save the invitation. Allow browser storage and try again.'); return; }
-    setResidents(previous => [...previous, { id: crypto.randomUUID(), name: name.trim(), email: normalizedEmail, unit, householdId: household?.id, joinCode, access: 'Invited' }]);
+    setResidents(previous => [...previous, { id: randomUUID(), name: name.trim(), email: normalizedEmail, unit, householdId: household?.id, joinCode, access: 'Invited' }]);
     setDialog(null); setNotice(`Invitation created for ${name.trim()}. Resident join code: ${joinCode}. No email was sent.`);
   }
 

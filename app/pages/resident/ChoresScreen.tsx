@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { addDays, choreDates, isAssignedTo, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
 import { choreLooks, chorePresets, resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
@@ -5,7 +6,8 @@ import { POINTS_PER_CHORE } from '../../data/choreRewards';
 import { ROOMIE_COLORS } from '../../components/RoomiePet';
 import ChorePet from './ChorePet';
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
-import { Animated, Easing, Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Animated, Easing, Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { useSharedChores } from '../../hooks/useSharedChores';
 import type { ResidentData } from '../../hooks/useResidentData';
@@ -162,7 +164,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     if (!Number.isInteger(effort) || effort < 1 || effort > 1440) { setError('Choose an effort estimate.'); return; }
     if (unavailable) { setError('Choose an available roommate.'); return; }
     if (!dates.length) { setError('Choose when the chore should repeat.'); return; }
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     if (shared) {
       const chores = planChoreOccurrences(input, dates, members, data.chores, data.name, choice, id);
       if (!await shared.add(chores)) return;

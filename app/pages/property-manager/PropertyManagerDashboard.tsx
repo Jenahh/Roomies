@@ -1,3 +1,5 @@
+import { randomUUID } from '../../utils/randomUUID';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
 import { getHouseholdResidents, replaceHouseholdResidents } from '../../data/householdResidents';
 import PropertyManagerRequestsScreen from './PropertyManagerRequestsScreen';
@@ -71,7 +73,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
 
   function saveAnnouncement() {
     if (!title.trim() || !message.trim()) { setError('Enter a title and message.'); return; }
-    setAnnouncements(previous => [{ id: crypto.randomUUID(), title: title.trim(), message: message.trim() }, ...previous]);
+    setAnnouncements(previous => [{ id: randomUUID(), title: title.trim(), message: message.trim() }, ...previous]);
     setCreatingAnnouncement(false);
     setActiveTab('Announcements');
   }
@@ -88,7 +90,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
           {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerHomeScreen name={data.name} now={now} property={demoProperty} requests={demoMaintenanceRequests} onCreateAnnouncement={openAnnouncement} onAllRequests={() => setActiveTab('Requests')} onRequest={setSelectedRequest} onManageResidents={() => openResidents()} />)}
           {activeTab === 'Requests' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerRequestsScreen property={demoProperty} requests={demoMaintenanceRequests} onSelect={setSelectedRequest} />)}
           {activeTab === 'Announcements' && <PropertyManagerAnnouncementsScreen property={demoProperty} announcements={announcements} onCreate={openAnnouncement} />}
-          {activeTab === 'Properties' && <PropertyManagerPropertiesScreen property={demoProperty} households={households} residents={residents} onManageHousehold={openResidents} onCreateHousehold={name => setHouseholds(previous => [...previous, { id: crypto.randomUUID(), propertyName: demoProperty.name, name }])} />}
+          {activeTab === 'Properties' && <PropertyManagerPropertiesScreen property={demoProperty} households={households} residents={residents} onManageHousehold={openResidents} onCreateHousehold={name => setHouseholds(previous => [...previous, { id: randomUUID(), propertyName: demoProperty.name, name }])} />}
           {activeTab === 'ManageResidents' && <ManageResidentsScreen key={selectedHouseholdId || 'property'} propertyName={demoProperty.name} household={selectedHousehold} residents={getHouseholdResidents(residents, selectedHouseholdId)} setResidents={updateHouseholdResidents} onBack={() => setActiveTab('Properties')} />}
           {activeTab === 'Profile' && <PropertyManagerProfileScreen user={user} name={data.name} propertyName={demoProperty.name} color={data.pet?.color} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
         </ScrollView>

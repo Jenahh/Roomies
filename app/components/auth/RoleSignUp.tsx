@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles as s } from '../../styles/ResidentSignUp.styles';
 import roomiesLogo from '../../../assets/Roomies Logo.png';
 import { demoJoinCodes } from '../../data/demoJoinCodes';
