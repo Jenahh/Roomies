@@ -25,7 +25,7 @@ export default function DashboardHeader({ household, pet, mood, onHousehold, onN
       <Pressable accessibilityRole="button" accessibilityLabel="Notifications" onPress={onNotifications} style={({ pressed }) => [styles.notification, pressed && styles.pressed]}>
         <Icon name="bell" size={20} active={notificationsActive} />
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="Roomie updates" onPress={onPet} style={({ pressed }) => [styles.headerPet, pressed && styles.pressed]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Customize Roomie" onPress={onPet} style={({ pressed }) => [styles.headerPet, pressed && styles.pressed]}>
         <RoomiePet color={pet?.color} mood={mood} accessories={getPetAccessoryIds(pet)} accessoryColors={pet?.accessoryColors} size={40} accessibilityLabel="Roomie Pet" />
       </Pressable>
     </View>
