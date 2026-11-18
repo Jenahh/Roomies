@@ -30,6 +30,7 @@ import ProfileScreen from '../../pages/resident/ProfileScreen';
 import NotificationsScreen from '../../pages/resident/NotificationsScreen';
 import MaintenanceScreen from '../../pages/resident/MaintenanceScreen';
 import ContactRAScreen from '../../pages/resident/ContactRAScreen';
+import { loadAnnouncements } from '../../data/householdAnnouncements';
 import './quick-add.css';
 
 function localDate(date: Date) {
@@ -47,6 +48,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const hasRoomiePet = user.role === 'resident';
   const { data: localData, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const [announcements] = useState(loadAnnouncements);
   const databaseDemo = user.demoHouseholdId !== undefined;
   const shared = useSharedChores(user.email, user.demoHouseholdId, activeTab);
   const data = databaseDemo ? { ...localData, chores: shared.snapshot?.chores ?? [] } : localData;
@@ -217,6 +219,21 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
               <Text accessibilityRole="header" numberOfLines={2} style={styles.greeting}>{firstName ? `${greeting}, ${firstName}!` : greeting}</Text>
               {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
               {!!status && <Text style={styles.dashboardStatus}>{status}</Text>}
+              <View style={styles.sectionHeading}>
+                <Text style={styles.sectionTitle}>Announcements</Text>
+              </View>
+              <View style={styles.upcoming}>
+                {announcements.length ? announcements.map(announcement => (
+                  <View key={announcement.id} style={styles.event}>
+                    <View style={styles.eventCopy}>
+                      <Text style={styles.eventTitle}>{announcement.title}</Text>
+                      <Text style={styles.eventDetail}>{announcement.message}</Text>
+                    </View>
+                  </View>
+                 )) : (
+                   <Text style={styles.emptyText}>No announcements right now.</Text>
+                 )}
+              </View>
               {!householdName && <Pressable accessibilityRole="button" onPress={() => { setSetupProfile(true); setActiveTab('Profile'); }} style={styles.setupCard}><Text style={styles.cardTitle}>Set up your household</Text><Text style={styles.statCaption}>Add a household name in your profile</Text></Pressable>}
               <HouseholdProgressCard completed={completed} />
               <View style={styles.stats}>
