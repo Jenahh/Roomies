@@ -23,6 +23,9 @@ const iconPaths = {
   laundry: 'M4 3h16v18H4zM4 7h16M7 5h.01M10 5h.01M12 18a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
   trash: 'M3 5h18M9 5V2h6v3M6 5l1 17h10l1-17M10 9v9M14 9v9',
   dinner: 'M3 20 9 3c7 2 11 8 12 15L3 20ZM7 15l11-1M11 9h.01M10 17h.01',
+  study: 'M12 6v15M12 6C9 3 6 3 3 4v15c3-1 6-1 9 2 3-3 6-3 9-2V4c-3-1-6-1-9 2Z',
+  game: 'M8 8h8c3 0 4 2 5 6l1 3a2 2 0 0 1-3 2l-4-3H9l-4 3a2 2 0 0 1-3-2l1-3c1-4 2-6 5-6ZM7 10v4M5 12h4M16 11h.01M19 13h.01',
+  basket: 'M3 10h18l-2 10H5L3 10ZM7 10l3-6M17 10l-3-6M9 14v3M15 14v3',
   add: 'M12 4v16M4 12h16',
   split: 'M5 3h14v18l-3-2-4 2-4-2-3 2V3ZM15 7H10a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H9M12 5v12',
 } as const;

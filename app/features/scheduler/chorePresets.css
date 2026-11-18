@@ -31,3 +31,4 @@
 .chore-choices strong { font-size: 12px; }
 .chore-recommended { color: #24573b; font-weight: 700; }
 @media (max-width: 360px) { .chore-quick-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.chore-presets button[aria-pressed=true] { border-color: #675BC2; background: #efecff; box-shadow: inset 0 0 0 1px #675BC2; }

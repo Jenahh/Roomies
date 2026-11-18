@@ -35,7 +35,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
             <Text style={styles.backText}>{'<'}</Text>

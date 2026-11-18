@@ -1,3 +1,5 @@
+import type { RoomieActionId } from './roomieActions';
+
 export const ROOMIE_ACCESSORY_IDS = [
   'bow',
   'sprout-hat',
@@ -48,6 +50,47 @@ export const ROOMIE_ACCESSORY_PLACEMENTS: Record<RoomieAccessoryId, [number, num
   bandana: [0.30074, 0.62527, 0.39692, 0.22621],
   'bow-tie': [0.3204, 0.5779, 0.35075, 0.30769],
 };
+
+export const ROOMIE_GLASSES_MOOD_OFFSETS: Record<'happy' | 'annoyed' | 'stressed', { x: number; y: number }> = {
+  happy: { x: 0.015, y: 0 },
+  annoyed: { x: 0.006, y: 0.042 },
+  stressed: { x: 0.01, y: 0.067 },
+};
+
+const glassesAssetCenter = { x: 0.4984, y: 0.5024 };
+const actionGlassesPlacement: Partial<Record<RoomieActionId, { x: number; y: number; scale: number }>> = {
+  chores: { x: 0.4472, y: 0.3939, scale: 0.85 },
+  expenses: { x: 0.4472, y: 0.3953, scale: 0.85 },
+  dinner: { x: 0.4918, y: 0.327, scale: 1 },
+  calendar: { x: 0.4795, y: 0.3939, scale: 1 },
+};
+
+export function getRoomieAccessoryFrame(
+  id: RoomieAccessoryId,
+  size: number,
+  mood: 'happy' | 'annoyed' | 'stressed',
+  action?: RoomieActionId,
+): [number, number, number, number] {
+  const [left, top, frameWidth, frameHeight] = ROOMIE_ACCESSORY_PLACEMENTS[id];
+  const actionPlacement = id === 'round-glasses' && action ? actionGlassesPlacement[action] : undefined;
+  const width = id === 'round-glasses' ? Math.min(frameWidth, frameHeight) * (actionPlacement?.scale ?? 1) : frameWidth;
+  const height = id === 'round-glasses' ? width : frameHeight;
+  if (actionPlacement) {
+    return [
+      actionPlacement.x * size - glassesAssetCenter.x * width * size,
+      actionPlacement.y * size - glassesAssetCenter.y * height * size,
+      width * size,
+      height * size,
+    ];
+  }
+  const offset = id === 'round-glasses' ? ROOMIE_GLASSES_MOOD_OFFSETS[mood] : { x: 0, y: 0 };
+  return [
+    (left + (frameWidth - width) / 2 + offset.x) * size,
+    (top + (frameHeight - height) / 2 + offset.y) * size,
+    width * size,
+    height * size,
+  ];
+}
 
 const legacyAccessories: Record<string, RoomieAccessoryId> = {
   'Little bow': 'bow',

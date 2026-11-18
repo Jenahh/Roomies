@@ -1,12 +1,10 @@
+import { useContext } from 'react';
+import { RoomiePetContext } from './RoomiePetContext';
+import { getPetAccessoryIds, getRoomieAccessoryFrame } from '../data/roomiePetAccessories';
 import type { CSSProperties } from 'react';
 import type { PetMood } from '../data/roomiePetMood';
 import { ROOMIE_ACTIONS, type RoomieActionId } from '../data/roomieActions';
-import {
-  ROOMIE_ACCESSORY_PLACEMENTS,
-  ROOMIE_ACCESSORY_SLOTS,
-  type RoomieAccessoryId,
-  type RoomieAccessorySlot,
-} from '../data/roomiePetAccessories';
+import { ROOMIE_ACCESSORY_SLOTS, type RoomieAccessoryId, type RoomieAccessorySlot } from '../data/roomiePetAccessories';
 import annoyed3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-body.png';
 import annoyed3dDetails from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-details.png';
 import happy3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/happy-3d-body.png';
@@ -112,24 +110,26 @@ type RoomiePetProps = {
   action?: RoomieActionId;
 };
 
-export default function RoomiePet({ mood = 'happy', color, accessories = [], accessoryColors = {}, size = 128, accessibilityLabel, className, role, action }: RoomiePetProps) {
+export default function RoomiePet({ mood = 'happy', color, accessories: accessoryOverride, accessoryColors: accessoryColorOverride, size = 128, accessibilityLabel, className, role, action }: RoomiePetProps) {
   const spriteMood = getSpriteMood(mood);
   const sprite = action ? actionSprites[action] : sprites[role ?? spriteMood];
   const actionFace = action ? actionSprites[action].faces[getActionMood(mood)] : undefined;
   const dimensions: CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%' };
+  const savedPet = useContext(RoomiePetContext);
+  const accessories = accessoryOverride ?? getPetAccessoryIds(savedPet);
+  const accessoryColors = accessoryColorOverride ?? savedPet?.accessoryColors ?? {};
   const equippedBySlot = new Map<RoomieAccessorySlot, RoomieAccessoryId>();
   for (const id of accessories) equippedBySlot.set(ROOMIE_ACCESSORY_SLOTS[id], id);
   const selectedAccessories = [...equippedBySlot.values()];
 
   function renderAccessory(id: RoomieAccessoryId) {
-    const [left, top, width, height] = ROOMIE_ACCESSORY_PLACEMENTS[id].map(value => value * size);
+    const [left, top, width, height] = getRoomieAccessoryFrame(id, size, getActionMood(mood), action);
     const original = ROOMIE_ACCESSORY_IMAGES[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/${id}.png`];
     const base = accessoryLayerImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/layers/${id}-base.png`];
     const details = accessoryLayerImages[`../../assets/roomie-pet-kit/roomie-pet-kit/accessories/layers/${id}-details.png`];
     const accessoryColor = accessoryColors[id];
-    const glassesOffset = id === 'round-glasses' && spriteMood !== 'happy-3d' ? size * 0.06 : 0;
     const bodyOffset = ROOMIE_ACCESSORY_SLOTS[id] === 'body' && spriteMood === 'stressed-3d' ? size * 0.03 : 0;
-    const position: CSSProperties = { position: 'absolute', left, top: top + glassesOffset + bodyOffset, width, height };
+    const position: CSSProperties = { position: 'absolute', left, top: top + bodyOffset, width, height };
 
     if (!accessoryColor) {
       return <img key={id} src={original} alt="" aria-hidden="true" draggable={false} style={{ ...position, objectFit: 'fill' }} />;
@@ -176,11 +176,11 @@ export default function RoomiePet({ mood = 'happy', color, accessories = [], acc
       className={className}
       style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
     >
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
+      {!role && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
       <div aria-hidden="true" style={bodyStyle} />
       <img src={sprite.details} alt="" aria-hidden="true" draggable={false} style={detailsStyle} />
       {actionFace && <img src={actionFace} alt="" aria-hidden="true" draggable={false} style={detailsStyle} />}
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
+      {!role && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
     </div>
   );
 }

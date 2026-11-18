@@ -104,7 +104,7 @@ export default function ManageResidentsScreen({ propertyName, household, residen
       <Text style={s.notice}>Demo roster. Changes stay in this session and do not affect real resident access.</Text>
       <Modal visible={dialog !== null} transparent animationType="fade" onRequestClose={() => setDialog(null)}>
         <View style={shared.backdrop}>
-          <ScrollView style={shared.modal} contentContainerStyle={shared.modalContent} keyboardShouldPersistTaps="handled">
+          <ScrollView showsVerticalScrollIndicator={false} style={shared.modal} contentContainerStyle={shared.modalContent} keyboardShouldPersistTaps="handled">
             <Pressable accessibilityRole="button" accessibilityLabel="Back to resident roster" onPress={() => setDialog(null)} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
             {dialog === 'invite' && <>
               <Text accessibilityRole="header" style={shared.sectionTitle}>Invite resident to {unitLabel}</Text>

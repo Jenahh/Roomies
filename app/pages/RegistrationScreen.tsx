@@ -24,7 +24,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.page}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.page}>
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={styles.backButton}>
             <Text style={styles.backArrow}>{'<'}</Text>

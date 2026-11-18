@@ -1,5 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import DashboardIcon, { type IconName } from '../../components/dashboard/DashboardIcon';
 
 import type { Expense, ResidentData } from '../../hooks/useResidentData';
 import type { PetMood } from '../../data/roomiePetMood';
@@ -15,7 +16,17 @@ const paths = {
   Other: 'M5 3h14v18l-3-2-4 2-4-2-3 2V3ZM8 8h8M8 12h8',
   repeat: 'm18 2 4 4-4 4M2 11V6h20M6 22l-4-4 4-4M22 13v5H2',
 } as const;
+const iconNames: Record<keyof typeof paths, IconName> = {
+  wallet: 'expenses',
+  Rent: 'home',
+  Electricity: 'flame',
+  Groceries: 'dinner',
+  Internet: 'messages',
+  Other: 'split',
+  repeat: 'calendar',
+};
 function Icon({ name, size = 20 }: { name: keyof typeof paths; size?: number }) {
+  if (Platform.OS !== 'web') return <DashboardIcon name={iconNames[name]} color="#737783" size={size} />;
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
@@ -77,7 +88,7 @@ export default function ExpensesScreen({ data, setData, mood, storageError, auto
     <View style={s.section}><Text accessibilityRole="header" style={s.sectionTitle}>Shared this month</Text><Text style={s.link}>{monthly.length} {monthly.length === 1 ? 'expense' : 'expenses'}</Text></View>
     <View style={s.expenses}>{monthly.length ? monthly.map(expenseRow) : <View style={s.empty}><Text style={s.expenseTitle}>Keep household costs in one place</Text><Text style={s.subtitle}>Add rent, groceries, or a bill to split with your roomies.</Text></View>}</View>
     <Pressable accessibilityRole="button" onPress={() => setPanel('recurring')} style={s.recurring}><Icon name="repeat" size={17} /><Text style={s.recurringText}>Recurring monthly expenses</Text><Text style={s.link}>›</Text></Pressable>
-    <Modal visible={panel !== null || selected !== null} transparent animationType="fade" onRequestClose={() => { setPanel(null); setSelected(null); }}><View style={s.backdrop}><ScrollView style={s.modal} contentContainerStyle={s.form} keyboardShouldPersistTaps="handled">
+    <Modal visible={panel !== null || selected !== null} transparent animationType="fade" onRequestClose={() => { setPanel(null); setSelected(null); }}><View style={s.backdrop}><ScrollView showsVerticalScrollIndicator={false} style={s.modal} contentContainerStyle={s.form} keyboardShouldPersistTaps="handled">
       <Text accessibilityRole="header" style={s.sectionTitle}>{selected ? selected.title : panel === 'add' ? 'Add expense' : panel === 'balances' ? 'Your outstanding balances' : 'Recurring monthly expenses'}</Text>
       {panel === 'add' && <>
         <Text style={s.label}>Expense title</Text><TextInput autoFocus accessibilityLabel="Expense title" placeholder="e.g. Rent" value={title} onChangeText={setTitle} style={s.input} />

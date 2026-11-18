@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   // Roomies uses plain CSS. Skip discovery of ancestor PostCSS configs.
   css: { postcss: { plugins: [] } },
+  // React Native Web's animation cleanup expects the Node-style global alias.
+  define: { global: 'globalThis' },
   test: {
     include: ['app/**/*.test.{ts,tsx}'],
   },

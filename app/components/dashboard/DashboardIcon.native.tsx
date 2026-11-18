@@ -26,6 +26,9 @@ const iconGlyphs: Record<IconName, string> = {
   laundry: '◉',
   trash: '▤',
   dinner: '◉',
+  study: '📖',
+  game: '🎮',
+  basket: '🛒',
   add: '+',
   split: '$',
 };

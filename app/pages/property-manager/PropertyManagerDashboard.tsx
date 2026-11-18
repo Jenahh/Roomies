@@ -83,7 +83,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
   return (
     <SafeAreaView style={s.safeArea}>
       <View style={s.shell}>
-        <ScrollView ref={pageScroll} contentContainerStyle={s.page}>
+        <ScrollView showsVerticalScrollIndicator={false} ref={pageScroll} contentContainerStyle={s.page}>
           <RoleDashboardHeader role="Property Manager" showLogo={false} showWordmark={false} />
           {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerHomeScreen name={data.name} now={now} property={demoProperty} requests={demoMaintenanceRequests} onCreateAnnouncement={openAnnouncement} onAllRequests={() => setActiveTab('Requests')} onRequest={setSelectedRequest} onManageResidents={() => openResidents()} />)}
           {activeTab === 'Requests' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerRequestsScreen property={demoProperty} requests={demoMaintenanceRequests} onSelect={setSelectedRequest} />)}
@@ -96,7 +96,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
       </View>
       <Modal visible={!!selectedRequest || creatingAnnouncement} transparent animationType="fade" onRequestClose={closeModal}>
         <View style={s.backdrop}>
-          <ScrollView style={s.modal} contentContainerStyle={s.modalContent} keyboardShouldPersistTaps="handled">
+          <ScrollView showsVerticalScrollIndicator={false} style={s.modal} contentContainerStyle={s.modalContent} keyboardShouldPersistTaps="handled">
             <Pressable accessibilityRole="button" accessibilityLabel="Back to dashboard" onPress={closeModal} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
             {selectedRequest && <MaintenanceRequestDetailsScreen request={selectedRequest} />}
             {creatingAnnouncement && <CreateAnnouncementScreen title={title} setTitle={setTitle} message={message} setMessage={setMessage} error={error} onSave={saveAnnouncement} />}
