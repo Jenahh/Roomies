@@ -7,7 +7,7 @@ import { getImageSource } from '../../utils/imageSource';
 
 export default function HouseholdProgressCard({ completed }: { completed: number }) {
   const { width, height } = useWindowDimensions();
-  const diameter = Math.max(140, Math.min(210, width - 80, height * 0.26));
+  const diameter = Math.max(148, Math.min(224, width - 80, height * 0.26));
   const tree = getTreeProgress(completed);
   const bundle = useRoomieAssetBundle({ key: String(tree.stage), sources: [tree.image], value: { image: tree.image, stage: tree.stage } });
   const [reduceMotion, setReduceMotion] = useState(true);
@@ -42,10 +42,10 @@ export default function HouseholdProgressCard({ completed }: { completed: number
   const visibleHeight = [0.36, 0.48, 0.60, 0.70, 0.76][stageIndex] * diameter;
   const imageSize = visibleHeight * 1254 / (bottom - top);
   const imageLeft = diameter / 2 - imageSize * (left + right) / (2 * 1254);
-  const imageTop = diameter * 0.84 - imageSize * bottom / 1254;
+  const imageTop = diameter / 2 - imageSize * (top + bottom) / (2 * 1254);
   const segmentCount = 32;
-  const segmentLength = 12;
-  const segmentThickness = 4;
+  const segmentLength = diameter * 0.044;
+  const segmentThickness = 2.5;
   const radius = diameter / 2 - segmentThickness / 2;
   return <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: Math.round(tree.progress * 100) }} style={s.container}>
     <View style={[s.circle, { width: diameter, height: diameter, borderRadius: diameter / 2 }]}>
@@ -67,8 +67,8 @@ export default function HouseholdProgressCard({ completed }: { completed: number
 }
 
 const s = StyleSheet.create({
-  container: { alignItems: 'center', paddingTop: 16, marginBottom: 14 },
+  container: { alignItems: 'center', paddingTop: 14, marginBottom: 20 },
   circle: { backgroundColor: '#EAF6EF', alignItems: 'center', justifyContent: 'center' },
-  dash: { position: 'absolute', borderRadius: 2, backgroundColor: '#C9DED1', overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: '#6CCD9A' },
+  dash: { position: 'absolute', borderRadius: 2, backgroundColor: '#C7DBCF', overflow: 'hidden' },
+  fill: { height: '100%', backgroundColor: '#56A97D' },
 });
