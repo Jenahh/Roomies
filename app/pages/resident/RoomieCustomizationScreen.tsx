@@ -1,6 +1,7 @@
+import { styles as dashboardStyles } from '../../styles/ResidentDashboard.styles';
 import RoomiePet, { ROOMIE_ACCESSORY_IMAGES, ROOMIE_COLORS } from '../../components/RoomiePet';
-import { useState, type Dispatch, type SetStateAction } from 'react';
-import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import { useState, type Dispatch, type SetStateAction, type ReactNode } from 'react';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { ResidentData } from '../../hooks/useResidentData';
 import {
   getLegacyPetAccessory,
@@ -13,6 +14,9 @@ import {
 import { styles as s } from '../../styles/RoomieCustomizationScreen.styles';
 import { getImageSource } from '../../utils/imageSource';
 
+const unavailableAccessories = new Set<RoomieAccessoryId>(['star-pin', 'backpack', 'bandana']);
+const customizableAccessories = ROOMIE_ACCESSORY_IDS.filter(id => !unavailableAccessories.has(id));
+
 const petColors = [
   ['Blue', ROOMIE_COLORS.blue],
   ['Green', ROOMIE_COLORS.green],
@@ -22,12 +26,12 @@ const petColors = [
 ] as const;
 
 function initialAccessories(data: ResidentData): RoomieAccessoryId[] {
-  const savedAccessories = getPetAccessoryIds(data.pet);
+  const savedAccessories = getPetAccessoryIds(data.pet).filter(id => !unavailableAccessories.has(id));
   if (savedAccessories.length || data.pet?.accessories || data.pet?.accessory === 'None') return savedAccessories;
   return ['bow'];
 }
 
-export default function RoomieCustomizationScreen({ data, setData, storageError, onBack }: { data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onBack: () => void }) {
+export default function RoomieCustomizationScreen({ data, setData, storageError, onBack, header }: { data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onBack: () => void; header?: ReactNode }) {
   const [name, setName] = useState(data.pet?.name || 'Pip');
   const [color, setColor] = useState(data.pet?.color || 'Blue');
   const [accessories, setAccessories] = useState(() => initialAccessories(data));
@@ -63,7 +67,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
     setSaved(true);
   }
 
-  return <>
+  return <View style={s.screen}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={dashboardStyles.page}>{header}
     <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
     <View style={s.preview}>
       <View style={s.petPreview}>
@@ -74,7 +78,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
       </View>
     </View>
     <View accessibilityRole="group" accessibilityLabel="Pet accessories" style={s.accessories}>
-      {ROOMIE_ACCESSORY_IDS.map(id => {
+      {customizableAccessories.map(id => {
         const equipped = accessories.includes(id);
         const locked = id === 'sprout-hat' && !leafUnlocked && !equipped;
         return <Pressable key={id} accessibilityRole="checkbox" accessibilityLabel={`${ROOMIE_ACCESSORY_LABELS[id]}${locked ? ', locked, 210 points required' : ''}`} accessibilityState={{ checked: equipped, disabled: locked }} disabled={locked} onPress={() => chooseAccessory(id)} style={[s.accessory, equipped && s.selectedAccessory, locked && s.lockedAccessory]}>
@@ -87,6 +91,6 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
     <View style={s.nameField}><TextInput accessibilityLabel="Pet name" maxLength={16} value={name} onChangeText={value => { setName(value); setSaved(false); }} style={s.nameInput} /></View>
     {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
-    <Pressable accessibilityRole="button" accessibilityLabel={saved ? 'Changes saved' : 'Save changes'} accessibilityLiveRegion={saved ? 'polite' : 'none'} onPress={save} style={({ pressed }) => [s.save, saved && s.saved, pressed && s.pressed]}><Text style={s.saveText}>✓</Text></Pressable>
-  </>;
+    </ScrollView><Pressable accessibilityRole="button" accessibilityLabel={saved ? 'Changes saved' : 'Save changes'} accessibilityLiveRegion={saved ? 'polite' : 'none'} onPress={save} style={({ pressed }) => [s.save, saved && s.saved, pressed && s.pressed]}><Text style={s.saveText}>{'\u2713'}</Text></Pressable>
+  </View>;
 }

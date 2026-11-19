@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import WelcomeScreen from './pages/WelcomeScreen';
 import RegistrationScreen from './pages/RegistrationScreen';
 import LoginScreen from './pages/LoginScreen';
@@ -14,7 +15,7 @@ import PropertyManagerVerificationScreen from './pages/property-manager/Property
 import ResidentAssistantJoinScreen from './pages/resident-assistant/ResidentAssistantJoinScreen';
 import ResidentAssistantVerificationScreen from './pages/resident-assistant/ResidentAssistantVerificationScreen';
 
-export default function App() {
+function AppContent() {
   const [path, setPath] = useState(() => Platform.OS === 'web' ? window.location.pathname : '/');
   const [user, setUser] = useState<ResidentUser | null>(demoResident);
 
@@ -72,4 +73,30 @@ export default function App() {
   return path === '/registration'
     ? <RegistrationScreen onBack={() => navigate('/')} onContinue={role => { if (role === 'resident') navigate('/resident-sign-up'); else if (role === 'assistant') navigate('/resident-assistant-join'); else if (role === 'landlord') navigate('/property-manager-join'); }} />
     : <WelcomeScreen onGetStarted={() => navigate('/registration')} onLogIn={() => navigate('/login')} />;
+}
+
+const previewStyles = StyleSheet.create({
+  stage: { flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8EAF0' },
+  fill: { flex: 1, width: '100%', height: '100%', backgroundColor: '#FFFFFF' },
+  phone: { borderWidth: 8, borderColor: '#252631', borderRadius: 36, overflow: 'hidden', backgroundColor: '#FAF9F6' },
+});
+
+export default function App() {
+  const { width, height } = useWindowDimensions();
+  const isLocalWebPreview = Platform.OS === 'web'
+    && typeof window !== 'undefined'
+    && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    && width > 430;
+  const phoneWidth = Math.max(0, Math.min(390, width - 48, (height - 48) * 390 / 844));
+  const phoneHeight = phoneWidth * 844 / 390;
+
+  return (
+    <SafeAreaProvider style={previewStyles.fill}>
+      <View style={isLocalWebPreview ? previewStyles.stage : previewStyles.fill}>
+        <View nativeID={isLocalWebPreview ? "roomies-phone-preview" : undefined} style={isLocalWebPreview ? [previewStyles.phone, { width: phoneWidth, height: phoneHeight }] : previewStyles.fill}>
+          <AppContent />
+        </View>
+      </View>
+    </SafeAreaProvider>
+  );
 }

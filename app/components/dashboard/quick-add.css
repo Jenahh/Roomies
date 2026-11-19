@@ -24,18 +24,18 @@
 }
 
 .quick-add-option:nth-child(1) {
-  right: 8px;
+  right: -12px;
   bottom: 132px;
 }
 
 .quick-add-option:nth-child(2) {
-  right: 88px;
-  bottom: 78px;
+  right: 90px;
+  bottom: 90px;
 }
 
 .quick-add-option:nth-child(3) {
   right: 132px;
-  bottom: 8px;
+  bottom: -12px;
 }
 
 .quick-add-menu.is-open .quick-add-option {
@@ -44,10 +44,12 @@
 }
 
 .quick-add-menu {
+  visibility: hidden;
   pointer-events: none;
 }
 
 .quick-add-menu.is-open {
+  visibility: visible;
   pointer-events: auto;
 }
 

@@ -3,14 +3,13 @@ import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
-  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 20, paddingTop: Platform.select({ native: 14, default: 26 }), paddingBottom: Platform.select({ native: 16, default: 30 }) },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Platform.select({ native: 14, default: 24 }), gap: 16 },
+  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: Platform.select({ native: 24, default: 20 }), paddingTop: Platform.select({ native: 14, default: 26 }), paddingBottom: Platform.select({ native: 16, default: 30 }) },
+  header: { position: 'relative', flexDirection: 'row', alignItems: 'center', marginBottom: Platform.select({ native: 14, default: 24 }) },
   backButton: { minHeight: 44, justifyContent: 'center', paddingRight: 8, borderRadius: 8 },
   backText: backNavigationText,
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  logoCenter: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
   logo: { width: 38, height: 38 },
-  wordmark: { fontSize: 25, fontWeight: '800', letterSpacing: -0.7, color: '#292B35' },
-  title: { fontSize: 30, lineHeight: 42, fontWeight: '800', letterSpacing: -0.6, color: '#292B35', paddingBottom: 10, marginBottom: Platform.select({ native: 12, default: 20 }) },
+  title: { fontSize: Platform.select({ native: 28, default: 30 }), lineHeight: Platform.select({ native: 36, default: 42 }), fontWeight: '800', letterSpacing: -0.6, color: '#292B35', paddingBottom: 10, marginBottom: Platform.select({ native: 12, default: 20 }) },
   subtitle: { fontSize: 14, lineHeight: 21, color: '#7B7D87', marginTop: 6, marginBottom: 22 },
   form: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, gap: 12 },
   label: { fontSize: 13, fontWeight: '600', color: '#292B35', marginBottom: 7 },
@@ -28,6 +27,6 @@ export const styles = StyleSheet.create({
   arrow: { position: 'absolute', right: 18, fontSize: 21, color: '#263350' },
   createAccount: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginTop: 24, gap: 3 },
   createPrompt: { fontSize: 14, color: '#7B7D87' },
-  footer: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', paddingTop: 80 },
+  footer: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', paddingTop: Platform.select({ native: 24, default: 80 }) },
   footerText: { fontSize: 11, color: '#7B7D87', textAlign: 'left' },
 });

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import { styles } from '../styles/LoginScreen.styles';
 import { demoAccounts, type ResidentUser } from '../data/demoAccount';
@@ -35,18 +36,17 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
             <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
-          <View style={styles.brand}>
+          <View pointerEvents="none" style={styles.logoCenter}>
             <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
-            <Text style={styles.wordmark}>Roomies</Text>
           </View>
         </View>
 
-        <Text accessibilityRole="header" style={styles.title}>Welcome back.</Text>
+        <Text accessibilityRole="header" numberOfLines={1} style={styles.title}>Welcome back.</Text>
         <View style={styles.form}>
           <TextInput accessibilityLabel="Email" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
           <View style={styles.passwordField}>
@@ -73,7 +73,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
           </Pressable>
         </View>
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Your home. Your people. A private space.</Text>
+          <Text numberOfLines={1} style={styles.footerText}>A private space for roommates.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
