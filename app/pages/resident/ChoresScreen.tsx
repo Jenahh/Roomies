@@ -2,11 +2,12 @@ import { randomUUID } from '../../utils/randomUUID';
 import { addDays, choreDates, isAssignedTo, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
 import { choreLooks, chorePresets, resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
-import { POINTS_PER_CHORE } from '../../data/choreRewards';
+import { getPersonalChorePoints, isPersonalChore, POINTS_PER_CHORE } from '../../data/choreRewards';
 import { ROOMIE_COLORS } from '../../components/RoomiePet';
+import ConfettiBurst from '../../components/ConfettiBurst';
 import ChorePet from './ChorePet';
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
-import { Animated, Easing, Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import type { useSharedChores } from '../../hooks/useSharedChores';
@@ -24,37 +25,6 @@ const roommateColors = [
   ROOMIE_COLORS.yellow,
   ROOMIE_COLORS.pink,
 ];
-
-const confettiPieces = [
-  { dx: -19, dy: -12, backgroundColor: '#A35FEC' },
-  { dx: -8, dy: -23, backgroundColor: '#D28B25' },
-  { dx: 10, dy: -24, backgroundColor: '#3B9663' },
-  { dx: 23, dy: -10, backgroundColor: '#DF6598' },
-  { dx: 19, dy: 12, backgroundColor: '#D28B25' },
-  { dx: -16, dy: 14, backgroundColor: '#3B9663' },
-];
-
-function ChoreConfetti() {
-  const progress = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animation = Animated.timing(progress, { toValue: 1, duration: 460, easing: Easing.out(Easing.ease), useNativeDriver: true });
-    animation.start();
-    return () => animation.stop();
-  }, [progress]);
-  const opacity = progress.interpolate({ inputRange: [0, 0.65, 1], outputRange: [1, 1, 0] });
-  const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
-  const rotation = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '75deg'] });
-
-  return <View pointerEvents="none" style={s.confetti}>{confettiPieces.map((piece, index) => <Animated.View key={index} style={[
-    s.confettiPiece,
-    { left: '50%', top: '50%', backgroundColor: piece.backgroundColor, opacity, transform: [
-      { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [0, piece.dx] }) },
-      { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, piece.dy] }) },
-      { scale },
-      { rotate: rotation },
-    ] },
-  ]} />)}</View>;
-}
 
 export default function ChoresScreen({ data, setData, storageError, assignedHousehold, autoOpenAdd = false, onAddOpened, renderPage, shared }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onPet?: () => void;
@@ -122,7 +92,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   }
   if (otherChores.total) treeContributions.push(otherChores);
   const petName = data.pet?.name || 'Roomie';
-  const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (shared ? chore.memberId === 'resident-self' : !chore.assignee || chore.assignee === data.name);
+  const mine = (chore: ResidentData['chores'][number]) => isPersonalChore(chore, data.name, !!shared);
   const upcomingChores = data.chores.filter(chore => !chore.completed).sort((a,b) => a.due.localeCompare(b.due));
   const nextChore = upcomingChores.find(mine) ?? upcomingChores[0];
   const featuredChore = celebration ?? nextChore;
@@ -155,7 +125,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   }, [autoOpenAdd]);
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : (!chore.completed || chore.id === burst) && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
-  const points = data.chores.filter(chore => chore.completed && mine(chore)).length * POINTS_PER_CHORE;
+  const points = getPersonalChorePoints(data, !!shared);
   async function save() {
     const parsed = new Date(due + 'T12:00:00');
     if (!title.trim()) { setError('Pick a chore to get started.'); return; }
@@ -215,7 +185,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
           setBurst(chore.completed ? null : chore.id);
           setCelebration(chore.completed ? null : chore);
         }} style={({ pressed }) => [s.chore, chore.completed && s.completedRow, pressed && s.pressed]}>
-          <View style={[s.checkbox, own && !chore.completed && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text numberOfLines={1} style={s.check}>✓</Text>}{burst === chore.id && <ChoreConfetti key={burst} />}</View>
+          <View style={[s.checkbox, own && !chore.completed && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text numberOfLines={1} style={s.check}>✓</Text>}{burst === chore.id && <ConfettiBurst key={burst} />}</View>
           <ChoreBadge look={chore.look} title={chore.title} muted={chore.completed} />
           <View style={s.copy}><Text numberOfLines={1} style={[s.choreTitle, chore.completed && s.completed]}>{chore.title}</Text><Text numberOfLines={1} style={s.detailText}>{name}{own ? ' (you)' : ''} · {day}{chore.time ? `, ${chore.time}` : ''}</Text></View>
         </Pressable>;

@@ -29,11 +29,11 @@ export function getRoomieWelcome(data: ResidentData, now: Date) {
   add(eventsToday, eventsToday.length === 1 ? 'event today' : 'events today', 'Calendar');
   const mood = getPetMood(data, now);
   const dialogue = mood === 'Stressed'
-    ? "I'm feeling a little stressed because there are overdue chores or expenses. Let's take them one at a time!"
-    : mood === 'Attention'
-      ? "I've missed you! I could use a little attention. Here's what's happening at home."
+    ? "I'm feeling a little stressed because more than five chores are due today. Let's take them one at a time!"
+    : mood === 'Annoyed'
+      ? "I'm feeling annoyed because there are overdue chores. Let's catch up together."
       : updates.length
         ? "I'm feeling happy! Here's a little update on what's happening at home."
-        : "I'm feeling happy! There are no overdue chores or expenses, and nothing new to catch up on.";
+        : "I'm feeling happy! There is nothing new to catch up on.";
   return { mood, dialogue, updates };
 }

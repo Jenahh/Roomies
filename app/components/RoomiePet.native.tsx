@@ -133,7 +133,7 @@ const defaultColor = ROOMIE_COLORS.blue;
 const accessoryLayer = { position: 'absolute' as const, width: '100%' as const, height: '100%' as const };
 
 function normalizeMood(mood: PetMood | SpriteMood): 'happy' | 'annoyed' | 'stressed' {
-  if (mood === 'Attention' || mood === 'annoyed' || mood === 'annoyed-3d') return 'annoyed';
+  if (mood === 'Annoyed' || mood === 'annoyed' || mood === 'annoyed-3d') return 'annoyed';
   if (mood === 'Stressed' || mood === 'stressed' || mood === 'stressed-3d') return 'stressed';
   return 'happy';
 }

@@ -37,8 +37,6 @@ export const styles = StyleSheet.create({
   list: { gap: 8, marginTop: 10 },
   chore: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, minHeight: 68 },
   checkbox: { width: 18, height: 18, borderWidth: 1, borderColor: '#9094A0', borderRadius: 3, alignItems: 'center', justifyContent: 'center' },
-  confetti: { position: 'absolute', top: 0, left: 0, width: 18, height: 18, zIndex: 1 },
-  confettiPiece: { position: 'absolute', width: 5, height: 6, borderRadius: 2 },
   blueBorder: { borderColor: '#657EEA' },
   completedRow: { backgroundColor: '#EFEFEF' },
   checked: { backgroundColor: '#676767', borderColor: '#676767' },
