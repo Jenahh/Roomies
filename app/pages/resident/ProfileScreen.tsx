@@ -17,11 +17,8 @@ type ProfileScreenProps = {
   onRAHistory: () => void;
 };
 
-export default function ProfileScreen({ onSignOut, user, data, setData, storageError, onMaintenance, onContactRA, onMaintenanceHistory, onRAHistory }: ProfileScreenProps) {
+export default function ProfileScreen({ initialEditing, onSignOut, user, data, setData, storageError, onMaintenance, onContactRA, onMaintenanceHistory, onRAHistory }: ProfileScreenProps) {
   return (
-    <ProfileEditor name={data.name} email={user.email} role={user.role} locationLabel="Household name" location={data.household} locationEditable storageError={storageError} onSignOut={onSignOut}
-export default function ProfileScreen({ initialEditing, onSignOut, user, data, setData, storageError, onMaintenance, onContactRA }: ProfileScreenProps) {
-  return <>
     <ProfileEditor initialEditing={initialEditing} name={data.name} email={user.email} role={user.role} locationLabel="Household name" location={data.household} locationEditable storageError={storageError} onSignOut={onSignOut}
       onSave={({ name, location }) => setData(previous => ({
         ...previous, name, household: location,

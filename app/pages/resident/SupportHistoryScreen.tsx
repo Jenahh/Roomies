@@ -1,7 +1,9 @@
 import { useState, type Dispatch, type SetStateAction } from 'react';
+import { Image, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { History, Wrench, MessageCircle, ChevronRight } from 'lucide-react';
 import RoomiePet from '../../components/RoomiePet';
 import type { ResidentData } from '../../hooks/useResidentData';
+import { styles as s } from '../../styles/ProfileScreen.styles';
 import './SupportHistoryScreen.css';
 type Props = { data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError?: string; kind: 'maintenance' | 'ra'; onBack: () => void };
 export default function SupportHistoryScreen({ data, setData, storageError, kind, onBack }: Props) {
@@ -27,8 +29,69 @@ export default function SupportHistoryScreen({ data, setData, storageError, kind
     setData(previous => ({ ...previous, supportDrafts: (previous.supportDrafts || []).filter(x => !(x.id === selected.id && x.kind === kind)) }));
     setId(null); reset();
   }
+  function back() {
+    if (selected) {
+      setId(null);
+      reset();
+    } else {
+      onBack();
+    }
+  }
+
+  function edit() {
+    if (!selected) return;
+    setTitle(selected.title);
+    setDescription(selected.description);
+    reset();
+    setEditing(true);
+  }
+
+  if (Platform.OS !== 'web') {
+    return (
+      <View style={s.card}>
+        <Pressable accessibilityRole="button" onPress={back} style={s.edit}>
+          <Text style={s.link}>{selected ? 'Back to history' : 'Back to profile'}</Text>
+        </Pressable>
+        <Text accessibilityRole="header" style={s.title}>{maintenance ? 'Request history' : 'Message history'}</Text>
+        {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
+        {selected ? <>
+          <Text style={s.subtitle}>Draft · Not sent</Text>
+          <Text style={s.subtitle}>{selected.category || 'Other'} · {new Date(selected.createdAt).toLocaleDateString()}</Text>
+          {editing ? <>
+            <Text style={s.label}>{maintenance ? 'Issue title' : 'Subject'}</Text>
+            <TextInput accessibilityLabel={maintenance ? 'Issue title' : 'Subject'} value={title} onChangeText={setTitle} style={s.input} />
+            <Text style={s.label}>Description</Text>
+            <TextInput accessibilityLabel="Description" value={description} onChangeText={setDescription} multiline style={s.input} />
+            <Pressable accessibilityRole="button" onPress={save} style={s.save}><Text style={s.saveText}>Save changes</Text></Pressable>
+            <Pressable accessibilityRole="button" onPress={reset} style={s.edit}><Text style={s.link}>Cancel</Text></Pressable>
+          </> : <>
+            <Text accessibilityRole="header" style={s.name}>{selected.title}</Text>
+            <Text style={s.email}>{selected.description}</Text>
+            {!!selected.photo && <Image accessibilityLabel="Attached maintenance photo" source={{ uri: selected.photo }} resizeMode="contain" style={{ height: 160 }} />}
+            {confirm ? <>
+              <Text style={s.sectionTitle}>Delete this draft?</Text>
+              <Pressable accessibilityRole="button" onPress={remove} style={s.signOut}><Text style={s.signOutText}>Confirm deletion</Text></Pressable>
+              <Pressable accessibilityRole="button" onPress={reset} style={s.edit}><Text style={s.link}>Cancel</Text></Pressable>
+            </> : <>
+              <Pressable accessibilityRole="button" onPress={() => setNotice('Submission is not connected yet. Your draft has been kept.')} style={s.save}><Text style={s.saveText}>{maintenance ? 'Submit request' : 'Send message'}</Text></Pressable>
+              <Pressable accessibilityRole="button" onPress={edit} style={s.edit}><Text style={s.link}>Edit draft</Text></Pressable>
+              <Pressable accessibilityRole="button" onPress={() => { setNotice(''); setConfirm(true); }} style={s.edit}><Text style={s.error}>Delete draft</Text></Pressable>
+            </>}
+          </>}
+          {!!notice && !storageError && <Text accessibilityLiveRegion="polite" style={s.subtitle}>{notice}</Text>}
+        </> : requests.length ? requests.map(item => (
+          <Pressable key={item.id} accessibilityRole="button" onPress={() => { reset(); setId(item.id); }} style={s.input}>
+            <Text style={s.sectionTitle}>{item.title}</Text>
+            <Text numberOfLines={2} style={s.subtitle}>{item.description}</Text>
+            <Text style={s.subtitle}>Draft · {new Date(item.createdAt).toLocaleDateString()}</Text>
+          </Pressable>
+        )) : <Text style={s.subtitle}>No drafts yet.</Text>}
+      </View>
+    );
+  }
+
   return <section className="support-history">
-    <button className="history-back" onClick={() => { if (selected) { setId(null); reset(); } else onBack(); }}>‹ {selected ? 'Back to history' : 'Back to profile'}</button>
+    <button className="history-back" onClick={back}>‹ {selected ? 'Back to history' : 'Back to profile'}</button>
     <div className="history-header"><RoomiePet role={maintenance ? 'property-manager' : 'assistant'} color={data.pet?.color} size={85}/><div><h2>{maintenance ? 'Request history' : 'Message history'}</h2><p>{maintenance ? 'Manage your maintenance drafts.' : 'Manage your RA message drafts.'}</p></div></div>
     {storageError && <p role="alert" className="history-error">{storageError}</p>}
     {selected ? <div className="history-details">
