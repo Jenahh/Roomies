@@ -1,0 +1,9 @@
+{
+  "plugins": [
+    "expo-asset"
+  ],
+  "androidNavigationBar": {
+    "backgroundColor": "#FFFFFF",
+    "barStyle": "dark-content"
+  }
+}

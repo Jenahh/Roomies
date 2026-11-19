@@ -1,3 +1,4 @@
+import { randomUUID } from '../../utils/randomUUID';
 import { chorePresets } from '../../data/chorePresets';
 import { ChoreBadge, ChorePresets } from './ChorePresets';
 import { useState, type Dispatch, type SetStateAction } from 'react';
@@ -12,7 +13,7 @@ const starterChores: ChoreTemplate[] = chorePresets.flatMap(preset => {
 const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 export default function SmartScheduler({data,setData,onBack,storageError}:{data:ResidentData;storageError:string;setData:Dispatch<SetStateAction<ResidentData>>;onBack:()=>void}){
  const [tab,setTab]=useState<'quick'|'setup'|'review'>('quick');
- const [members,setMembers]=useState<SchedulerMember[]>(()=>data.scheduler?.members??[{id:crypto.randomUUID(),name:data.name,days:[0,1,2,3,4,5,6],capacity:120}]);
+ const [members,setMembers]=useState<SchedulerMember[]>(()=>data.scheduler?.members??[{id:randomUUID(),name:data.name,days:[0,1,2,3,4,5,6],capacity:120}]);
  const [templates,setTemplates]=useState<ChoreTemplate[]>(()=>data.scheduler?.templates??[]);
  const [week,setWeek]=useState(() => { let next = nextMonday(); while (data.chores.some(chore => chore.scheduleWeek === next)) next = addDays(next, 7); return next; }); const [draft,setDraft]=useState<ScheduledTask[]|null>(null); const [conflicts,setConflicts]=useState<string[]>([]); const [message,setMessage]=useState('');
  const [roommateName,setRoommateName]=useState('');
@@ -29,7 +30,7 @@ export default function SmartScheduler({data,setData,onBack,storageError}:{data:
   if (!name) { setMessage('Enter your roommate’s name.'); return; }
   if (members.some(member => member.name.trim().toLowerCase() === name.toLowerCase())) { setMessage('That roommate is already in your plan.'); return; }
   change();
-  setMembers(previous => [...previous, { id: crypto.randomUUID(), name, days: [0,1,2,3,4,5,6], capacity: 120 }]);
+  setMembers(previous => [...previous, { id: randomUUID(), name, days: [0,1,2,3,4,5,6], capacity: 120 }]);
   setRoommateName('');
  }
  function generate(chores = templates){try{const result=generateSchedule(week,members,chores,data.chores);setTemplates(chores);setDraft(result.tasks);setConflicts(result.conflicts);setSnapshot(fingerprint);setMessage('');setTab('review');}catch(e){setMessage((e as Error).message);}}
@@ -64,12 +65,12 @@ export default function SmartScheduler({data,setData,onBack,storageError}:{data:
  <div className="sc-section-heading"><h2>Roommate availability</h2><span>Weekly limits in minutes</span></div>
  <p>Enter each participating roommate’s preferences. Days selected below are available days.</p>
  {members.map(m=><article className="sc-card" key={m.id}><div className="sc-fields"><label>Name<input aria-label={`Roommate name ${m.name}`} value={m.name} maxLength={60} onChange={e=>updateMember(m.id,{name:e.target.value})}/></label><label>Weekly limit (min)<input aria-label={`Weekly limit for ${m.name}`} type="number" min="1" max="10080" value={m.capacity} onChange={e=>updateMember(m.id,{capacity:Number(e.target.value)})}/></label></div><div className="sc-days" role="group" aria-label={`Available days for ${m.name}`}>{days.map((day,i)=><button key={day} aria-label={`${day} available for ${m.name}`} aria-pressed={m.days.includes(i)} onClick={()=>updateMember(m.id,{days:m.days.includes(i)?m.days.filter(d=>d!==i):[...m.days,i]})}>{day}</button>)}</div><button className="sc-remove" onClick={()=>{change();setMembers(members.filter(x=>x.id!==m.id));}}>Remove roommate</button></article>)}
- <button className="sc-outline" onClick={()=>{change();setMembers([...members,{id:crypto.randomUUID(),name:'',days:[0,1,2,3,4,5,6],capacity:120}]);}}>+ Add roommate</button>
+ <button className="sc-outline" onClick={()=>{change();setMembers([...members,{id:randomUUID(),name:'',days:[0,1,2,3,4,5,6],capacity:120}]);}}>+ Add roommate</button>
  <div className="sc-section-heading"><h2>Recurring chores</h2><span>Separate from one-off chores</span></div>
- <ChorePresets onPick={preset=>{change();setTemplates(previous=>[...previous,{...preset,id:crypto.randomUUID()}]);}} />
+ <ChorePresets onPick={preset=>{change();setTemplates(previous=>[...previous,{...preset,id:randomUUID()}]);}} />
  {!templates.length&&<div className="sc-empty">Add your first recurring chore, such as taking out the trash or cleaning the kitchen.</div>}
  {templates.map((t,index)=><article className="sc-card" key={t.id}><label>Chore name<input aria-label={`Recurring chore ${index+1}`} value={t.title} maxLength={100} placeholder="e.g. Clean kitchen" onChange={e=>updateTemplate(t.id,{title:e.target.value})}/></label><div className="sc-fields"><label>Effort (minutes)<input aria-label={`Effort for chore ${index+1}`} type="number" min="1" max="1440" value={t.minutes} onChange={e=>updateTemplate(t.id,{minutes:Number(e.target.value)})}/></label><label>Times per week<select aria-label={`Frequency for chore ${index+1}`} value={t.frequency} onChange={e=>updateTemplate(t.id,{frequency:Number(e.target.value)})}>{[1,2,3,4,5,6,7].map(n=><option key={n} value={n}>{n}</option>)}</select></label></div><button className="sc-remove" onClick={()=>{change();setTemplates(templates.filter(x=>x.id!==t.id));}}>Remove recurring chore</button></article>)}
- <button className="sc-outline" onClick={()=>{change();setTemplates([...templates,{id:crypto.randomUUID(),title:'',minutes:30,frequency:1}]);}}>+ Add recurring chore</button>
+ <button className="sc-outline" onClick={()=>{change();setTemplates([...templates,{id:randomUUID(),title:'',minutes:30,frequency:1}]);}}>+ Add recurring chore</button>
  <div className="sc-card"><label>Week starting (Monday)<input aria-label="Week starting Monday" type="date" value={week} onChange={e=>{change();setWeek(e.target.value);}}/></label><p>The scheduler balances effort relative to weekly limits and discourages repeating assignments from the previous four weeks. Existing chores count toward limits; chores without effort count as 30 minutes. This is a best-effort plan, not a guarantee of the optimal schedule.</p></div>
  {settingsError&&<p className="sc-hint">{settingsError}</p>}
  <button className="sc-outline" onClick={()=>{if(settingsError){setMessage(settingsError);return;}setData(p=>({...p,scheduler:{members,templates}}));setMessage('Preferences saved in this browser.');}}>Save preferences</button>

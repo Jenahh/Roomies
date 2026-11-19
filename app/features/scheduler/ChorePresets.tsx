@@ -1,11 +1,9 @@
-import Icon from '../../components/dashboard/DashboardIcon';
-import { choreLooks, chorePresets, getChoreLook, type ChoreLook } from '../../data/chorePresets';
+import { choreLooks, chorePresets, type ChoreLook } from '../../data/chorePresets';
 import './chorePresets.css';
 
-export function ChoreBadge({ look, title }: { look?: ChoreLook; title?: string }) {
-  const style = getChoreLook(look, title);
-  return <span className="chore-badge" aria-hidden="true" style={{ background: style.tint }}><Icon name={style.icon} color={style.ink} size={18} /></span>;
-}
+import { ChoreBadge } from './ChoreBadge';
+
+export { ChoreBadge };
 
 export function ChorePresets({ onPick, selected }: { selected?: ChoreLook; onPick: (preset: typeof chorePresets[number]) => void }) {
   return <div className="chore-presets" role="group" aria-label="Chore presets">

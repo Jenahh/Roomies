@@ -1,10 +1,12 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
+import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
 import ResidentAssistantConcernsScreen from './ResidentAssistantConcernsScreen';
 import ResidentAssistantMessagesScreen from './ResidentAssistantMessagesScreen';
 import ConcernDetailsScreen from './ConcernDetailsScreen';
 import ResidentAssistantProfileScreen from './ResidentAssistantProfileScreen';
 import { useResidentData } from '../../hooks/useResidentData';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { Modal, SafeAreaView, ScrollView, View } from 'react-native';
+import { Modal, ScrollView, View } from 'react-native';
 import type { ResidentUser } from '../../data/demoAccount';
 import { demoConcerns, demoHall, demoHallUpdates, type ResidentConcern } from '../../data/demoResidentAssistant';
 import DashboardNavigation, { type DashboardTab } from '../../components/dashboard/DashboardNavigation';
@@ -23,7 +25,7 @@ const tabs: DashboardTab[] = [
 
 export default function ResidentAssistantDashboard({ user, onSignOut }: { user: ResidentUser; onSignOut: () => void }) {
   const { data, setData, storageError } = useResidentData(user.email, user.name);
-  const [activeTab, setActiveTab] = useState('Home');
+  const [activeTab, setActiveTab] = useState(user.databaseDemoStaff ? 'Concerns' : 'Home');
   const [selectedConcern, setSelectedConcern] = useState<ResidentConcern | null>(null);
   const [now, setNow] = useState(() => new Date());
   const petMood = getPetMood(data, now);
@@ -40,15 +42,15 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
   }, [activeTab]);
 
   return (
-    <SafeAreaView style={s.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={s.safeArea}>
       <View style={s.shell}>
-        <ScrollView ref={pageScroll} contentContainerStyle={s.page}>
+        <ScrollView showsVerticalScrollIndicator={false} ref={pageScroll} contentContainerStyle={s.page}>
           <ResidentAssistantHeader />
-          {activeTab === 'Home' && <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />}
+          {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="RA Concern" /> : <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />)}
           {activeTab === 'Calendar' && (
             <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} />
           )} 
-          {activeTab === 'Concerns' && <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />}
+          {activeTab === 'Concerns' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="RA Concern" /> : <ResidentAssistantConcernsScreen hall={demoHall} concerns={demoConcerns} onSelect={setSelectedConcern} />)}
           {activeTab === 'Messages' && <ResidentAssistantMessagesScreen />}
           {activeTab === 'Profile' && <ResidentAssistantProfileScreen user={user} name={data.name} hall={demoHall} color={data.pet?.color} storageError={storageError} onSaveName={name => setData(previous => ({ ...previous, name }))} onSignOut={onSignOut} />}
         </ScrollView>

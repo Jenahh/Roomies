@@ -1,4 +1,5 @@
-import { Pressable, SafeAreaView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SignupProgress from '../../components/auth/SignupProgress';
 import VerificationPet from '../../components/auth/VerificationPet';
 import { styles as s } from '../../styles/ResidentVerificationScreen.styles';

@@ -44,10 +44,12 @@
 }
 
 .quick-add-menu {
+  visibility: hidden;
   pointer-events: none;
 }
 
 .quick-add-menu.is-open {
+  visibility: visible;
   pointer-events: auto;
 }
 
