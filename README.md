@@ -1,6 +1,8 @@
 # Roomies
 CSC 4330 - Roomies
 
+npm install
+npm run dev
 ## CSC 4402 database demo
 
 Run from the repository root in two terminals:

@@ -30,6 +30,7 @@ import ProfileScreen from '../../pages/resident/ProfileScreen';
 import NotificationsScreen from '../../pages/resident/NotificationsScreen';
 import MaintenanceScreen from '../../pages/resident/MaintenanceScreen';
 import ContactRAScreen from '../../pages/resident/ContactRAScreen';
+import SupportHistoryScreen from '../../pages/resident/SupportHistoryScreen';
 import { loadAnnouncements } from '../../data/householdAnnouncements';
 import './quick-add.css';
 
@@ -48,6 +49,8 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const hasRoomiePet = user.role === 'resident';
   const { data: localData, setData, storageError } = useResidentData(user.email, user.name);
   const [activeTab, setActiveTab] = useState('Home');
+  const [maintenanceCategory, setMaintenanceCategory] = useState('Plumbing');
+  const [raCategory, setRACategory] = useState('General support');
   const [announcements] = useState(loadAnnouncements);
   const databaseDemo = user.demoHouseholdId !== undefined;
   const shared = useSharedChores(user.email, user.demoHouseholdId, activeTab);
@@ -60,7 +63,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddTarget, setQuickAddTarget] = useState<'Chores' | 'Expenses' | 'Calendar' | null>(null);
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
-  const navigationTab = (activeTab === 'Notifications' || activeTab === 'Achievements' || activeTab === 'PetCheckIn') ? 'Home' : (activeTab === 'Maintenance' || activeTab === 'ContactRA' || activeTab === 'CustomizePet') ? 'Profile' : activeTab;
+  const navigationTab = (activeTab === 'Notifications' || activeTab === 'Achievements' || activeTab === 'PetCheckIn') ? 'Home' : (activeTab === 'Maintenance' || activeTab === 'ContactRA' || activeTab === 'CustomizePet' || activeTab === 'MaintenanceHistory' || activeTab === 'RAHistory') ? 'Profile' : activeTab;
   useEffect(() => {
     pageScroll.current?.scrollTo({ y: 0, animated: false });
     if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
@@ -194,6 +197,24 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       {hasRoomiePet && updatesOpen && <RoomieWelcome data={data} setData={setData} onFinish={() => setUpdatesOpen(false)} />}
       <View style={styles.shell}>
+        <ScrollView ref={pageScroll} contentContainerStyle={styles.page}>
+        {residentHeader}
+        {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'CustomizePet' && hasRoomiePet ? <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'MaintenanceHistory' ? <SupportHistoryScreen key="maintenance-history" data={data} setData={setData} storageError={storageError} kind="maintenance" onBack={() => setActiveTab('Profile')} /> : activeTab === 'RAHistory' ? <SupportHistoryScreen key="ra-history" data={data} setData={setData} storageError={storageError} kind="ra" onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? <ContactRAScreen initialCategory={raCategory} data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Maintenance' ? <MaintenanceScreen initialCategory={maintenanceCategory} data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} /> : activeTab === 'Chores' ? <ChoresScreen assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Expenses' ? <ExpensesScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Calendar' ? <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} autoOpenAdd={quickAddTarget === 'Calendar'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={(category) => { setMaintenanceCategory(category); setActiveTab('Maintenance'); }} onContactRA={(category) => { setRACategory(category); setActiveTab('ContactRA'); }} onMaintenanceHistory={() => setActiveTab('MaintenanceHistory')} onRAHistory={() => setActiveTab('RAHistory')} /> : <>
+          <Text accessibilityRole="header" style={styles.greeting}>{greeting}, {data.name}!</Text>
+          {!!storageError && <Text accessibilityRole="alert" style={styles.formError}>{storageError}</Text>}
+          <HouseholdProgressCard total={weeklyChores.length} completed={completed} />
+          <View style={styles.stats}>
+            <DashboardStatCard action="chores" color={data.pet?.color} mood={petMood} value={todayCount + (todayCount === 1 ? ' chore' : ' chores')} onPress={() => openPanel('Chores')} style={styles.choreStat} />
+            <DashboardStatCard action="expenses" color={data.pet?.color} mood={petMood} value={currency.format(totalCents / 100)} onPress={() => openPanel('Expenses')} style={styles.expenseStat} />
+          </View>
+          <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Coming up</Text></View>
+          <View style={styles.upcoming}>
+            {!upcoming.length && <Text style={styles.emptyText}>No upcoming chores or events. Add one below.</Text>}
+            {upcoming.map(item => <Pressable key={item.id} accessibilityRole={item.kind === 'chore' ? 'checkbox' : 'button'} accessibilityState={item.kind === 'chore' ? { checked: false } : undefined} accessibilityLabel={item.title} onPress={() => item.kind === 'chore' ? toggleChore(item.id) : openPanel('Calendar')} style={({ pressed }) => [styles.event, pressed && styles.pressed]}><RoomiePet action={item.kind === 'chore' ? 'chores' : 'calendar'} color={data.pet?.color} mood={petMood} size={50} /><View style={styles.eventCopy}><Text style={styles.eventTitle}>{item.title}</Text><Text style={styles.eventDetail}>{displayDate(item.date)}</Text></View>{item.kind === 'chore' ? <View style={styles.checkbox} /> : <Text style={styles.chevron}>{'\u203A'}</Text>}</Pressable>)}
+          </View>
+          </>}
+        </ScrollView>
+        <View pointerEvents="box-none" style={styles.quickAddContainer}>
         {databaseDemo && shared.error && <Text accessibilityRole="alert">{shared.error}</Text>}
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
