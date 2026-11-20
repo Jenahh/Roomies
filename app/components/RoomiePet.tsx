@@ -85,7 +85,7 @@ const accessoryLayerImages = import.meta.glob('../../assets/roomie-pet-kit/roomi
 
 function getSpriteMood(mood: PetMood | SpriteMood): SpriteMood {
   if (mood === 'Happy') return 'happy-3d';
-  if (mood === 'Attention') return 'annoyed-3d';
+  if (mood === 'Annoyed') return 'annoyed-3d';
   if (mood === 'Stressed') return 'stressed-3d';
   if (mood === 'happy') return 'happy-3d';
   if (mood === 'annoyed') return 'annoyed-3d';

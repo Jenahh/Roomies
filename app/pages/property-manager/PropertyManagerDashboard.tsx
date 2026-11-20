@@ -18,6 +18,7 @@ import RoleDashboardHeader from '../../components/dashboard/RoleDashboardHeader'
 import PropertyManagerHomeScreen from './PropertyManagerHomeScreen';
 import PropertyManagerProfileScreen from './PropertyManagerProfileScreen';
 import { styles as s } from '../../styles/PropertyManagerDashboard.styles';
+import { loadAnnouncements, saveAnnouncements } from '../../data/householdAnnouncements';
 
 const tabs: DashboardTab[] = [
   { label: 'Home', icon: 'home' },
@@ -36,7 +37,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
   const [residents, setResidents] = useState<ManagedResident[]>(demoManagedResidents);
   const [creatingAnnouncement, setCreatingAnnouncement] = useState(false);
   const [households, setHouseholds] = useState<ManagedHousehold[]>([]);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(loadAnnouncements);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -72,8 +73,22 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
   }
 
   function saveAnnouncement() {
-    if (!title.trim() || !message.trim()) { setError('Enter a title and message.'); return; }
-    setAnnouncements(previous => [{ id: randomUUID(), title: title.trim(), message: message.trim() }, ...previous]);
+    if (!title.trim() || !message.trim()) { 
+      setError('Enter a title and message.'); 
+      return; 
+    }
+
+    const updated = [
+      {id: crypto.randomUUID(), title: title.trim(), message: message.trim() },
+      ...announcements,
+      ];
+    
+    if (!saveAnnouncements(updated)) {
+      setError('Could not save the announcement on this device. Try again.');
+      return;
+    }
+    
+    setAnnouncements(updated);
     setCreatingAnnouncement(false);
     setActiveTab('Announcements');
   }
