@@ -23,7 +23,6 @@ const categories = {
   bill: { label: 'Bills', dot: '#A66316', background: '#FFF2DC' },
   event: { label: 'Events', dot: '#5B62BD', background: '#EDF0FF' },
 } as const;
-const MONTH_PREVIEW_LIMIT = 3;
 type EventLook = { title: string; icon: IconName; tint: string; ink: string };
 const householdEvent: EventLook = { title: 'Household event', icon: 'calendar', tint: '#EDF0FF', ink: '#5355AD' };
 const customEvent: EventLook = { title: 'Custom event', icon: 'sparkles', tint: '#FCE8ED', ink: '#8E4259' };
@@ -43,6 +42,7 @@ function AgendaIcon({ icon, tint, ink }: Pick<EventLook, 'icon' | 'tint' | 'ink'
   </View>;
 }
 
+const dayTints = ['#E8F0FF', '#EAF6EF', '#F0E9FC', '#FFF2DC', '#FCE8ED', '#EAF6EF', '#EDF0FF'];
 const weekdayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 const eventTimes = [null, ...Array.from({ length: 48 }, (_, index) => (index + 16) % 48)];
 const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -52,23 +52,36 @@ type CalendarItem = { id: string; title: string; date: string; detail: string } 
 );
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
-function MonthCard({ month, selected, today, itemsByDay, onMonth, onDay }: {
+function MonthCard({ month, selected, today, itemsByDay, onMonth, onDay, weekOnly = false }: {
   month: Date; selected: string | null; today: string; itemsByDay?: Map<string, CalendarItem[]>;
-  onMonth: (month: Date) => void; onDay: (day: string) => void;
+  onMonth: (month: Date) => void; onDay: (day: string) => void; weekOnly?: boolean;
 }) {
   const startOffset = (month.getDay() + 6) % 7;
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const weeks = Array.from({ length: Math.ceil((startOffset + days) / 7) }, (_, week) =>
     weekdayNames.map((_, index) => new Date(month.getFullYear(), month.getMonth(), 1 - startOffset + week * 7 + index)));
-  return <View style={s.calendar}>
+  const weekAnchor = readDate(selected ?? today);
+  const weekStart = new Date(weekAnchor);
+  weekStart.setDate(weekAnchor.getDate() - (weekAnchor.getDay() + 6) % 7);
+  const visibleWeeks = weekOnly ? [weekdayNames.map((_, index) => new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + index))] : weeks;
+  function navigate(offset: number) {
+    if (!weekOnly) {
+      onMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1));
+      return;
+    }
+    const next = new Date(weekAnchor);
+    next.setDate(next.getDate() + offset * 7);
+    onDay(dateKey(next));
+  }
+  return <View style={[s.calendar, weekOnly && s.weekCard]}>
     <View style={s.monthHeader}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Previous month" onPress={() => onMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} style={s.arrow}><Text style={s.arrowText}>‹</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={weekOnly ? 'Previous week' : 'Previous month'} onPress={() => navigate(-1)} style={s.arrow}><Text style={s.arrowText}>‹</Text></Pressable>
       <Text numberOfLines={1} accessibilityRole="header" accessibilityLiveRegion="polite" style={s.monthTitle}>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</Text>
-      <Pressable accessibilityRole="button" accessibilityLabel="Next month" onPress={() => onMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} style={s.arrow}><Text style={s.arrowText}>›</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={weekOnly ? 'Next week' : 'Next month'} onPress={() => navigate(1)} style={s.arrow}><Text style={s.arrowText}>›</Text></Pressable>
     </View>
-    <View style={s.week}>{weekdayNames.map(day => <Text key={day} numberOfLines={1} style={s.weekdayText}>{day}</Text>)}</View>
-    {weeks.map(week => <View key={dateKey(week[0])} style={s.week}>
-      {week.map(day => {
+    {!weekOnly && <View style={s.week}>{weekdayNames.map(day => <Text key={day} numberOfLines={1} style={s.weekdayText}>{day}</Text>)}</View>}
+    {visibleWeeks.map(week => <View key={dateKey(week[0])} style={[s.week, weekOnly ? s.weekCards : s.monthWeek]}>
+      {week.map((day, dayIndex) => {
         const key = dateKey(day);
         const active = key === selected;
         const current = key === today;
@@ -81,12 +94,18 @@ function MonthCard({ month, selected, today, itemsByDay, onMonth, onDay }: {
           accessibilityState={{ selected: active }}
           accessibilityLabel={`${dayLabel(day)}${current ? ', today' : ''}${itemsByDay ? `, ${entries.length} scheduled` : ''}`}
           onPress={() => onDay(key)}
-          style={s.dayCell}
+          style={[s.dayCell, weekOnly && s.weekDayCard, weekOnly && { backgroundColor: active ? '#5355AD' : dayTints[dayIndex] }, weekOnly && current && !active && s.currentWeekDay, !weekOnly && s.monthDayCell]}
         >
-          <View style={[s.dayNumber, current && s.today, active && s.activeDay]}>
-            <Text numberOfLines={1} style={[s.dayText, outside && s.outside, active && s.activeDayText]}>{day.getDate()}</Text>
+          {weekOnly && <Text numberOfLines={1} style={[s.weekDayLabel, active && s.activeDayText]}>{weekdayNames[dayIndex]}</Text>}
+          <View style={[s.dayNumber,
+            !weekOnly && !outside && { backgroundColor: dayTints[dayIndex] },
+            !weekOnly && outside && s.outsideTile,
+            !weekOnly && current && s.today,
+            !weekOnly && active && s.activeDay,
+          ]}>
+            <Text numberOfLines={1} style={[s.dayText, weekOnly && s.weekDate, !weekOnly && outside && s.outside, active && s.activeDayText]}>{day.getDate()}</Text>
           </View>
-          <View style={s.dots}>{kinds.map(kind => <View key={kind} style={[s.dot, { backgroundColor: categories[kind].dot }]} />)}</View>
+          <View style={s.dots}>{kinds.map(kind => <View key={kind} style={[s.dot, { backgroundColor: weekOnly && active ? '#FFFFFF' : categories[kind].dot }]} />)}</View>
         </Pressable>;
       })}
     </View>)}
@@ -103,8 +122,8 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
 }) {
   const today = dateKey(new Date());
   const [month, setMonth] = useState(() => monthStart(new Date()));
-  const [showFullMonth, setShowFullMonth] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [monthView, setMonthView] = useState(false);
+  const [selected, setSelected] = useState<string>(today);
   const [eventType, setEventType] = useState('');
   const [customTitle, setCustomTitle] = useState('');
   const isCustom = eventType === 'Custom event';
@@ -128,10 +147,7 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
     itemsByDay.set(item.date, dayItems);
   }
   const monthKey = dateKey(month).slice(0, 7);
-  const agenda = selected ? itemsByDay.get(selected) ?? [] : items.filter(item => item.date.startsWith(monthKey));
-
-  const hasMore = !selected && agenda.length > MONTH_PREVIEW_LIMIT;
-  const visible = hasMore && !showFullMonth ? agenda.slice(0, MONTH_PREVIEW_LIMIT) : agenda;
+  const visible = itemsByDay.get(selected) ?? [];
 
   useEffect(() => {
     if (!editing) return;
@@ -148,7 +164,6 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
   function chooseDay(day: string) {
     setMonth(monthStart(readDate(day)));
     setSelected(day);
-    setShowFullMonth(false);
     setDetail(null);
   }
 
@@ -235,14 +250,21 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
       {(monthKey !== today.slice(0, 7) || (selected && selected !== today)) && <Pressable accessibilityRole="button" onPress={() => chooseDay(today)} style={s.action}><Text style={s.link}>Today</Text></Pressable>}
     </View>
     {!!storageError && <Text numberOfLines={1} accessibilityRole="alert" style={s.error}>{storageError}</Text>}
-    <MonthCard month={month} selected={selected} today={today} itemsByDay={itemsByDay} onMonth={next => { setMonth(next); setSelected(null); setDetail(null); setShowFullMonth(false); }} onDay={chooseDay} />
+    <View style={s.viewToggle} accessibilityRole="radiogroup" accessibilityLabel="Calendar view">
+      {['Week', 'Month'].map((label, index) => <Pressable key={label} accessibilityRole="radio" accessibilityState={{ checked: monthView === Boolean(index) }} onPress={() => setMonthView(Boolean(index))} style={[s.viewOption, monthView === Boolean(index) && s.selectedChoice]}>
+        <Text numberOfLines={1} style={s.choiceText}>{label}</Text>
+      </Pressable>)}
+    </View>
+    <MonthCard month={month} selected={selected} today={today} itemsByDay={itemsByDay} weekOnly={!monthView} onMonth={next => {
+      const preferredDay = Math.min(readDate(selected).getDate(), new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate());
+      chooseDay(dateKey(new Date(next.getFullYear(), next.getMonth(), preferredDay)));
+    }} onDay={chooseDay} />
   </>;
 
   const agendaHeading = (
     <View style={[s.header, s.agendaHeader]}>
-      <Text numberOfLines={1} accessibilityRole="header" style={s.sectionTitle}>{selected ? dayLabel(readDate(selected)) : 'Roomies Plans'}</Text>
+      <Text numberOfLines={1} accessibilityRole="header" style={s.sectionTitle}>{selected === today ? 'Today’s plans' : dayLabel(readDate(selected))}</Text>
       <View style={s.agendaActions}>
-        {selected && <Pressable accessibilityRole="button" onPress={() => { setSelected(null); setDetail(null); }} style={s.action}><Text style={s.link}>All plans</Text></Pressable>}
         {onAdd && <Pressable accessibilityRole="button" accessibilityLabel="Add event" onPress={onAdd} style={({ pressed }) => [dashboardStyles.quickAddButton, s.agendaAdd, pressed && dashboardStyles.pressed]}>
           <Icon name="add" color="#FFFFFF" size={25} />
         </Pressable>}
@@ -256,9 +278,6 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
         <Text numberOfLines={1} style={s.itemTitle}>Nothing planned</Text>
       </View>
     </View>}
-    {hasMore && <Pressable accessibilityRole="button" accessibilityState={{ expanded: showFullMonth }} onPress={() => { setShowFullMonth(!showFullMonth); setDetail(null); }} style={s.more}>
-      <Text numberOfLines={1} style={s.link}>{showFullMonth ? 'Show fewer' : `Show ${agenda.length - MONTH_PREVIEW_LIMIT} more`}</Text>
-    </Pressable>}
   </>;
 
   const page = <>{calendar}{agendaHeading}{agendaItems}</>;

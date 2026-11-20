@@ -159,14 +159,14 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
 
   const residentHeader = <DashboardHeader notificationsActive={activeTab === 'Notifications'} household={householdName} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('CustomizePet'); }} />;
   function renderResidentPage(content: ReactNode) {
-    return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage]} showsVerticalScrollIndicator={false}>
+    return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage, activeTab === 'Chores' && styles.chorePage]} showsVerticalScrollIndicator={false}>
       {residentHeader}
       {content}
     </ScrollView>;
   }
 
-  function renderAddDock(label: string) {
-    return <View style={styles.quickAddDock}>
+  function renderAddDock(label: string, floating = false) {
+    return <View pointerEvents={floating ? 'box-none' : 'auto'} style={[styles.quickAddDock, floating && styles.floatingAddDock]}>
       <View style={styles.quickAddButtonWrapper}>
         <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
           <Icon name="add" color="#FFFFFF" size={25} />
@@ -196,7 +196,10 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
         ) : activeTab === 'Chores' ? (
-          <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={renderResidentPage} />
+          <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={content => <View style={styles.chorePane}>
+              {renderResidentPage(content)}
+              {renderAddDock('Add chore', true)}
+            </View>} />
         ) : activeTab === 'Calendar' ? (
           <CalendarScreen
             data={data}
@@ -252,7 +255,6 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             </View>
           )}
         </View>}
-        {activeTab === 'Chores' && renderAddDock('Add chore')}
         <DashboardNavigation activeTab={navigationTab} onNavigate={tab => { setQuickAddOpen(false); setQuickAddTarget(null); setSetupProfile(false); setActiveTab(tab); }} />
       </View>
       <Modal visible={panel === 'Household'} transparent animationType="slide" onRequestClose={() => setPanel(null)}>
