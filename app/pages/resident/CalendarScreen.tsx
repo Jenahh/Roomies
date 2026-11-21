@@ -42,7 +42,6 @@ function AgendaIcon({ icon, tint, ink }: Pick<EventLook, 'icon' | 'tint' | 'ink'
   </View>;
 }
 
-const dayTints = ['#E8F0FF', '#EAF6EF', '#F0E9FC', '#FFF2DC', '#FCE8ED', '#EAF6EF', '#EDF0FF'];
 const weekdayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 const eventTimes = [null, ...Array.from({ length: 48 }, (_, index) => (index + 16) % 48)];
 const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -94,12 +93,15 @@ function MonthCard({ month, selected, today, itemsByDay, onMonth, onDay, weekOnl
           accessibilityState={{ selected: active }}
           accessibilityLabel={`${dayLabel(day)}${current ? ', today' : ''}${itemsByDay ? `, ${entries.length} scheduled` : ''}`}
           onPress={() => onDay(key)}
-          style={[s.dayCell, weekOnly && s.weekDayCard, weekOnly && { backgroundColor: active ? '#5355AD' : dayTints[dayIndex] }, weekOnly && current && !active && s.currentWeekDay, !weekOnly && s.monthDayCell]}
+          style={[s.dayCell, weekOnly && s.weekDayCard, weekOnly && s.emptyDay,
+            weekOnly && entries.length > 0 && s.scheduledDay,
+            weekOnly && current && !active && s.currentWeekDay,
+            weekOnly && active && s.activeDay, !weekOnly && s.monthDayCell]}
         >
           {weekOnly && <Text numberOfLines={1} style={[s.weekDayLabel, active && s.activeDayText]}>{weekdayNames[dayIndex]}</Text>}
           <View style={[s.dayNumber,
-            !weekOnly && !outside && { backgroundColor: dayTints[dayIndex] },
-            !weekOnly && outside && s.outsideTile,
+            !weekOnly && s.emptyDay,
+            !weekOnly && entries.length > 0 && s.scheduledDay,
             !weekOnly && current && s.today,
             !weekOnly && active && s.activeDay,
           ]}>
