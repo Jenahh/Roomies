@@ -1,3 +1,4 @@
+import { getPersonalChorePoints, isPersonalChore, POINTS_PER_CHORE } from '../../data/choreRewards';
 import AchievementProgressBar from '../../components/dashboard/AchievementProgressBar';
 import { Pressable, Text, View } from 'react-native';
 import type { ResidentData } from '../../hooks/useResidentData';
@@ -11,8 +12,8 @@ function weekKey(value: Date) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 }
 
-export default function AchievementsScreen({ data, now, onBack }: { data: ResidentData; now: Date; onBack: () => void }) {
-  const personalCompleted = data.chores.filter(chore => chore.completed && (!chore.unassigned && (!chore.assignee || chore.assignee === data.name)));
+export default function AchievementsScreen({ data, now, onBack, sharedChores }: { data: ResidentData; now: Date; sharedChores?: boolean; onBack: () => void }) {
+  const points = getPersonalChorePoints(data, sharedChores);
   const currentWeek = weekKey(now);
   const weeks = [2, 1, 0].map(offset => {
     const date = new Date(now);
@@ -26,9 +27,9 @@ export default function AchievementsScreen({ data, now, onBack }: { data: Reside
   for (const week of [...weeks].reverse()) { if (!week.achieved) break; streak++; }
   const current = weeks[2];
   const completedWeeks = [...new Set(data.chores.map(chore => weekKey(new Date(chore.due + 'T12:00:00'))))].filter(key => key <= currentWeek && data.chores.filter(chore => weekKey(new Date(chore.due + 'T12:00:00')) === key).every(chore => chore.completed)).length;
-  const personalThisWeek = personalCompleted.filter(chore => weekKey(new Date(chore.due + 'T12:00:00')) === currentWeek).length;
+  const personalThisWeek = data.chores.filter(chore => chore.completed && isPersonalChore(chore, data.name, sharedChores) && weekKey(new Date(chore.due + 'T12:00:00')) === currentWeek).length;
   const badges: { title: string; detail: string; icon: IconName; unlocked: boolean }[] = [
-    { title: 'Cleaning Champion', detail: '20 chores done', icon: 'star', unlocked: personalCompleted.length >= 20 },
+    { title: 'Cleaning Champion', detail: '20 chores done', icon: 'star', unlocked: points >= 20 * POINTS_PER_CHORE },
     { title: 'Team Player', detail: 'All weekly chores done', icon: 'concerns', unlocked: current.achieved },
     { title: 'On a Roll', detail: '3 complete weeks in a row', icon: 'flame', unlocked: streak >= 3 },
   ];
@@ -44,11 +45,11 @@ export default function AchievementsScreen({ data, now, onBack }: { data: Reside
       <View style={s.points}>
         <View style={s.pointsCopy}>
           <Text style={s.sectionTitle}>Roomie points</Text>
-          <Text style={s.detail}>Earn 10 points for every assigned chore you complete.</Text>
-          <AchievementProgressBar label="Points toward Cleaning Champion" value={personalCompleted.length * 10} target={200} />
-          <Text style={s.detail}>{Math.min(personalCompleted.length * 10, 200)} / 200 pts</Text>
+          <Text style={s.detail}>Earn {POINTS_PER_CHORE} points for every assigned chore you complete.</Text>
+          <AchievementProgressBar label="Points toward Cleaning Champion" value={points} target={200} />
+          <Text style={s.detail}>{Math.min(points, 200)} / 200 pts</Text>
         </View>
-        <View style={s.pill}><Text style={s.pointsText}>{personalCompleted.length * 10} pts</Text></View>
+        <View style={s.pill}><Text style={s.pointsText}>{points} pts</Text></View>
       </View>
       <View style={s.streak}>
         <Text style={s.sectionTitle}>{streak ? `${streak}-week streak` : 'Start your household streak'}</Text>

@@ -1,31 +1,13 @@
-
-import {
-  useEffect,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
-
-import {
-  History,
-  Wrench,
-  MessageCircle,
-  ChevronRight,
-} from 'lucide-react';
-
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { Image, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { History, Wrench, MessageCircle, ChevronRight } from 'lucide-react';
 import RoomiePet from '../../components/RoomiePet';
 import type { ResidentData } from '../../hooks/useResidentData';
-
+import { styles as s } from '../../styles/ProfileScreen.styles';
 import {
-  createSupportRequest,
-  getSupportRequests,
-  getSupportReplies,
-  sendSupportReply,
-  type SupportRequestResponse,
-  type SupportReply,
+  createSupportRequest, getSupportRequests, getSupportReplies, sendSupportReply,
+  type SupportRequestResponse, type SupportReply,
 } from '../../services/api';
-
 import './SupportHistoryScreen.css';
 
 type Props = {
@@ -35,269 +17,82 @@ type Props = {
   kind: 'maintenance' | 'ra';
   onBack: () => void;
 };
-
 const statusLabels: Record<string, string> = {
-  submitted: 'Submitted',
-  in_progress: 'In Progress',
-  resolved: 'Resolved',
-  closed: 'Closed',
+  submitted: 'Submitted', in_progress: 'In Progress', resolved: 'Resolved', closed: 'Closed',
 };
+function formatStatus(status: string): string { return statusLabels[status] || status; }
 
-function formatStatus(status: string): string {
-  return statusLabels[status] || status;
-}
-
-export default function SupportHistoryScreen({
-  data,
-  setData,
-  storageError,
-  kind,
-  onBack,
-}: Props) {
-  // ========================================
-  // SCREEN STATE
-  // ========================================
-
+export default function SupportHistoryScreen({ data, setData, storageError, kind, onBack }: Props) {
   const [id, setId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [confirm, setConfirm] = useState(false);
-
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
   const submissionLock = useRef(false);
-
-  // Submitted requests
-  const [submittedRequests, setSubmittedRequests] = useState<
-    SupportRequestResponse[]
-  >([]);
-
+  const [submittedRequests, setSubmittedRequests] = useState<SupportRequestResponse[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [requestsError, setRequestsError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-
-  // Conversation
   const [replies, setReplies] = useState<SupportReply[]>([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [replyError, setReplyError] = useState('');
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
-
   const sendingReplyLock = useRef(false);
-
   const maintenance = kind === 'maintenance';
-
   const Icon = maintenance ? Wrench : MessageCircle;
-
-  // ========================================
-  // LOCAL DRAFTS
-  // ========================================
-
-  const drafts = [...(data.supportDrafts || [])]
-    .filter(x => x.kind === kind)
-    .sort((a, b) =>
-      b.createdAt.localeCompare(a.createdAt)
-    );
-
-  // ========================================
-  // SUBMITTED REQUESTS
-  // ========================================
-
-  const requests = submittedRequests
-    .filter(request =>
-      request.request_type ===
-      (maintenance ? 'maintenance' : 'ra_message')
-    )
-    .sort((a, b) =>
-      b.created_at.localeCompare(a.created_at)
-    );
-
-  // Prefix IDs to distinguish drafts from database requests.
-  const selectedDraft = id?.startsWith('draft:')
-    ? drafts.find(x => x.id === id.slice(6))
-    : undefined;
-
-  const selectedRequest = id?.startsWith('request:')
-    ? requests.find(x => x.id === Number(id.slice(8)))
-    : undefined;
-
-  // ========================================
-  // LOAD SUBMITTED REQUESTS
-  // ========================================
-
+  const drafts = [...(data.supportDrafts || [])].filter(x => x.kind === kind)
+    .sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  const requests = submittedRequests.filter(request => request.request_type ===
+    (maintenance ? 'maintenance' : 'ra_message')).sort((a,b) => b.created_at.localeCompare(a.created_at));
+  const selectedDraft = id?.startsWith('draft:') ? drafts.find(x => x.id === id.slice(6)) : undefined;
+  const selectedRequest = id?.startsWith('request:') ? requests.find(x => x.id === Number(id.slice(8))) : undefined;
   async function refreshRequests() {
-    setRefreshing(true);
-    setRequestsError('');
-
-    try {
-      const result = await getSupportRequests();
-      setSubmittedRequests(result);
-    } catch (err) {
-      setRequestsError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to load submitted requests.'
-      );
-    } finally {
-      setLoadingRequests(false);
-      setRefreshing(false);
-    }
+    setRefreshing(true); setRequestsError('');
+    try { setSubmittedRequests(await getSupportRequests()); }
+    catch (err) { setRequestsError(err instanceof Error ? err.message : 'Unable to load submitted requests.'); }
+    finally { setLoadingRequests(false); setRefreshing(false); }
   }
-
   useEffect(() => {
     let active = true;
-
-    setLoadingRequests(true);
-    setRequestsError('');
-
-    getSupportRequests()
-      .then(result => {
-        if (active) {
-          setSubmittedRequests(result);
-        }
-      })
-      .catch(err => {
-        if (active) {
-          setRequestsError(
-            err instanceof Error
-              ? err.message
-              : 'Unable to load submitted requests.'
-          );
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoadingRequests(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
+    setLoadingRequests(true); setRequestsError('');
+    getSupportRequests().then(result => { if (active) setSubmittedRequests(result); })
+      .catch(err => { if (active) setRequestsError(err instanceof Error ? err.message : 'Unable to load submitted requests.'); })
+      .finally(() => { if (active) setLoadingRequests(false); });
+    return () => { active = false; };
   }, [kind]);
-
-  // ========================================
-  // LOAD CONVERSATION FOR SELECTED REQUEST
-  // ========================================
-
   useEffect(() => {
     let active = true;
-
-    setReplies([]);
-    setReplyText('');
-    setReplyError('');
-
-    if (!selectedRequest) {
-      setLoadingReplies(false);
-      return;
-    }
-
+    setReplies([]); setReplyText(''); setReplyError('');
+    if (!selectedRequest) { setLoadingReplies(false); return; }
     setLoadingReplies(true);
-
-    getSupportReplies(selectedRequest.id)
-      .then(result => {
-        if (active) {
-          setReplies(result);
-        }
-      })
-      .catch(err => {
-        if (active) {
-          setReplyError(
-            err instanceof Error
-              ? err.message
-              : 'Unable to load conversation.'
-          );
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoadingReplies(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
+    getSupportReplies(selectedRequest.id).then(result => { if (active) setReplies(result); })
+      .catch(err => { if (active) setReplyError(err instanceof Error ? err.message : 'Unable to load conversation.'); })
+      .finally(() => { if (active) setLoadingReplies(false); });
+    return () => { active = false; };
   }, [selectedRequest?.id]);
-
-  // ========================================
-  // RESET SCREEN STATE
-  // ========================================
-
-  function reset() {
-    setEditing(false);
-    setConfirm(false);
-    setNotice('');
-    setError('');
-  }
-
+  function reset() { setEditing(false); setConfirm(false); setNotice(''); setError(''); }
   function goBack() {
-    if (id !== null) {
-      setId(null);
-      reset();
-      setReplyError('');
-      setReplyText('');
-      refreshRequests();
-    } else {
-      onBack();
-    }
+    if (id !== null) { setId(null); reset(); setReplyError(''); setReplyText(''); void refreshRequests(); }
+    else onBack();
   }
-
-  // ========================================
-  // SAVE EXISTING DRAFT
-  // ========================================
-
   function save() {
     if (!selectedDraft || submissionLock.current) return;
-
-    if (!title.trim() || !description.trim()) {
-      setError('Please enter a title and description.');
-      return;
-    }
-
-    setData(previous => ({
-      ...previous,
-
-      supportDrafts: (previous.supportDrafts || [])
-        .map(x =>
-          x.id === selectedDraft.id && x.kind === kind
-            ? {
-                ...x,
-                title: title.trim(),
-                description: description.trim(),
-              }
-            : x
-        ),
-    }));
-
-    setEditing(false);
-    setError('');
-    setNotice('Changes updated.');
+    if (!title.trim() || !description.trim()) { setError('Please enter a title and description.'); return; }
+    setData(previous => ({ ...previous, supportDrafts: (previous.supportDrafts || []).map(x =>
+      x.id === selectedDraft.id && x.kind === kind ? { ...x, title: title.trim(), description: description.trim() } : x) }));
+    setEditing(false); setError(''); setNotice('Changes updated.');
   }
-
-  // ========================================
-  // DELETE EXISTING DRAFT
-  // ========================================
-
   function remove() {
     if (!selectedDraft || submissionLock.current) return;
-
-    setData(previous => ({
-      ...previous,
-
-      supportDrafts: (previous.supportDrafts || [])
-        .filter(x =>
-          !(x.id === selectedDraft.id && x.kind === kind)
-        ),
-    }));
-
-    setId(null);
-    reset();
+    setData(previous => ({ ...previous, supportDrafts: (previous.supportDrafts || []).filter(x =>
+      !(x.id === selectedDraft.id && x.kind === kind)) }));
+    setId(null); reset();
   }
+
 
   // ========================================
   // SUBMIT DRAFT TO BACKEND
@@ -414,6 +209,108 @@ export default function SupportHistoryScreen({
   // ========================================
   // SCREEN
   // ========================================
+
+
+  if (Platform.OS !== 'web') {
+    const action = (label: string, onPress: () => void, disabled = false) => (
+      <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={s.edit}>
+        <Text style={s.link}>{label}</Text>
+      </Pressable>
+    );
+    return (
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+        {action(id !== null ? 'Back to history' : 'Back to profile', goBack, submitting || sendingReply)}
+        <Text accessibilityRole="header" style={s.title}>{maintenance ? 'Request history' : 'Message history'}</Text>
+        {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
+        {!!error && <Text accessibilityRole="alert" style={s.error}>{error}</Text>}
+        {!!requestsError && <Text accessibilityRole="alert" style={s.error}>{requestsError}</Text>}
+        {!!notice && <Text style={s.subtitle}>{notice}</Text>}
+        {selectedDraft ? (
+          <View style={s.card}>
+            <Text style={s.subtitle}>Draft · Not sent</Text>
+            <Text style={s.subtitle}>{selectedDraft.category || 'Other'} · {new Date(selectedDraft.createdAt).toLocaleDateString()}</Text>
+            {editing ? (
+              <>
+                <Text style={s.label}>{maintenance ? 'Issue title' : 'Subject'}</Text>
+                <TextInput accessibilityLabel="Draft title" value={title} onChangeText={setTitle} style={s.input} maxLength={200}/>
+                <Text style={s.label}>Description</Text>
+                <TextInput accessibilityLabel="Draft description" multiline value={description} onChangeText={setDescription} style={s.input} maxLength={10000}/>
+                {action('Save changes', save)}
+                {action('Cancel', reset)}
+              </>
+            ) : (
+              <>
+                <Text style={s.sectionTitle}>{selectedDraft.title}</Text>
+                <Text style={s.subtitle}>{selectedDraft.description}</Text>
+                {!!selectedDraft.photo && <Image source={{ uri: selectedDraft.photo }} style={{ height: 160 }} resizeMode="contain"/>}
+                {confirm ? (
+                  <>
+                    <Text style={s.label}>Delete this draft?</Text>
+                    {action('Confirm deletion', remove)}
+                    {action('Cancel', reset)}
+                  </>
+                ) : (
+                  <>
+                    {action(submitting ? 'Sending...' : maintenance ? 'Submit request' : 'Send message', () => { void submitDraft(); }, submitting)}
+                    {action('Edit draft', () => { setTitle(selectedDraft.title); setDescription(selectedDraft.description); reset(); setEditing(true); }, submitting)}
+                    {action('Delete draft', () => { setNotice(''); setConfirm(true); }, submitting)}
+                  </>
+                )}
+              </>
+            )}
+          </View>
+        ) : selectedRequest ? (
+          <View style={s.card}>
+            <Text style={s.subtitle}>{formatStatus(selectedRequest.status)}</Text>
+            <Text style={s.sectionTitle}>{selectedRequest.subject}</Text>
+            <Text style={s.subtitle}>{selectedRequest.category || 'Other'} · {new Date(selectedRequest.created_at).toLocaleDateString()}</Text>
+            <Text style={s.subtitle}>{selectedRequest.description}</Text>
+            {!!selectedRequest.photo && <Image source={{ uri: selectedRequest.photo }} style={{ height: 160 }} resizeMode="contain"/>}
+            <Text style={s.sectionTitle}>Conversation</Text>
+            <Text style={s.subtitle}>You: {selectedRequest.description}</Text>
+            {loadingReplies && <Text style={s.subtitle}>Loading conversation...</Text>}
+            {replies.map(reply => (
+              <View key={reply.id} style={s.input}>
+                <Text style={s.label}>{reply.sender_id === selectedRequest.sender_id ? 'You' : reply.sender_name || 'Staff'}</Text>
+                <Text>{reply.message}</Text>
+                <Text style={s.subtitle}>{new Date(reply.created_at).toLocaleString()}</Text>
+              </View>
+            ))}
+            {!!replyError && <Text accessibilityRole="alert" style={s.error}>{replyError}</Text>}
+            <TextInput accessibilityLabel="Write a reply" placeholder="Write a reply..." multiline value={replyText} onChangeText={setReplyText} style={s.input} maxLength={10000} editable={!sendingReply}/>
+            {action(sendingReply ? 'Sending...' : 'Send reply', () => { void handleSendReply(); }, sendingReply || !replyText.trim())}
+            {action('Refresh conversation', () => {
+              setLoadingReplies(true);
+              getSupportReplies(selectedRequest.id).then(setReplies)
+                .catch(err => setReplyError(err instanceof Error ? err.message : 'Unable to refresh conversation.'))
+                .finally(() => setLoadingReplies(false));
+              void refreshRequests();
+            }, loadingReplies || sendingReply)}
+          </View>
+        ) : (
+          <View style={s.card}>
+            {action(refreshing ? 'Refreshing...' : 'Refresh history', () => { void refreshRequests(); }, refreshing)}
+            {loadingRequests && <Text style={s.subtitle}>Loading requests...</Text>}
+            {!loadingRequests && requests.length === 0 && drafts.length === 0 && <Text style={s.subtitle}>No requests yet.</Text>}
+            {requests.map(item => (
+              <Pressable key={`request-${item.id}`} accessibilityRole="button" style={s.input} onPress={() => { reset(); setId(`request:${item.id}`); }}>
+                <Text style={s.sectionTitle}>{item.subject}</Text>
+                <Text numberOfLines={2} style={s.subtitle}>{item.description}</Text>
+                <Text style={s.subtitle}>{formatStatus(item.status)} · {new Date(item.created_at).toLocaleDateString()}</Text>
+              </Pressable>
+            ))}
+            {drafts.map(item => (
+              <Pressable key={`draft-${item.id}`} accessibilityRole="button" style={s.input} onPress={() => { reset(); setId(`draft:${item.id}`); }}>
+                <Text style={s.sectionTitle}>{item.title}</Text>
+                <Text numberOfLines={2} style={s.subtitle}>{item.description}</Text>
+                <Text style={s.subtitle}>Draft · {new Date(item.createdAt).toLocaleDateString()}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    );
+  }
 
   return (
     <section className="support-history">

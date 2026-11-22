@@ -1,13 +1,14 @@
+import { useContext } from 'react';
+import { RoomiePetContext } from './RoomiePetContext';
+import RoomiePetPlaceholder from './RoomiePetPlaceholder';
+import { preloadRoomieImageSources, type RoomieImageSource } from './roomiePetImageLoader';
+import { useRoomieAssetBundle } from './useRoomieAssetBundle';
+import { getPetAccessoryIds, getRoomieAccessoryFrame } from '../data/roomiePetAccessories';
 import { Image, View } from 'react-native';
 import { getImageSource } from '../utils/imageSource';
 import type { PetMood } from '../data/roomiePetMood';
 import { ROOMIE_ACTIONS, type RoomieActionId } from '../data/roomieActions';
-import {
-  ROOMIE_ACCESSORY_PLACEMENTS,
-  ROOMIE_ACCESSORY_SLOTS,
-  type RoomieAccessoryId,
-  type RoomieAccessorySlot,
-} from '../data/roomiePetAccessories';
+import { ROOMIE_ACCESSORY_SLOTS, type RoomieAccessoryId, type RoomieAccessorySlot } from '../data/roomiePetAccessories';
 import annoyed3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-body.png';
 import annoyed3dDetails from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/annoyed-3d-details.png';
 import happy3dBody from '../../assets/roomie-pet-kit/roomie-pet-kit/assets/happy-3d-body.png';
@@ -111,6 +112,9 @@ export const ROOMIE_ACCESSORY_IMAGES: Record<string, string | number> = {
   '../../assets/roomie-pet-kit/roomie-pet-kit/accessories/bucket-hat.png': bucketHat,
 };
 
+// Warm the default sprite as soon as the renderer is loaded. Other bundles share this cache.
+void preloadRoomieImageSources([...spriteAssets.happy, ...spriteAssets.assistant, ...spriteAssets['property-manager']]).catch(() => {});
+
 type SpriteMood = 'happy' | 'annoyed' | 'stressed' | 'happy-3d' | 'annoyed-3d' | 'stressed-3d';
 type RoomieRole = 'assistant' | 'property-manager';
 type RoomiePetProps = {
@@ -129,46 +133,61 @@ const defaultColor = ROOMIE_COLORS.blue;
 const accessoryLayer = { position: 'absolute' as const, width: '100%' as const, height: '100%' as const };
 
 function normalizeMood(mood: PetMood | SpriteMood): 'happy' | 'annoyed' | 'stressed' {
-  if (mood === 'Attention' || mood === 'annoyed' || mood === 'annoyed-3d') return 'annoyed';
+  if (mood === 'Annoyed' || mood === 'annoyed' || mood === 'annoyed-3d') return 'annoyed';
   if (mood === 'Stressed' || mood === 'stressed' || mood === 'stressed-3d') return 'stressed';
   return 'happy';
 }
 
-export default function RoomiePet({ mood = 'happy', color, accessories = [], accessoryColors = {}, size = 128, accessibilityLabel, role, action }: RoomiePetProps) {
-  const expression = normalizeMood(mood);
-  const [body, details] = action ? actionAssets[action] : spriteAssets[role ?? expression];
-  const face = action ? actionAssets[action][2][expression === 'happy' ? 0 : expression === 'annoyed' ? 1 : 2] : null;
+export default function RoomiePet({ mood = 'happy', color, accessories: accessoryOverride, accessoryColors: accessoryColorOverride, size = 128, accessibilityLabel, role, action }: RoomiePetProps) {
+  const requestedExpression = normalizeMood(mood);
+  const [requestedBody, requestedDetails] = action ? actionAssets[action] : spriteAssets[role ?? requestedExpression];
+  const requestedFace = action ? actionAssets[action][2][requestedExpression === 'happy' ? 0 : requestedExpression === 'annoyed' ? 1 : 2] : null;
+  const savedPet = useContext(RoomiePetContext);
+  const accessories = accessoryOverride ?? getPetAccessoryIds(savedPet);
+  const accessoryColors = accessoryColorOverride ?? savedPet?.accessoryColors ?? {};
   const equippedBySlot = new Map<RoomieAccessorySlot, RoomieAccessoryId>();
   accessories.forEach(id => equippedBySlot.set(ROOMIE_ACCESSORY_SLOTS[id], id));
-  const selectedAccessories = [...equippedBySlot.values()];
+  const requestedAccessories = role ? [] : [...equippedBySlot.values()];
+  const sources: RoomieImageSource[] = [requestedBody, requestedDetails];
+  if (requestedFace) sources.push(requestedFace);
+  for (const id of requestedAccessories) {
+    const [original, base, extra] = accessoryAssets[id];
+    if (accessoryColors[id] && base) { sources.push(base); if (extra) sources.push(extra); }
+    else sources.push(original);
+  }
+  const snapshot = { expression: requestedExpression, body: requestedBody, details: requestedDetails, face: requestedFace, action, role, selectedAccessories: requestedAccessories, accessoryColors: { ...accessoryColors }, color };
+  const bundle = useRoomieAssetBundle({ key: JSON.stringify(snapshot), sources, value: snapshot });
+  const label = accessibilityLabel ?? (action ? `Roomie ${ROOMIE_ACTIONS[action].label.toLowerCase()}` : role === 'assistant' ? 'Resident Assistant Roomie' : role === 'property-manager' ? 'Property Manager Roomie' : `Roomie Pet, ${requestedExpression}`);
+  const colorKey = color?.toLowerCase() as keyof typeof ROOMIE_COLORS | undefined;
+  if (!bundle.value) return <RoomiePetPlaceholder size={size} color={colorKey ? ROOMIE_COLORS[colorKey] ?? defaultColor : defaultColor} accessibilityLabel={label} />;
+  const { expression, body, details, face, action: displayedAction, role: displayedRole, selectedAccessories, accessoryColors: displayedColors, color: displayedColor } = bundle.value;
 
   function renderAccessory(id: RoomieAccessoryId) {
     const [original, base, extra] = accessoryAssets[id];
-    const [left, top, width, height] = ROOMIE_ACCESSORY_PLACEMENTS[id].map(value => value * size);
-    const accessoryColor = accessoryColors[id];
-    const glassesOffset = id === 'round-glasses' && expression !== 'happy' ? size * 0.06 : 0;
+    const [left, top, width, height] = getRoomieAccessoryFrame(id, size, expression, displayedAction);
+    const accessoryColor = displayedColors[id];
     const bodyOffset = ROOMIE_ACCESSORY_SLOTS[id] === 'body' && expression === 'stressed' ? size * 0.03 : 0;
     return (
-      <View key={id} pointerEvents="none" style={{ position: 'absolute', left, top: top + glassesOffset + bodyOffset, width, height }}>
+      <View key={id} pointerEvents="none" style={{ position: 'absolute', left, top: top + bodyOffset, width, height }}>
         <Image source={getImageSource(accessoryColor && base ? base : original)} resizeMode="stretch" style={{ width: '100%', height: '100%', tintColor: accessoryColor && base ? accessoryColor : undefined }} />
         {accessoryColor && extra && <Image source={getImageSource(extra)} resizeMode="stretch" style={accessoryLayer} />}
       </View>
     );
   }
 
-  const colorKey = color?.toLowerCase() as keyof typeof ROOMIE_COLORS | undefined;
+  const displayedColorKey = displayedColor?.toLowerCase() as keyof typeof ROOMIE_COLORS | undefined;
   return (
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel={accessibilityLabel ?? (action ? `Roomie ${ROOMIE_ACTIONS[action].label.toLowerCase()}` : role === 'assistant' ? 'Resident Assistant Roomie' : role === 'property-manager' ? 'Property Manager Roomie' : `Roomie Pet, ${expression}`)}
+      accessibilityLabel={label}
       style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
     >
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
-      <Image source={getImageSource(body)} resizeMode="contain" style={{ width: '100%', height: '100%', tintColor: colorKey ? ROOMIE_COLORS[colorKey] : defaultColor }} />
+      {!displayedRole && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] === 'back').map(renderAccessory)}
+      <Image source={getImageSource(body)} resizeMode="contain" style={{ width: '100%', height: '100%', tintColor: displayedColorKey ? ROOMIE_COLORS[displayedColorKey] ?? defaultColor : defaultColor }} />
       <Image source={getImageSource(details)} resizeMode="contain" style={accessoryLayer} />
       {face && <Image source={getImageSource(face)} resizeMode="contain" style={accessoryLayer} />}
-      {!role && !action && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
+      {!displayedRole && selectedAccessories.filter(id => ROOMIE_ACCESSORY_SLOTS[id] !== 'back').map(renderAccessory)}
     </View>
   );
 }

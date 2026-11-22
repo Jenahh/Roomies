@@ -1,8 +1,13 @@
+import { randomUUID } from '../../utils/randomUUID';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
+import { loadAnnouncements, saveAnnouncements } from '../../data/householdAnnouncements';
 
 import {
   getHouseholdResidents,
   replaceHouseholdResidents,
 } from '../../data/householdResidents';
+
 
 import PropertyManagerRequestsScreen from './PropertyManagerRequestsScreen';
 import PropertyManagerAnnouncementsScreen from './PropertyManagerAnnouncementsScreen';
@@ -24,12 +29,12 @@ import {
 import {
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
   ActivityIndicator,
 } from 'react-native';
+
 
 import type { ResidentUser } from '../../data/demoAccount';
 
@@ -59,6 +64,7 @@ import PropertyManagerProfileScreen from './PropertyManagerProfileScreen';
 import {
   styles as s,
 } from '../../styles/PropertyManagerDashboard.styles';
+
 
 
 const tabs: DashboardTab[] = [
@@ -131,7 +137,7 @@ export default function PropertyManagerDashboard({
   const [selectedHouseholdId, setSelectedHouseholdId] =
     useState<string | undefined>(undefined);
 
-  const [activeTab, setActiveTab] = useState('Home');
+  const [activeTab, setActiveTab] = useState(user.databaseDemoStaff ? 'Requests' : 'Home');
 
   const [now, setNow] = useState(() => new Date());
 
@@ -148,7 +154,8 @@ export default function PropertyManagerDashboard({
     useState<ManagedHousehold[]>([]);
 
   const [announcements, setAnnouncements] =
-    useState<Announcement[]>([]);
+    useState<Announcement[]>(loadAnnouncements);
+
 
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -187,8 +194,8 @@ export default function PropertyManagerDashboard({
   useEffect(() => {
 
     if (
-      activeTab !== 'Home' &&
-      activeTab !== 'Requests'
+      user.databaseDemoStaff ||
+      (activeTab !== 'Home' && activeTab !== 'Requests')
     ) {
       return;
     }
@@ -335,15 +342,21 @@ export default function PropertyManagerDashboard({
 
     }
 
-    setAnnouncements(previous => [
+    const updated = [
       {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         title: title.trim(),
         message: message.trim(),
       },
-      ...previous,
-    ]);
+      ...announcements,
+    ];
 
+    if (!saveAnnouncements(updated)) {
+      setError('Could not save the announcement on this device. Try again.');
+      return;
+    }
+
+    setAnnouncements(updated);
     setCreatingAnnouncement(false);
     setActiveTab('Announcements');
 
@@ -397,12 +410,13 @@ export default function PropertyManagerDashboard({
 
   return (
 
-    <SafeAreaView style={s.safeArea}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={s.safeArea}>
 
       <View style={s.shell}>
 
         <ScrollView
           ref={pageScroll}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={s.page}
         >
 
@@ -415,8 +429,8 @@ export default function PropertyManagerDashboard({
 
           {/* Maintenance loading and refresh */}
 
-          {(activeTab === 'Home' ||
-            activeTab === 'Requests') && (
+          {!user.databaseDemoStaff &&
+            (activeTab === 'Home' || activeTab === 'Requests') && (
 
             <View style={{ gap: 10 }}>
 
@@ -491,8 +505,9 @@ export default function PropertyManagerDashboard({
 
           {/* Home dashboard */}
 
-          {activeTab === 'Home' && (
-
+          {activeTab === 'Home' && (user.databaseDemoStaff ? (
+            <DatabaseRequests user={user} type="Maintenance" />
+          ) : (
             <PropertyManagerHomeScreen
               name={data.name}
               now={now}
@@ -505,13 +520,17 @@ export default function PropertyManagerDashboard({
               onRequest={setSelectedRequest}
               onManageResidents={() => openResidents()}
             />
-
-          )}
+          ))}
 
 
           {/* All maintenance requests */}
 
+          {activeTab === 'Requests' && user.databaseDemoStaff && (
+            <DatabaseRequests user={user} type="Maintenance" />
+          )}
+
           {activeTab === 'Requests' &&
+            !user.databaseDemoStaff &&
             !requestsLoading &&
             !requestsError && (
 
@@ -550,7 +569,7 @@ export default function PropertyManagerDashboard({
                 setHouseholds(previous => [
                   ...previous,
                   {
-                    id: crypto.randomUUID(),
+                    id: randomUUID(),
                     propertyName: demoProperty.name,
                     name,
                   },
@@ -602,6 +621,7 @@ export default function PropertyManagerDashboard({
             />
 
           )}
+
 
         </ScrollView>
 
@@ -674,6 +694,7 @@ export default function PropertyManagerDashboard({
               />
 
             )}
+
 
           </ScrollView>
 

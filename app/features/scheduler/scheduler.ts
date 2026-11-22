@@ -62,7 +62,7 @@ export function weekOf(date: string): string {
   return addDays(date, -(new Date(date + 'T12:00:00').getDay() + 6) % 7);
 }
 
-function isAssignedTo(chore: ScheduledTask, member: SchedulerMember, members: SchedulerMember[], residentName: string) {
+export function isAssignedTo(chore: ScheduledTask, member: SchedulerMember, members: SchedulerMember[], residentName: string) {
   if (chore.unassigned) return false;
   if (chore.memberId && members.some(person => person.id === chore.memberId)) return chore.memberId === member.id;
   return normalizedName(chore.assignee || residentName) === normalizedName(member.name);

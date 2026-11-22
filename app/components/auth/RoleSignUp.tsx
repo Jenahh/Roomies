@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles as s } from '../../styles/ResidentSignUp.styles';
+import roomiesLogo from '../../../assets/Roomies Logo.png';
 import { demoJoinCodes } from '../../data/demoJoinCodes';
 import { matchesResidentInvitation } from '../../data/residentInvitations';
 import type { ResidentUser } from '../../data/demoAccount';
 import AccountDetailsFields from './AccountDetailsFields';
 import SignupProgress from './SignupProgress';
 import RoomiePet from '../RoomiePet';
+import { getImageSource } from '../../utils/imageSource';
 
 export type SignUpNavigationProps = {
   onBack: () => void;
@@ -71,8 +74,12 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
     setPassword(''); setConfirmPassword(''); setError('');
     onRequestSubmitted();
   }
-  return <SafeAreaView style={s.safeArea}><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
-    <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable><Text style={s.step}>{step} of 2</Text></View>
+  return <SafeAreaView style={s.safeArea}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
+    <View style={s.header}>
+      <Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+      <View pointerEvents="none" style={s.logoCenter}><Image source={getImageSource(roomiesLogo)} style={s.logo} resizeMode="contain" accessibilityLabel="Roomies logo" /></View>
+      <Text style={s.step}>{step} of 2</Text>
+    </View>
     <SignupProgress step={step === 1 ? 2 : 3} />
     <View style={[s.homeIcon, { backgroundColor: content.avatarBackground }]}>
       {role === 'assistant'

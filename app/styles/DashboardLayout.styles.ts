@@ -2,8 +2,8 @@ import { Platform, StyleSheet } from 'react-native';
 import { backNavigationText } from './BackNavigation.styles';
 
 export const dashboardLayout = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
-  shell: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center' },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  shell: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center', backgroundColor: '#FAF9F6' },
   page: { flexGrow: 1, paddingHorizontal: 20, paddingTop: Platform.select({ native: 12, default: 30 }), paddingBottom: Platform.select({ native: 16, default: 32 }) },
   title: { fontSize: 28, lineHeight: 36, fontWeight: '800', letterSpacing: -0.6, color: '#292B35' },
   subtitle: { fontSize: 12, lineHeight: 20, color: '#7B7D87', marginTop: 2 },

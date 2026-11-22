@@ -1,7 +1,6 @@
-.chore-pet { position: relative; flex: 0 0 auto; width: 106px; height: 100px; overflow: hidden; border-radius: 12px; background: #fbfffc; }
-.chore-pet-body, .chore-pet-shadow, .chore-pet-prop, .chore-pet-sparkles { position: absolute; pointer-events: none; }
-.chore-pet-body { width: 78px; height: 78px; left: 7px; bottom: 12px; object-fit: contain; }
-.chore-pet-shadow { width: 72px; height: 9px; left: 15px; bottom: 12px; border-radius: 50%; background: #e8f1eb; }
+.chore-pet { position: relative; flex: 0 0 auto; width: 132px; height: 120px; overflow: hidden; }
+.chore-pet-body, .chore-pet-prop, .chore-pet-sparkles { position: absolute; pointer-events: none; }
+.chore-pet-body { width: 108px; height: 108px; left: 8px; bottom: 5px; }
 .chore-pet-prop { right: 0; bottom: 8px; }
 .chore-pet-broom { right: 1px; bottom: 7px; transform-origin: 60% 45%; animation: roomie-sweep .8s ease-in-out 2; }
 .chore-pet-sparkles { inset: 0; opacity: .75; }
@@ -28,14 +27,3 @@
 @keyframes roomie-carry { 0%,100% { transform: translate(0); } 50% { transform: translate(-7px,-5px) rotate(-8deg); } }
 @keyframes roomie-lift { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-9px); } }
 @media (prefers-reduced-motion: reduce) { .chore-pet--celebrating * { animation: none !important; } }
-
-.chore-confetti { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-.chore-confetti i { position: absolute; left: 50%; top: 50%; width: 5px; height: 6px; border-radius: 2px; background: #a35fec; animation: chore-confetti-pop .46s ease-out both; }
-.chore-confetti i:nth-child(1) { --dx: -19px; --dy: -12px; }
-.chore-confetti i:nth-child(2) { --dx: -8px; --dy: -23px; background: #d28b25; }
-.chore-confetti i:nth-child(3) { --dx: 10px; --dy: -24px; background: #3b9663; }
-.chore-confetti i:nth-child(4) { --dx: 23px; --dy: -10px; background: #df6598; }
-.chore-confetti i:nth-child(5) { --dx: 19px; --dy: 12px; background: #d28b25; }
-.chore-confetti i:nth-child(6) { --dx: -16px; --dy: 14px; background: #3b9663; }
-@keyframes chore-confetti-pop { from { opacity: 1; transform: scale(.7); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(75deg); } }
-@media (prefers-reduced-motion: reduce) { .chore-confetti { display: none; } }

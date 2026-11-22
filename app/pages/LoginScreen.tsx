@@ -1,15 +1,14 @@
 
 import { useState } from 'react';
-
 import {
   Image,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import roomiesLogo from '../../assets/Roomies Logo.png';
 import { styles } from '../styles/LoginScreen.styles';
@@ -18,39 +17,32 @@ import PasswordVisibilityIcon from '../components/auth/PasswordVisibilityIcon';
 import { getImageSource } from '../utils/imageSource';
 import { loginUser } from '../services/api';
 
-
 type LoginScreenProps = {
   onBack?: () => void;
   onCreateAccount?: () => void;
   onResidentLogin: (user: ResidentUser) => void;
 };
 
-
 export default function LoginScreen({
   onBack,
   onCreateAccount,
   onResidentLogin,
 }: LoginScreenProps) {
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-
   // Authenticate using the Roomies backend.
   async function logIn() {
-
     if (loading) return;
 
-    // Validate the email address.
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setMessage('Enter a valid email address.');
       return;
     }
 
-    // Make sure a password was entered.
     if (!password) {
       setMessage('Enter your password.');
       return;
@@ -60,82 +52,58 @@ export default function LoginScreen({
     setMessage('');
 
     try {
-
       const user = await loginUser(email, password);
-
-      // Navigate to the appropriate dashboard.
       onResidentLogin(user);
-
     } catch (error) {
-
       setMessage(
         error instanceof Error
           ? error.message
           : 'Unable to log in.'
       );
-
     } finally {
-
       setLoading(false);
-
     }
   }
 
-
   return (
     <SafeAreaView style={styles.safeArea}>
-
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.page}
         keyboardShouldPersistTaps="handled"
       >
-
-        {/* Header */}
         <View style={styles.header}>
-
           <Pressable
             onPress={onBack}
             accessibilityRole="button"
             accessibilityLabel="Back to welcome"
             style={({ pressed }) => [
               styles.backButton,
-              pressed && styles.linkPressed
+              pressed && styles.linkPressed,
             ]}
           >
             <Text style={styles.backText}>{'<'}</Text>
           </Pressable>
 
-          <View style={styles.brand}>
-
+          <View pointerEvents="none" style={styles.logoCenter}>
             <Image
               source={getImageSource(roomiesLogo)}
               style={styles.logo}
               resizeMode="contain"
               accessibilityLabel="Roomies logo"
             />
-
-            <Text style={styles.wordmark}>
-              Roomies
-            </Text>
-
           </View>
-
         </View>
 
-
-        {/* Welcome heading */}
         <Text
           accessibilityRole="header"
+          numberOfLines={1}
           style={styles.title}
         >
           Welcome back.
         </Text>
 
-
-        {/* Login form */}
         <View style={styles.form}>
-
-          {/* Email input */}
           <TextInput
             accessibilityLabel="Email"
             value={email}
@@ -149,10 +117,7 @@ export default function LoginScreen({
             style={styles.input}
           />
 
-
-          {/* Password input */}
           <View style={styles.passwordField}>
-
             <TextInput
               accessibilityLabel="Password"
               value={password}
@@ -170,53 +135,36 @@ export default function LoginScreen({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={
-                showPassword
-                  ? 'Hide password'
-                  : 'Show password'
+                showPassword ? 'Hide password' : 'Show password'
               }
               accessibilityState={{
-                expanded: showPassword
+                expanded: showPassword,
               }}
               onPress={() =>
                 setShowPassword(value => !value)
               }
               style={({ pressed }) => [
                 styles.visibilityButton,
-                pressed && styles.linkPressed
+                pressed && styles.linkPressed,
               ]}
             >
-
-              <PasswordVisibilityIcon
-                visible={showPassword}
-              />
-
+              <PasswordVisibilityIcon visible={showPassword} />
             </Pressable>
-
           </View>
 
-
-          {/* Forgot password */}
           <Pressable
             accessibilityRole="button"
             onPress={() =>
-              setMessage(
-                'Password reset is not connected yet.'
-              )
+              setMessage('Password reset is not connected yet.')
             }
             style={({ pressed }) => [
               styles.forgotButton,
-              pressed && styles.linkPressed
+              pressed && styles.linkPressed,
             ]}
           >
-
-            <Text style={styles.link}>
-              Forgot password?
-            </Text>
-
+            <Text style={styles.link}>Forgot password?</Text>
           </Pressable>
 
-
-          {/* Error or status message */}
           {!!message && (
             <Text
               accessibilityRole="alert"
@@ -227,8 +175,6 @@ export default function LoginScreen({
             </Text>
           )}
 
-
-          {/* Login button */}
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ disabled: loading }}
@@ -237,22 +183,16 @@ export default function LoginScreen({
             style={({ pressed }) => [
               styles.loginButton,
               pressed && styles.buttonPressed,
-              loading && { opacity: 0.6 }
+              loading && { opacity: 0.6 },
             ]}
           >
-
             <Text style={styles.loginText}>
               {loading ? 'Logging in...' : 'Log In'}
             </Text>
-
           </Pressable>
-
         </View>
 
-
-        {/* Create account */}
         <View style={styles.createAccount}>
-
           <Text style={styles.createPrompt}>
             New to Roomies?{' '}
           </Text>
@@ -264,27 +204,16 @@ export default function LoginScreen({
               pressed && styles.linkPressed
             }
           >
-
-            <Text style={styles.link}>
-              Create Account
-            </Text>
-
+            <Text style={styles.link}>Create Account</Text>
           </Pressable>
-
         </View>
 
-
-        {/* Footer */}
         <View style={styles.footer}>
-
-          <Text style={styles.footerText}>
-            Your home. Your people. A private space.
+          <Text numberOfLines={1} style={styles.footerText}>
+            A private space for roommates.
           </Text>
-
         </View>
-
       </ScrollView>
-
     </SafeAreaView>
   );
 }

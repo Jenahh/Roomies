@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import {
+  Platform,
   Pressable,
   Text,
   TextInput,
@@ -15,45 +16,39 @@ import {
 
 import RoomiePet from '../../components/RoomiePet';
 import SupportRecipient from '../../components/profile/SupportRecipient';
-
+import { randomUUID } from '../../utils/randomUUID';
 import type { ResidentData } from '../../hooks/useResidentData';
 import { createSupportRequest } from '../../services/api';
 
 import './MaintenanceScreen.css';
 import { styles as s } from '../../styles/MaintenanceScreen.styles';
 
+type ContactRAScreenProps = {
+  data: ResidentData;
+  setData: Dispatch<SetStateAction<ResidentData>>;
+  storageError: string;
+  onBack: () => void;
+  initialCategory?: string;
+};
 
 export default function ContactRAScreen({
   setData,
   storageError,
   onBack,
   initialCategory = 'General support',
-}: {
-  data: ResidentData;
-  setData: Dispatch<SetStateAction<ResidentData>>;
-  storageError: string;
-  onBack: () => void;
-  initialCategory?: string;
-}) {
-
+}: ContactRAScreenProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-
-  const category = initialCategory;
-
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const submissionLock = useRef(false);
+  const category = initialCategory;
 
-
-  // Send the message to the assigned RA.
-
+  // Send the message to the assigned RA through the backend.
   async function sendMessage() {
-
     if (submissionLock.current) return;
 
     setSaved(false);
@@ -61,9 +56,7 @@ export default function ContactRAScreen({
     setError('');
 
     if (!title.trim() || !description.trim()) {
-
       setError('Enter a subject and description.');
-
       return;
     }
 
@@ -71,7 +64,6 @@ export default function ContactRAScreen({
     setSubmitting(true);
 
     try {
-
       await createSupportRequest({
         request_type: 'ra_message',
         category,
@@ -83,49 +75,38 @@ export default function ContactRAScreen({
       setTitle('');
       setDescription('');
       setSubmitted(true);
-
     } catch (error) {
-
       setError(
         error instanceof Error
           ? error.message
           : 'Unable to send your message.'
       );
-
     } finally {
-
       submissionLock.current = false;
       setSubmitting(false);
-
     }
   }
 
-
-  // Save the message locally as a draft.
-
+  // Save the message locally without sending it to the RA.
   function save() {
-
     if (submissionLock.current) return;
 
     setSubmitted(false);
+    setError('');
 
     if (!title.trim() || !description.trim()) {
-
       setError(
         'Enter a subject and describe the support you need.'
       );
-
       return;
     }
 
     setData(previous => ({
       ...previous,
-
       supportDrafts: [
         ...(previous.supportDrafts || []),
-
         {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           kind: 'ra',
           title: title.trim(),
           description: description.trim(),
@@ -138,16 +119,12 @@ export default function ContactRAScreen({
 
     setTitle('');
     setDescription('');
-    setError('');
     setSaved(true);
   }
 
-
   return (
     <>
-
       {/* Back button */}
-
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Back to profile"
@@ -155,32 +132,27 @@ export default function ContactRAScreen({
         disabled={submitting}
         style={s.backArrow}
       >
-        <Text style={s.backArrowText}>
-          {'<'}
-        </Text>
+        <Text style={s.backArrowText}>{'<'}</Text>
       </Pressable>
 
-
       {/* Mascot and heading */}
-
       <View style={s.header}>
-
-        <div
-          key={
-            submitted || (saved && !storageError)
-              ? 'saved'
-              : 'ready'
-          }
-          className="maintenance-mascot"
-        >
-          <RoomiePet
-            role="assistant"
-            size={95}
-          />
-        </div>
+        {Platform.OS === 'web' ? (
+          <div
+            key={
+              submitted || (saved && !storageError)
+                ? 'saved'
+                : 'ready'
+            }
+            className="maintenance-mascot"
+          >
+            <RoomiePet role="assistant" size={95} />
+          </div>
+        ) : (
+          <RoomiePet role="assistant" size={95} />
+        )}
 
         <View style={s.copy}>
-
           <Text
             accessibilityRole="header"
             style={s.title}
@@ -199,23 +171,15 @@ export default function ContactRAScreen({
                 ? 'Your support request is saved.'
                 : "Let's talk about what's happening."}
           </Text>
-
         </View>
-
       </View>
 
-
       {/* RA message form */}
-
       <View style={s.form}>
-
         {/* Assigned resident assistant */}
-
         <SupportRecipient kind="ra" />
 
-
         {/* Selected category */}
-
         <Text
           style={{
             alignSelf: 'flex-start',
@@ -231,12 +195,8 @@ export default function ContactRAScreen({
           {category}
         </Text>
 
-
-        {/* Message subject */}
-
-        <Text style={s.label}>
-          Subject
-        </Text>
+        {/* Subject */}
+        <Text style={s.label}>Subject</Text>
 
         <TextInput
           accessibilityLabel="RA request subject"
@@ -252,12 +212,8 @@ export default function ContactRAScreen({
           style={s.input}
         />
 
-
-        {/* Message description */}
-
-        <Text style={s.label}>
-          Description
-        </Text>
+        {/* Description */}
+        <Text style={s.label}>Description</Text>
 
         <TextInput
           accessibilityLabel="RA request description"
@@ -274,9 +230,7 @@ export default function ContactRAScreen({
           style={[s.input, s.description]}
         />
 
-
         {/* Error messages */}
-
         {!!error && (
           <Text
             accessibilityRole="alert"
@@ -295,60 +249,43 @@ export default function ContactRAScreen({
           </Text>
         )}
 
-
         {/* Draft saved confirmation */}
-
         {saved && !storageError && (
-
           <Text
             accessibilityLiveRegion="polite"
             style={s.success}
           >
-            Support request draft saved.
-            It has not been sent to your RA.
+            Support request draft saved. It has not been
+            sent to your RA.
           </Text>
-
         )}
 
-
         {/* Successful submission confirmation */}
-
         {submitted && (
-
           <Text
             accessibilityLiveRegion="polite"
             style={s.success}
           >
             Your message has been sent to your RA!
           </Text>
-
         )}
 
-
         {/* Send message button */}
-
         <Pressable
           accessibilityRole="button"
           disabled={submitting}
           onPress={sendMessage}
           style={({ pressed }) => [
             s.submit,
-            (pressed || submitting)
-              && s.pressed,
+            (pressed || submitting) && s.pressed,
           ]}
         >
-
           <Text style={s.submitText}>
-            {submitting
-              ? 'Sending...'
-              : 'Send message'}
+            {submitting ? 'Sending...' : 'Send message'}
           </Text>
-
         </Pressable>
 
-
         {/* Save as draft button */}
-
         <Pressable
           accessibilityRole="button"
           disabled={submitting}
@@ -360,11 +297,9 @@ export default function ContactRAScreen({
               borderWidth: 1,
               borderColor: '#D5D9EF',
             },
-            (pressed || submitting)
-              && s.pressed,
+            (pressed || submitting) && s.pressed,
           ]}
         >
-
           <Text
             style={[
               s.submitText,
@@ -373,11 +308,8 @@ export default function ContactRAScreen({
           >
             Save as draft
           </Text>
-
         </Pressable>
-
       </View>
-
     </>
   );
 }

@@ -8,44 +8,55 @@ import {
 
 import {
   Image,
+  Platform,
   Pressable,
   Text,
   TextInput,
   View,
 } from 'react-native';
 
-import type { ResidentData } from '../../hooks/useResidentData';
 import RoomiePet from '../../components/RoomiePet';
 import SupportRecipient from '../../components/profile/SupportRecipient';
+import type { ResidentData } from '../../hooks/useResidentData';
 import { createSupportRequest } from '../../services/api';
+import { randomUUID } from '../../utils/randomUUID';
 
 import './MaintenanceScreen.css';
 import { styles as s } from '../../styles/MaintenanceScreen.styles';
 
+type MaintenanceScreenProps = {
+  data: ResidentData;
+  setData: Dispatch<SetStateAction<ResidentData>>;
+  storageError: string;
+  onBack: () => void;
+  initialCategory?: string;
+};
 
 export default function MaintenanceScreen({
   setData,
   storageError,
   onBack,
   initialCategory = 'Plumbing',
-}: {
-  data: ResidentData;
-  setData: Dispatch<SetStateAction<ResidentData>>;
-  storageError: string;
-  onBack: () => void;
-  initialCategory?: string;
-}) {
-
+}: MaintenanceScreenProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [photo, setPhoto] = useState('');
+  const [photoName, setPhotoName] = useState('');
+  const [loadingPhoto, setLoadingPhoto] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
+  const fileInput = useRef<HTMLInputElement>(null);
+  const submissionLock = useRef(false);
   const category = initialCategory;
 
   const examples: Record<string, string> = {
-    'Plumbing': 'e.g. Kitchen faucet is dripping',
-    'Electrical': 'e.g. Bedroom light is not working',
+    Plumbing: 'e.g. Kitchen faucet is dripping',
+    Electrical: 'e.g. Bedroom light is not working',
     'Heating & cooling': 'e.g. AC is not cooling',
-    'Appliances': 'e.g. Refrigerator is not working',
+    Appliances: 'e.g. Refrigerator is not working',
     'Doors & locks': 'e.g. Front door lock is stuck',
     'General repair': 'e.g. Kitchen cabinet is broken',
   };
@@ -53,24 +64,17 @@ export default function MaintenanceScreen({
   const titlePlaceholder =
     examples[category] || 'Briefly describe the issue';
 
-  const [photo, setPhoto] = useState('');
-  const [photoName, setPhotoName] = useState('');
-  const [loadingPhoto, setLoadingPhoto] = useState(false);
+  function clearPhoto() {
+    setPhoto('');
+    setPhotoName('');
 
-  const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
-
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const fileInput = useRef<HTMLInputElement>(null);
-  const submissionLock = useRef(false);
-
+    if (fileInput.current) {
+      fileInput.current.value = '';
+    }
+  }
 
   // Submit the maintenance request to the backend.
-
   async function submitRequest() {
-
     if (submissionLock.current || loadingPhoto) return;
 
     setSaved(false);
@@ -86,7 +90,6 @@ export default function MaintenanceScreen({
     setSubmitting(true);
 
     try {
-
       await createSupportRequest({
         request_type: 'maintenance',
         category,
@@ -97,38 +100,26 @@ export default function MaintenanceScreen({
 
       setTitle('');
       setDescription('');
-      setPhoto('');
-      setPhotoName('');
+      clearPhoto();
       setSubmitted(true);
-
-      if (fileInput.current) {
-        fileInput.current.value = '';
-      }
-
     } catch (error) {
-
       setError(
         error instanceof Error
           ? error.message
           : 'Unable to submit your request.'
       );
-
     } finally {
-
       submissionLock.current = false;
       setSubmitting(false);
-
     }
   }
 
-
   // Save the request locally as a draft.
-
   function save() {
-
     if (submissionLock.current || loadingPhoto) return;
 
     setSubmitted(false);
+    setError('');
 
     if (!title.trim() || !description.trim()) {
       setError('Enter an issue title and description.');
@@ -137,12 +128,10 @@ export default function MaintenanceScreen({
 
     setData(previous => ({
       ...previous,
-
       supportDrafts: [
         ...(previous.supportDrafts || []),
-
         {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           kind: 'maintenance',
           title: title.trim(),
           description: description.trim(),
@@ -156,21 +145,12 @@ export default function MaintenanceScreen({
 
     setTitle('');
     setDescription('');
-    setPhoto('');
-    setPhotoName('');
-    setError('');
+    clearPhoto();
     setSaved(true);
-
-    if (fileInput.current) {
-      fileInput.current.value = '';
-    }
   }
 
-
-  // Read and validate an optional photo attachment.
-
+  // Read and validate an optional photo attachment on web.
   function choosePhoto(file?: File) {
-
     if (!file || submissionLock.current) return;
 
     const allowedTypes = [
@@ -184,9 +164,7 @@ export default function MaintenanceScreen({
       file.size === 0 ||
       file.size > 1024 * 1024
     ) {
-      setError(
-        'Choose a JPG, PNG, or WebP photo up to 1 MB.'
-      );
+      setError('Choose a JPG, PNG, or WebP photo up to 1 MB.');
 
       if (fileInput.current) {
         fileInput.current.value = '';
@@ -203,32 +181,22 @@ export default function MaintenanceScreen({
     const reader = new FileReader();
 
     reader.onload = () => {
-
       setPhoto(String(reader.result));
       setPhotoName(file.name);
       setLoadingPhoto(false);
-
     };
 
     reader.onerror = () => {
-
-      setError(
-        'This photo could not be read. Try another file.'
-      );
-
+      setError('This photo could not be read. Try another file.');
       setLoadingPhoto(false);
-
     };
 
     reader.readAsDataURL(file);
   }
 
-
   return (
     <>
-
       {/* Back button */}
-
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Back to profile"
@@ -236,36 +204,28 @@ export default function MaintenanceScreen({
         disabled={submitting}
         style={s.backArrow}
       >
-        <Text style={s.backArrowText}>
-          {'<'}
-        </Text>
+        <Text style={s.backArrowText}>{'<'}</Text>
       </Pressable>
 
-
       {/* Mascot and heading */}
-
       <View style={s.header}>
-
-        <div
-          key={
-            submitted || (saved && !storageError)
-              ? 'saved'
-              : 'ready'
-          }
-          className="maintenance-mascot"
-        >
-          <RoomiePet
-            role="property-manager"
-            size={95}
-          />
-        </div>
+        {Platform.OS === 'web' ? (
+          <div
+            key={
+              submitted || (saved && !storageError)
+                ? 'saved'
+                : 'ready'
+            }
+            className="maintenance-mascot"
+          >
+            <RoomiePet role="property-manager" size={95} />
+          </div>
+        ) : (
+          <RoomiePet role="property-manager" size={95} />
+        )}
 
         <View style={s.copy}>
-
-          <Text
-            accessibilityRole="header"
-            style={s.title}
-          >
+          <Text accessibilityRole="header" style={s.title}>
             {submitted
               ? 'Request sent, Roomie!'
               : saved && !storageError
@@ -280,22 +240,12 @@ export default function MaintenanceScreen({
                 ? 'Your request draft is saved.'
                 : "Tell me a little more about what's happening."}
           </Text>
-
         </View>
-
       </View>
 
-
       {/* Maintenance request form */}
-
       <View style={s.form}>
-
-        {/* Assigned property manager */}
-
         <SupportRecipient kind="maintenance" />
-
-
-        {/* Selected category */}
 
         <Text
           style={{
@@ -312,12 +262,7 @@ export default function MaintenanceScreen({
           {category}
         </Text>
 
-
-        {/* Issue title */}
-
-        <Text style={s.label}>
-          Issue title
-        </Text>
+        <Text style={s.label}>Issue title</Text>
 
         <TextInput
           accessibilityLabel="Issue title"
@@ -333,12 +278,7 @@ export default function MaintenanceScreen({
           style={s.input}
         />
 
-
-        {/* Description */}
-
-        <Text style={s.label}>
-          Description
-        </Text>
+        <Text style={s.label}>Description</Text>
 
         <TextInput
           accessibilityLabel="Issue description"
@@ -355,54 +295,41 @@ export default function MaintenanceScreen({
           style={[s.input, s.description]}
         />
 
+        {/* Photo upload is currently available on web. */}
+        {Platform.OS === 'web' && (
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            aria-label="Attach maintenance photo"
+            disabled={submitting || loadingPhoto}
+            style={{ display: 'none' }}
+            onChange={event =>
+              choosePhoto(event.target.files?.[0])
+            }
+          />
+        )}
 
-        {/* Hidden photo file input */}
-
-        <input
-          ref={fileInput}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          aria-label="Attach maintenance photo"
-          disabled={submitting || loadingPhoto}
-          style={{ display: 'none' }}
-          onChange={event =>
-            choosePhoto(event.target.files?.[0])
-          }
-        />
-
-
-        {/* Add photo button */}
-
-        <Pressable
-          accessibilityRole="button"
-          disabled={loadingPhoto || submitting}
-          onPress={() => fileInput.current?.click()}
-          style={s.photoButton}
-        >
-          <Text style={s.photoText}>
-
-            {loadingPhoto
-              ? 'Loading photo...'
-              : photo
-                ? 'Change photo'
-                : '+ Add a photo'}
-
-            {' '}
-
-            <Text style={s.subtitle}>
-              Optional
+        {Platform.OS === 'web' && (
+          <Pressable
+            accessibilityRole="button"
+            disabled={loadingPhoto || submitting}
+            onPress={() => fileInput.current?.click()}
+            style={s.photoButton}
+          >
+            <Text style={s.photoText}>
+              {loadingPhoto
+                ? 'Loading photo...'
+                : photo
+                  ? 'Change photo'
+                  : '+ Add a photo'}{' '}
+              <Text style={s.subtitle}>Optional</Text>
             </Text>
-
-          </Text>
-        </Pressable>
-
-
-        {/* Photo preview */}
+          </Pressable>
+        )}
 
         {!!photo && (
-
           <View style={s.photoCard}>
-
             <Image
               source={{ uri: photo }}
               style={s.photo}
@@ -410,60 +337,32 @@ export default function MaintenanceScreen({
               accessibilityLabel="Attached maintenance photo"
             />
 
-            <Text style={s.subtitle}>
-              {photoName}
-            </Text>
+            <Text style={s.subtitle}>{photoName}</Text>
 
             <Pressable
               accessibilityRole="button"
               disabled={loadingPhoto || submitting}
-              onPress={() => {
-
-                setPhoto('');
-                setPhotoName('');
-
-                if (fileInput.current) {
-                  fileInput.current.value = '';
-                }
-
-              }}
+              onPress={clearPhoto}
               style={s.back}
             >
-              <Text style={s.link}>
-                Remove photo
-              </Text>
+              <Text style={s.link}>Remove photo</Text>
             </Pressable>
-
           </View>
-
         )}
 
-
-        {/* Error messages */}
-
         {!!error && (
-          <Text
-            accessibilityRole="alert"
-            style={s.error}
-          >
+          <Text accessibilityRole="alert" style={s.error}>
             {error}
           </Text>
         )}
 
         {!!storageError && (
-          <Text
-            accessibilityRole="alert"
-            style={s.error}
-          >
+          <Text accessibilityRole="alert" style={s.error}>
             {storageError}
           </Text>
         )}
 
-
-        {/* Draft saved confirmation */}
-
         {saved && !storageError && (
-
           <Text
             accessibilityLiveRegion="polite"
             style={s.success}
@@ -471,26 +370,16 @@ export default function MaintenanceScreen({
             Request draft saved on this device.
             Not sent to property management.
           </Text>
-
         )}
 
-
-        {/* Successful submission confirmation */}
-
         {submitted && (
-
           <Text
             accessibilityLiveRegion="polite"
             style={s.success}
           >
-            Your request has been sent to your
-            property manager!
+            Your request has been sent to your property manager!
           </Text>
-
         )}
-
-
-        {/* Submit request button */}
 
         <Pressable
           accessibilityRole="button"
@@ -498,21 +387,13 @@ export default function MaintenanceScreen({
           onPress={submitRequest}
           style={({ pressed }) => [
             s.submit,
-            (pressed || loadingPhoto || submitting)
-              && s.pressed,
+            (pressed || loadingPhoto || submitting) && s.pressed,
           ]}
         >
-
           <Text style={s.submitText}>
-            {submitting
-              ? 'Submitting...'
-              : 'Submit request'}
+            {submitting ? 'Submitting...' : 'Submit request'}
           </Text>
-
         </Pressable>
-
-
-        {/* Save as draft button */}
 
         <Pressable
           accessibilityRole="button"
@@ -525,11 +406,9 @@ export default function MaintenanceScreen({
               borderWidth: 1,
               borderColor: '#D5D9EF',
             },
-            (pressed || loadingPhoto || submitting)
-              && s.pressed,
+            (pressed || loadingPhoto || submitting) && s.pressed,
           ]}
         >
-
           <Text
             style={[
               s.submitText,
@@ -538,11 +417,8 @@ export default function MaintenanceScreen({
           >
             Save as draft
           </Text>
-
         </Pressable>
-
       </View>
-
     </>
   );
 }
