@@ -1,0 +1,46 @@
+
+from pathlib import Path
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+
+# Store the database inside the backend folder.
+BASE_DIR = Path(__file__).resolve().parent
+DATABASE_URL = f"sqlite:///{(BASE_DIR / 'roomies.db').as_posix()}"
+
+
+# Create the database engine.
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+
+
+# Enable foreign key constraints in SQLite.
+@event.listens_for(engine, "connect")
+def enable_foreign_keys(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
+
+# Create database sessions.
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+
+# Base class for our database models.
+Base = declarative_base()
+
+
+# Provide a database session for API endpoints.
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()

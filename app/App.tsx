@@ -8,15 +8,16 @@ import ResidentAssistantDashboard from './pages/resident-assistant/ResidentAssis
 import PropertyManagerDashboard from './pages/property-manager/PropertyManagerDashboard';
 import ResidentSignUp from './pages/resident/ResidentSignUp';
 import ResidentVerificationScreen from './pages/resident/ResidentVerificationScreen';
-import { demoResident, demoResidentAssistant, demoPropertyManager, type ResidentUser } from './data/demoAccount';
+import type { ResidentUser } from './data/demoAccount';
 import PropertyManagerJoinScreen from './pages/property-manager/PropertyManagerJoinScreen';
 import PropertyManagerVerificationScreen from './pages/property-manager/PropertyManagerVerificationScreen';
 import ResidentAssistantJoinScreen from './pages/resident-assistant/ResidentAssistantJoinScreen';
 import ResidentAssistantVerificationScreen from './pages/resident-assistant/ResidentAssistantVerificationScreen';
+import { logoutUser } from './services/api';
 
 export default function App() {
   const [path, setPath] = useState(() => Platform.OS === 'web' ? window.location.pathname : '/');
-  const [user, setUser] = useState<ResidentUser | null>(demoResident);
+  const [user, setUser] = useState<ResidentUser | null>(null);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -34,6 +35,7 @@ export default function App() {
   }
 
   function signOut() {
+    logoutUser();
     setUser(null);
     if (Platform.OS === 'web') {
       window.history.replaceState(null, '', '/');
@@ -57,15 +59,15 @@ export default function App() {
     return <LoginScreen onBack={() => navigate('/')} onCreateAccount={() => navigate('/registration')} onResidentLogin={account => { setUser(account); navigate(account.role === 'property-manager' ? '/property-manager' : '/home'); }} />;
   }
 
-  if (path === '/resident-verification') return <ResidentVerificationScreen onBack={() => navigate('/registration')} onContinueAdmin={() => { setUser(demoResident); navigate('/home'); }} />;
+  if (path === '/resident-verification') return <ResidentVerificationScreen onBack={() => navigate('/registration')} onContinueAdmin={() => navigate('/login')} />;
 
   if (path === '/resident-assistant-join') return <ResidentAssistantJoinScreen onBack={() => navigate('/registration')} onLogIn={() => navigate('/login')} onRequestSubmitted={() => navigate('/resident-assistant-verification')} />;
 
-  if (path === '/resident-assistant-verification') return <ResidentAssistantVerificationScreen onBack={() => navigate('/resident-assistant-join')} onContinueAdmin={() => { setUser(demoResidentAssistant); navigate('/home'); }} />;
+  if (path === '/resident-assistant-verification') return <ResidentAssistantVerificationScreen onBack={() => navigate('/resident-assistant-join')} onContinueAdmin={() => navigate('/login')} />;
 
   if (path === '/property-manager-join') return <PropertyManagerJoinScreen onBack={() => navigate('/registration')} onLogIn={() => navigate('/login')} onRequestSubmitted={() => navigate('/property-manager-verification')} />;
 
-  if (path === '/property-manager-verification') return <PropertyManagerVerificationScreen onBack={() => navigate('/property-manager-join')} onContinueAdmin={() => { setUser(demoPropertyManager); navigate('/property-manager'); }} />;
+  if (path === '/property-manager-verification') return <PropertyManagerVerificationScreen onBack={() => navigate('/property-manager-join')} onContinueAdmin={() => navigate('/login')} />;
 
   if (path === '/resident-sign-up') return <ResidentSignUp onBack={() => navigate('/registration')} onLogIn={() => navigate('/login')} onRequestSubmitted={() => navigate('/resident-verification')} />;
 

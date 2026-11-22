@@ -3,7 +3,16 @@ export type MaintenanceRequest = {
   title: string;
   unit: string;
   detail: string;
-  status: 'Submitted' | 'In Progress';
+  status: 'Submitted' | 'In Progress' | 'Resolved' | 'Closed';
+
+  backendId?: number;
+  senderId?: number;
+  senderName?: string;
+
+  category?: string;
+  description?: string;
+  photo?: string | null;
+  createdAt?: string;
 };
 
 export type Announcement = { id: string; title: string; message: string };
