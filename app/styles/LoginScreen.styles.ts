@@ -1,0 +1,32 @@
+import { backNavigationText } from './BackNavigation.styles';
+import { Platform, StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#FAF9F6' },
+  page: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: Platform.select({ native: 24, default: 20 }), paddingTop: Platform.select({ native: 14, default: 26 }), paddingBottom: Platform.select({ native: 16, default: 30 }) },
+  header: { position: 'relative', flexDirection: 'row', alignItems: 'center', marginBottom: Platform.select({ native: 14, default: 24 }) },
+  backButton: { minHeight: 44, justifyContent: 'center', paddingRight: 8, borderRadius: 8 },
+  backText: backNavigationText,
+  logoCenter: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+  logo: { width: 38, height: 38 },
+  title: { fontSize: Platform.select({ native: 28, default: 30 }), lineHeight: Platform.select({ native: 36, default: 42 }), fontWeight: '800', letterSpacing: -0.6, color: '#292B35', paddingBottom: 10, marginBottom: Platform.select({ native: 12, default: 20 }) },
+  subtitle: { fontSize: 14, lineHeight: 21, color: '#7B7D87', marginTop: 6, marginBottom: 22 },
+  form: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, gap: 12 },
+  label: { fontSize: 13, fontWeight: '600', color: '#292B35', marginBottom: 7 },
+  input: { minHeight: 48, borderWidth: 1, borderColor: '#E7E6E3', borderRadius: 12, paddingHorizontal: 12, fontSize: 14, color: '#292B35' },
+  passwordField: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E7E6E3', borderRadius: 12 },
+  passwordInput: { flex: 1, minWidth: 0, minHeight: 48, paddingHorizontal: 12, fontSize: 14, color: '#292B35' },
+  visibilityButton: { minHeight: 44, minWidth: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  forgotButton: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', borderRadius: 8, marginVertical: 2 },
+  link: { fontSize: 13, fontWeight: '600', color: '#4056DE' },
+  linkPressed: { backgroundColor: '#EDF0FF' },
+  message: { fontSize: 13, lineHeight: 19, color: '#9B3636', marginBottom: 12 },
+  loginButton: { minHeight: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 44, paddingVertical: 12, backgroundColor: '#657EEA', borderRadius: 14 },
+  buttonPressed: { backgroundColor: '#8A9FFF' },
+  loginText: { fontSize: 15, fontWeight: '600', color: '#FFFFFF' },
+  arrow: { position: 'absolute', right: 18, fontSize: 21, color: '#263350' },
+  createAccount: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', marginTop: 24, gap: 3 },
+  createPrompt: { fontSize: 14, color: '#7B7D87' },
+  footer: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', paddingTop: Platform.select({ native: 24, default: 80 }) },
+  footerText: { fontSize: 11, color: '#7B7D87', textAlign: 'left' },
+});
