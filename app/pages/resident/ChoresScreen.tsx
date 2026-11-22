@@ -2,11 +2,12 @@ import { randomUUID } from '../../utils/randomUUID';
 import { addDays, choreDates, isAssignedTo, planChoreOccurrences, DEFAULT_CHORE_MINUTES, suggestAssignee, weeklyWorkload, type SchedulerMember } from '../../features/scheduler/scheduler';
 import { choreLooks, chorePresets, resolveChoreLook, type ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge } from '../../features/scheduler/ChorePresets';
-import { POINTS_PER_CHORE } from '../../data/choreRewards';
+import { getPersonalChorePoints, isPersonalChore, POINTS_PER_CHORE } from '../../data/choreRewards';
 import { ROOMIE_COLORS } from '../../components/RoomiePet';
+import ConfettiBurst from '../../components/ConfettiBurst';
 import ChorePet from './ChorePet';
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
-import { Animated, Easing, Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import type { useSharedChores } from '../../hooks/useSharedChores';
@@ -24,37 +25,6 @@ const roommateColors = [
   ROOMIE_COLORS.yellow,
   ROOMIE_COLORS.pink,
 ];
-
-const confettiPieces = [
-  { dx: -19, dy: -12, backgroundColor: '#A35FEC' },
-  { dx: -8, dy: -23, backgroundColor: '#D28B25' },
-  { dx: 10, dy: -24, backgroundColor: '#3B9663' },
-  { dx: 23, dy: -10, backgroundColor: '#DF6598' },
-  { dx: 19, dy: 12, backgroundColor: '#D28B25' },
-  { dx: -16, dy: 14, backgroundColor: '#3B9663' },
-];
-
-function ChoreConfetti() {
-  const progress = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const animation = Animated.timing(progress, { toValue: 1, duration: 460, easing: Easing.out(Easing.ease), useNativeDriver: true });
-    animation.start();
-    return () => animation.stop();
-  }, [progress]);
-  const opacity = progress.interpolate({ inputRange: [0, 0.65, 1], outputRange: [1, 1, 0] });
-  const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
-  const rotation = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '75deg'] });
-
-  return <View pointerEvents="none" style={s.confetti}>{confettiPieces.map((piece, index) => <Animated.View key={index} style={[
-    s.confettiPiece,
-    { left: '50%', top: '50%', backgroundColor: piece.backgroundColor, opacity, transform: [
-      { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [0, piece.dx] }) },
-      { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [0, piece.dy] }) },
-      { scale },
-      { rotate: rotation },
-    ] },
-  ]} />)}</View>;
-}
 
 export default function ChoresScreen({ data, setData, storageError, assignedHousehold, autoOpenAdd = false, onAddOpened, renderPage, shared }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; storageError: string; onPet?: () => void;
@@ -75,9 +45,9 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     return () => clearTimeout(timer);
   }, [burst]);
   const [filter, setFilter] = useState('All Chores');
-  const [activeSheet, setActiveSheet] = useState<'add' | 'split' | 'points' | null>(null);
+  const [activeSheet, setActiveSheet] = useState<'add' | 'points' | null>(null);
   const adding = activeSheet === 'add';
-  const sheetTitle = adding ? 'Add a chore' : activeSheet === 'points' ? 'Roomie points' : 'Roomies Split';
+  const sheetTitle = adding ? 'Add a chore' : 'Roomies progress';
   const closeSheet = () => setActiveSheet(null);
   const webDialog = useRef<HTMLDivElement>(null);
 
@@ -122,7 +92,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   }
   if (otherChores.total) treeContributions.push(otherChores);
   const petName = data.pet?.name || 'Roomie';
-  const mine = (chore: ResidentData['chores'][number]) => !chore.unassigned && (shared ? chore.memberId === 'resident-self' : !chore.assignee || chore.assignee === data.name);
+  const mine = (chore: ResidentData['chores'][number]) => isPersonalChore(chore, data.name, !!shared);
   const upcomingChores = data.chores.filter(chore => !chore.completed).sort((a,b) => a.due.localeCompare(b.due));
   const nextChore = upcomingChores.find(mine) ?? upcomingChores[0];
   const featuredChore = celebration ?? nextChore;
@@ -155,7 +125,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
   }, [autoOpenAdd]);
 
   const visible = [...data.chores].filter(chore => filter === 'Completed' ? chore.completed : (!chore.completed || chore.id === burst) && (filter !== 'My Chores' || mine(chore))).sort((a, b) => a.due.localeCompare(b.due));
-  const points = data.chores.filter(chore => chore.completed && mine(chore)).length * POINTS_PER_CHORE;
+  const points = getPersonalChorePoints(data, !!shared);
   async function save() {
     const parsed = new Date(due + 'T12:00:00');
     if (!title.trim()) { setError('Pick a chore to get started.'); return; }
@@ -176,13 +146,15 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     closeSheet();
   }
 
-  const treeBar = (
-    <View accessibilityRole="progressbar" accessibilityLabel="Weekly tree" accessibilityValue={{ min: 0, max: weekly.length || 1, now: completed }} style={s.track}>
-      {treeContributions.filter(person => person.done > 0).map(person => (
-        <View key={person.id} style={[s.fill, { backgroundColor: person.color, width: `${person.done / weekly.length * 100}%` }]} />
-      ))}
-    </View>
-  );
+  let completedShare = 0;
+  const ringContributions = treeContributions.map(person => {
+    const start = completedShare;
+    completedShare += weekly.length ? person.done / weekly.length : 0;
+    return { ...person, start, end: completedShare };
+  });
+  const ringDiameter = 136;
+  const ringSegments = 32;
+  const ringRadius = ringDiameter / 2 - 3;
 
   const page = renderPage(<>
     <View style={s.header}>
@@ -190,14 +162,35 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
     </View>
     {!!storageError && <Text numberOfLines={1} accessibilityRole="alert" style={s.error}>{storageError}</Text>}
     <View style={s.petHero}>
+      <View style={s.heroRow}>
       <View style={s.petIntro}>
         <ChorePet key={celebration ? `done:${celebration.id}` : nextChore?.id ?? 'idle'} look={petLook} name={petName} color={data.pet?.color} accessory={data.pet?.accessory} accessories={data.pet?.accessories} accessoryColors={data.pet?.accessoryColors} celebrating={!!celebration} />
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel={`Your points: ${points}. View points and tree rules`} onPress={() => setActiveSheet('points')} style={s.petPoints}>
-        <Text numberOfLines={1} style={s.points}>Your pts: {points} ›</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${points} all-time points. ${completed} of ${weekly.length} household chores completed this week. View roommate points and assigned minutes.`} onPress={() => setActiveSheet('points')} style={s.pointsCircleButton}>
+        <View style={[s.pointsCircle, { width: ringDiameter, height: ringDiameter, borderRadius: ringDiameter / 2 }]}>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={s.pointsNumber}>{points}</Text>
+          <Text numberOfLines={1} style={s.caption}>Roomie points</Text>
+          <View accessible={false} pointerEvents="none" style={s.ringOverlay}>
+            {Array.from({ length: ringSegments }, (_, index) => {
+              const angle = index * 2 * Math.PI / ringSegments;
+              return <View key={index} style={[s.ringDash, {
+                left: ringDiameter / 2 + ringRadius * Math.sin(angle) - 3,
+                top: ringDiameter / 2 - ringRadius * Math.cos(angle) - 1.5,
+                transform: [{ rotate: `${index * 360 / ringSegments}deg` }],
+              }]}>
+                {ringContributions.map(person => {
+                  const start = Math.max(0, Math.min(1, person.start * ringSegments - index));
+                  const end = Math.max(0, Math.min(1, person.end * ringSegments - index));
+                  return end > start ? <View key={person.id} style={[s.ringFill, {
+                    left: `${start * 100}%`, width: `${(end - start) * 100}%`, backgroundColor: person.color,
+                  }]} /> : null;
+                })}
+              </View>;
+            })}
+          </View>
+        </View>
       </Pressable>
-      <View style={s.row}><Text numberOfLines={1} style={s.cardTitle}>Weekly tree</Text><Text numberOfLines={1} style={s.count}>{completed} / {weekly.length} chores</Text></View>
-      {treeBar}
+      </View>
     </View>
     <View accessibilityRole="tablist" accessibilityLabel="Chore filters" style={s.filters}>{['My Chores', 'All Chores', 'Completed'].map(item => <Pressable key={item} accessibilityRole="tab" accessibilityState={{ selected: filter === item }} onPress={() => setFilter(item)} style={[s.filter, filter === item && s.selectedFilter]}><Text numberOfLines={1} style={[s.filterText, filter === item && s.selectedText]}>{item}</Text></Pressable>)}</View>
     <View style={s.list}>
@@ -215,18 +208,11 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
           setBurst(chore.completed ? null : chore.id);
           setCelebration(chore.completed ? null : chore);
         }} style={({ pressed }) => [s.chore, chore.completed && s.completedRow, pressed && s.pressed]}>
-          <View style={[s.checkbox, own && !chore.completed && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text numberOfLines={1} style={s.check}>✓</Text>}{burst === chore.id && <ChoreConfetti key={burst} />}</View>
+          <View style={[s.checkbox, own && !chore.completed && s.blueBorder, chore.completed && s.checked]}>{chore.completed && <Text numberOfLines={1} style={s.check}>✓</Text>}{burst === chore.id && <ConfettiBurst key={burst} />}</View>
           <ChoreBadge look={chore.look} title={chore.title} muted={chore.completed} />
           <View style={s.copy}><Text numberOfLines={1} style={[s.choreTitle, chore.completed && s.completed]}>{chore.title}</Text><Text numberOfLines={1} style={s.detailText}>{name}{own ? ' (you)' : ''} · {day}{chore.time ? `, ${chore.time}` : ''}</Text></View>
         </Pressable>;
       })}
-    </View>
-    <View style={s.splitCard}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Roomies Split" onPress={() => setActiveSheet('split')} style={({ pressed }) => [s.splitToggle, pressed && s.pressed]}>
-        <Text numberOfLines={1} style={s.splitSparkle}>✦</Text>
-        <Text numberOfLines={1} style={[s.cardTitle, s.splitLabel]}>Roomies Split</Text>
-        <Text numberOfLines={1} style={s.pickerArrow}>›</Text>
-      </Pressable>
     </View>
   </>);
 
@@ -326,7 +312,7 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
         <View style={s.formFooter}>
           <Pressable accessibilityRole="button" onPress={save} disabled={shared?.busy} style={s.addButton}><Text numberOfLines={1} style={s.addText}>{repeat !== 'once' && dates.length > 1 ? `Add ${dates.length} chores` : 'Add chore'}</Text></Pressable>
         </View>
-      </> : activeSheet === 'points' ? (
+      </> : (
         <ScrollView style={s.formScroll} contentContainerStyle={s.form} showsVerticalScrollIndicator>
           <View style={s.row}>
             <Text numberOfLines={1} style={s.cardTitle}>{points} pts all time</Text>
@@ -336,23 +322,19 @@ export default function ChoresScreen({ data, setData, storageError, assignedHous
             <Text numberOfLines={1} style={s.cardTitle}>Weekly tree</Text>
             <Text numberOfLines={1} style={s.count}>{completed} / {weekly.length} chores</Text>
           </View>
-          {treeBar}
           <View style={s.splitList}>
-            {treeContributions.map(person => <View key={person.id} style={s.splitChip}>
-              <View style={[s.contributionDot, { backgroundColor: person.color }]} />
-              <Text numberOfLines={1} style={[s.splitName, s.splitLabel]}>{person.name}</Text>
-              <Text numberOfLines={1} style={s.splitMinutes}>{person.total ? `${person.done * POINTS_PER_CHORE} / ${person.total * POINTS_PER_CHORE} pts` : 'No chores due'}</Text>
-            </View>)}
-          </View>
-        </ScrollView>
-      ) : (
-        <ScrollView style={s.formScroll} contentContainerStyle={s.form} showsVerticalScrollIndicator persistentScrollbar>
-          <Text numberOfLines={1} style={s.caption}>Chore minutes this week</Text>
-          <View style={s.splitList}>
-            {workloads.map(({ member, minutes }) => <View key={member.id} style={s.splitChip}>
-              <Text numberOfLines={1} style={s.splitName}>{member.id === self.id ? 'You' : member.name}</Text>
-              <Text numberOfLines={1} style={s.splitMinutes}>{minutes} min</Text>
-            </View>)}
+            {treeContributions.map(person => {
+              const minutes = workloads.find(load => load.member.id === person.id)?.minutes
+                ?? weekly.filter(chore => !members.some(member => isAssignedTo(chore, member, members, data.name))).reduce((sum, chore) => sum + (chore.minutes ?? DEFAULT_CHORE_MINUTES), 0);
+              return <View key={person.id} style={s.progressPerson}>
+                <View style={s.row}>
+                  <View style={[s.contributionDot, { backgroundColor: person.color }]} />
+                  <Text numberOfLines={1} style={[s.splitName, s.splitLabel]}>{person.name}</Text>
+                  <Text numberOfLines={1} style={s.splitMinutes}>{person.done * POINTS_PER_CHORE} pts earned</Text>
+                </View>
+                <Text numberOfLines={1} style={s.caption}>{minutes} min assigned</Text>
+              </View>;
+            })}
           </View>
           {weekly.some(chore => chore.unassigned && !chore.completed) && <Text numberOfLines={1} style={s.caption}>{weekly.filter(chore => chore.unassigned && !chore.completed).length} still unassigned</Text>}
         </ScrollView>

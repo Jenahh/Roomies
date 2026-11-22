@@ -20,7 +20,7 @@ export default function RoomieWelcome({ data, setData, onFinish }: {
     `Welcome home, ${data.name}! ${welcome.dialogue}`,
     ...welcome.updates.map(update => `You have ${update.title}: ${update.detail}.`),
     welcome.mood === 'Stressed' ? "We can do this! A little progress will help me feel better."
-      : welcome.mood === 'Attention' ? "Come check in with me when you have a moment!"
+      : welcome.mood === 'Annoyed' ? "Let's take care of the overdue chores together."
         : "Let's make today a good one!",
   ].flatMap(message => {
     const pages: string[] = [];

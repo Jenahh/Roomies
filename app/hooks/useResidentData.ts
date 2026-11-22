@@ -10,6 +10,7 @@ export type Expense = { id: string; title: string; amount: number; due: string; 
 export type HouseholdEvent = { id: string; title: string; date: string; time?: string; attendees?: string; custom?: boolean };
 export type SupportDraft = { id: string; kind: 'maintenance' | 'ra'; title: string; description: string; location: string; createdAt: string; category?: string; photo?: string };
 export type ResidentData = {
+  leafHatUnlock?: 'pending' | 'seen';
   welcomeSeen?: { chores: string[]; expenses: string[] };
   scheduler?: { members: SchedulerMember[]; templates: ChoreTemplate[] };
   name: string;
@@ -84,5 +85,5 @@ export function useResidentData(email: string, initialName: string) {
       setStorageError('Changes could not be saved on this device. Keep this page open to retain them.');
     }
   }, [key, data, storageReady]);
-  return { data, setData, storageError };
+  return { data, setData, storageError, storageReady };
 }
