@@ -1,4 +1,8 @@
 
+import os
+
+from dotenv import load_dotenv
+from pathlib import Path
 from pwdlib import PasswordHash
 
 from database import SessionLocal, Base, engine
@@ -12,12 +16,18 @@ from models import (
 )
 
 
+# Load local environment variables.
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
 password_hasher = PasswordHash.recommended()
 
 Base.metadata.create_all(bind=engine)
 
 
 def seed_database():
+
+    # Require a password supplied through an environment variable.
+    demo_password = os.environ["DEMO_ACCOUNT_PASSWORD"]
 
     db = SessionLocal()
 
@@ -36,7 +46,7 @@ def seed_database():
         resident = User(
             name="Resident Roomie",
             email="resident@gmail.com",
-            password_hash=password_hasher.hash("1234"),
+            password_hash=password_hasher.hash(demo_password),
             role="resident"
         )
 
@@ -44,7 +54,7 @@ def seed_database():
         ra = User(
             name="Resident Assistant",
             email="resident.assistant@gmail.com",
-            password_hash=password_hasher.hash("1234"),
+            password_hash=password_hasher.hash(demo_password),
             role="ra"
         )
 
@@ -52,7 +62,7 @@ def seed_database():
         manager = User(
             name="Casey",
             email="property.manager@gmail.com",
-            password_hash=password_hasher.hash("1234"),
+            password_hash=password_hasher.hash(demo_password),
             role="manager"
         )
 
@@ -98,22 +108,14 @@ def seed_database():
         db.commit()
 
         print("Database seeded successfully!")
-        print("Resident: resident@gmail.com")
-        print("RA: ra@gmail.com")
-        print("Manager: manager@gmail.com")
-        print("Property: Roomies Apartments")
-        print("Group: Building A")
-        print("Household: Apartment 204")
 
-    except Exception as error:
-
+    except Exception:
         db.rollback()
-        print("Error:", error)
         raise
 
     finally:
-
         db.close()
+
 
 if __name__ == "__main__":
     seed_database()
