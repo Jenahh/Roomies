@@ -73,6 +73,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
   const pageScroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const navigationTab = (activeTab === 'Notifications' || activeTab === 'Achievements' || activeTab === 'PetCheckIn') ? 'Home' : (activeTab === 'Maintenance' || activeTab === 'ContactRA' || activeTab === 'CustomizePet' || activeTab === 'MaintenanceHistory' || activeTab === 'RAHistory') ? 'Profile' : activeTab;
   useEffect(() => {
+    setQuickAddOpen(false);
     pageScroll.current?.scrollTo({ y: 0, animated: false });
     if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   }, [activeTab, quickAddTarget === 'Calendar']);
@@ -180,34 +181,32 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     return <View key={tab} pointerEvents={quickAddOpen ? 'auto' : 'none'} style={[styles.quickAddOptionWrapper, positions[index], !quickAddOpen && styles.quickAddOptionHidden]}>{option}</View>;
   });
 
+  const hasQuickAddMenu = activeTab === 'Home' || activeTab === 'Profile';
+  const quickAddLabel = activeTab === 'Chores' ? 'Add chore'
+    : activeTab === 'Expenses' ? 'Add expense'
+    : activeTab === 'Calendar' && quickAddTarget !== 'Calendar' ? 'Add event'
+    : hasQuickAddMenu ? (quickAddOpen ? 'Close quick add menu' : 'Add')
+    : null;
+  const quickAddButton = quickAddLabel && (
+    <Pressable accessibilityRole="button" accessibilityLabel={quickAddLabel} accessibilityState={hasQuickAddMenu ? { expanded: quickAddOpen } : undefined} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
+      <Icon name="add" color="#FFFFFF" size={25} />
+    </Pressable>
+  );
+
   const residentHeader = <DashboardHeader notificationsActive={activeTab === 'Notifications'} household={householdName} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('CustomizePet'); }} />;
   function renderResidentPage(content: ReactNode) {
-    return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage, activeTab === 'Chores' && styles.chorePage]} showsVerticalScrollIndicator={false}>
+    return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage, !!quickAddLabel && styles.pageWithQuickAdd]} showsVerticalScrollIndicator={false}>
       {residentHeader}
       {content}
     </ScrollView>;
   }
 
-  function renderAddDock(label: string, floating = false) {
-    return <View pointerEvents={floating ? 'box-none' : 'auto'} style={[styles.quickAddDock, floating && styles.floatingAddDock]}>
-      <View style={styles.quickAddButtonWrapper}>
-        <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
-          <Icon name="add" color="#FFFFFF" size={25} />
-        </Pressable>
-      </View>
-    </View>;
-  }
-
   function handleQuickAdd() {
-    if (quickAddOpen) {
-      setQuickAddOpen(false);
-      return;
-    }
     if (activeTab === 'Chores' || activeTab === 'Expenses' || activeTab === 'Calendar') {
       setQuickAddTarget(activeTab);
       return;
     }
-    setQuickAddOpen(true);
+    setQuickAddOpen(open => !open);
   }
 
   return (
@@ -222,10 +221,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
         {activeTab === 'CustomizePet' && hasRoomiePet ? (
           <RoomieCustomizationScreen mood={petMood} sharedChores={databaseDemo} data={data} setData={setData} storageError={storageError} header={residentHeader} onBack={() => setActiveTab('Profile')} />
         ) : activeTab === 'Chores' ? (
-          <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={content => <View style={styles.chorePane}>
-              {renderResidentPage(content)}
-              {renderAddDock('Add chore', true)}
-            </View>} />
+          <ChoresScreen shared={databaseDemo ? shared : undefined} assignedHousehold={assignedHousehold} data={data} setData={setData} storageError={storageError} onPet={hasRoomiePet ? () => setActiveTab('CustomizePet') : undefined} autoOpenAdd={quickAddTarget === 'Chores'} onAddOpened={() => setQuickAddTarget(null)} renderPage={renderResidentPage} />
         ) : activeTab === 'Calendar' ? (
           <CalendarScreen
             data={data}
@@ -237,10 +233,9 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             roommates={assignedHousehold?.roommates}
             onOpenSection={setActiveTab}
             renderPage={renderResidentPage}
-            onAdd={handleQuickAdd}
           />
         ) : (
-          <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Home' && styles.homePage]} showsVerticalScrollIndicator={false}>
+          <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, !!quickAddLabel && styles.pageWithQuickAdd]} showsVerticalScrollIndicator={false}>
             {residentHeader}
             {activeTab === 'PetCheckIn' ? <RoomieCheckInScreen sharedChores={databaseDemo} onCompleteChore={id => toggleChore(id, true)} data={data} setData={setData} now={now} storageError={storageError} onBack={() => setActiveTab('Home')} onExpenses={() => setActiveTab('Expenses')} /> : activeTab === 'Achievements' ? <AchievementsScreen sharedChores={databaseDemo} data={data} now={now} onBack={() => setActiveTab('Home')} /> : activeTab === 'Notifications' ? <NotificationsScreen data={data} setData={setData} mood={petMood} storageError={storageError} onBack={() => setActiveTab('Home')} /> : activeTab === 'MaintenanceHistory' ? <SupportHistoryScreen key="maintenance-history" data={data} setData={setData} storageError={storageError} kind="maintenance" onBack={() => setActiveTab('Profile')} /> : activeTab === 'RAHistory' ? <SupportHistoryScreen key="ra-history" data={data} setData={setData} storageError={storageError} kind="ra" onBack={() => setActiveTab('Profile')} /> : activeTab === 'ContactRA' ? (databaseDemo ? <DatabaseRequests user={user} type="RA Concern" onBack={() => setActiveTab('Profile')} /> : <ContactRAScreen initialCategory={raCategory} data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Maintenance' ? (databaseDemo ? <DatabaseRequests user={user} type="Maintenance" onBack={() => setActiveTab('Profile')} /> : <MaintenanceScreen initialCategory={maintenanceCategory} data={data} setData={setData} storageError={storageError} onBack={() => setActiveTab('Profile')} />) : activeTab === 'Expenses' ? <ExpensesScreen ledger={household.ledger} update={household.update} me={me} mood={petMood} petColor={data.pet?.color} storageError={household.storageError || storageError} autoOpenAdd={quickAddTarget === 'Expenses'} onAddOpened={() => setQuickAddTarget(null)} /> : activeTab === 'Profile' ? <ProfileScreen initialEditing={setupProfile} onSignOut={onSignOut} user={user} data={data} setData={setData} storageError={storageError} onMaintenance={category => { setMaintenanceCategory(category); setActiveTab('Maintenance'); }} onContactRA={category => { setRACategory(category); setActiveTab('ContactRA'); }} onMaintenanceHistory={() => setActiveTab('MaintenanceHistory')} onRAHistory={() => setActiveTab('RAHistory')} /> : <>
               <Text accessibilityRole="header" numberOfLines={2} style={styles.greeting}>{firstName ? `${greeting}, ${firstName}!` : greeting}</Text>
@@ -274,25 +269,21 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
             </>}
           </ScrollView>
         )}
-        {activeTab !== 'CustomizePet' && activeTab !== 'Chores' && activeTab !== 'Calendar' && activeTab !== 'Expenses' && <View pointerEvents="box-none" style={[styles.quickAddContainer, { bottom: 72 + bottomInset }]}>
-          {Platform.OS === 'web' ? (
+        {quickAddButton && <View pointerEvents="box-none" style={[styles.quickAddContainer, { bottom: 72 + bottomInset }]}>
+          {hasQuickAddMenu && (Platform.OS === 'web' ? (
             <div className={`quick-add-menu${quickAddOpen ? ' is-open' : ''}`}>
               <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={styles.quickAddMenu}>{quickAddOptions}</View>
             </div>
           ) : (
             <View pointerEvents={quickAddOpen ? 'auto' : 'none'} accessibilityElementsHidden={!quickAddOpen} style={[styles.quickAddMenu, !quickAddOpen && styles.quickAddMenuHidden]}>{quickAddOptions}</View>
-          )}
+          ))}
           {Platform.OS === 'web' ? (
-            <div className={`quick-add-button${quickAddOpen ? ' is-open' : ''}`}>
-              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
-                <Icon name="add" color="#FFFFFF" size={25} />
-              </Pressable>
+            <div className={`quick-add-button${hasQuickAddMenu && quickAddOpen ? ' is-open' : ''}`}>
+              {quickAddButton}
             </div>
           ) : (
             <View style={styles.quickAddButtonWrapper}>
-              <Pressable accessibilityRole="button" accessibilityLabel={quickAddOpen ? 'Close quick add menu' : 'Add'} accessibilityState={{ expanded: quickAddOpen }} onPress={handleQuickAdd} style={({ pressed }) => [styles.quickAddButton, pressed && styles.pressed]}>
-                <Icon name="add" color="#FFFFFF" size={25} />
-              </Pressable>
+              {quickAddButton}
             </View>
           )}
         </View>}

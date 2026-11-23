@@ -40,8 +40,6 @@ export const styles = StyleSheet.create({
   sectionTitle: { flexShrink: 1, fontSize: 17, fontWeight: '700', color: '#292B35' },
   action: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 6 },
   link: { fontSize: 13, fontWeight: '600', color: '#514FA1' },
-  agendaActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  agendaAdd: { position: 'relative', flexShrink: 0, width: 48, height: 48, borderRadius: 24 },
   agendaHeader: { marginTop: 8 },
   list: { backgroundColor: '#FFFFFF', borderRadius: 14 },
   itemDivider: { borderTopWidth: 1, borderColor: '#EFEDF3' },

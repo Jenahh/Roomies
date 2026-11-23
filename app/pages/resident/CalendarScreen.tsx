@@ -4,7 +4,6 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import type { ResidentData } from '../../hooks/useResidentData';
 import type { PetMood } from '../../data/roomiePetMood';
-import { styles as dashboardStyles } from '../../styles/ResidentDashboard.styles';
 import { styles as s } from '../../styles/CalendarScreen.styles';
 import Icon, { type IconName } from '../../components/dashboard/DashboardIcon';
 import type { ChoreLook } from '../../data/chorePresets';
@@ -117,9 +116,9 @@ function MonthCard({ month, selected, today, itemsByDay, onMonth, onDay, weekOnl
   </View>;
 }
 
-export default function CalendarScreen({ data, setData, mood, storageError, editing = false, renderPage, onAdd, onCancel, roommates = [], onOpenSection }: {
+export default function CalendarScreen({ data, setData, mood, storageError, editing = false, renderPage, onCancel, roommates = [], onOpenSection }: {
   data: ResidentData; setData: Dispatch<SetStateAction<ResidentData>>; mood: PetMood; storageError: string;
-  editing?: boolean; renderPage?: (content: ReactNode) => ReactNode; onAdd?: () => void; onCancel?: () => void; roommates?: { id: string; name: string }[];
+  editing?: boolean; renderPage?: (content: ReactNode) => ReactNode; onCancel?: () => void; roommates?: { id: string; name: string }[];
   onOpenSection?: (section: 'Chores' | 'Expenses') => void;
 }) {
   const today = dateKey(new Date());
@@ -266,11 +265,6 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
   const agendaHeading = (
     <View style={[s.header, s.agendaHeader]}>
       <Text numberOfLines={1} accessibilityRole="header" style={s.sectionTitle}>{selected === today ? 'Today’s plans' : dayLabel(readDate(selected))}</Text>
-      <View style={s.agendaActions}>
-        {onAdd && <Pressable accessibilityRole="button" accessibilityLabel="Add event" onPress={onAdd} style={({ pressed }) => [dashboardStyles.quickAddButton, s.agendaAdd, pressed && dashboardStyles.pressed]}>
-          <Icon name="add" color="#FFFFFF" size={25} />
-        </Pressable>}
-      </View>
     </View>
   );
   const agendaItems = <>
