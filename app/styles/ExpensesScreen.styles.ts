@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
   listRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 40 },
   divider: { borderBottomWidth: 1, borderBottomColor: '#EFEEEB' },
 
-  // Settle-up assistant
+  // The settle-up assistant
   assistant: { marginTop: 16, backgroundColor: '#EDF0FF', borderRadius: 14, padding: 16, gap: 12 },
   assistantHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   assistantTitle: { fontSize: 15, fontWeight: '700', color: '#292B35' },
@@ -68,7 +68,7 @@ export const styles = StyleSheet.create({
   markPaidText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF' },
   waiting: { fontSize: 10, color: '#7B7D87', maxWidth: 90, textAlign: 'right' },
   confirm: { gap: 8, paddingBottom: 12 },
-  confirmButtons: { flexDirection: 'row', gap: 8 },
+  confirmButtons: { flexDirection: 'row', gap: 8, paddingBottom: 12 },
   why: { minHeight: 36, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   explanation: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, gap: 10 },
   explainHeading: { fontSize: 12, fontWeight: '700', color: '#292B35' },
@@ -77,5 +77,10 @@ export const styles = StyleSheet.create({
   compareTile: { flex: 1, borderRadius: 10, padding: 10, backgroundColor: '#F4F4F6', gap: 2, alignItems: 'center' },
   compareBest: { backgroundColor: '#EAF6EF' },
   compareValue: { fontSize: 20, fontWeight: '800', color: '#292B35' },
+  textButton: { minHeight: 34, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  explainName: { width: 64, fontSize: 12, fontWeight: '600', color: '#292B35' },
+  explainMath: { flex: 1, fontSize: 11, color: '#606675' },
+  explainBalance: { fontSize: 12, fontWeight: '700', color: '#292B35' },
+  presetChip: { minHeight: 40, paddingHorizontal: 14, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E4E3E0', flexDirection: 'row', alignItems: 'center', gap: 6 },
   compareLabel: { fontSize: 10, lineHeight: 14, color: '#606675', textAlign: 'center' },
 });
