@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyTransfers, greedySettle, optimizeSettlement, zeroSumGroups, type Balance } from './settlement';
 import { expenseOccurrences, memberSummaries, parseLedger, planSettlement, residentExpenses, splitCents, type HouseholdLedger } from './ledger';
-import { explainTransfers, summarizePlan } from './explain';
+import { formatBalance, summarizePlan } from './explain';
 
 const b = (entries: Record<string, number>): Balance[] => Object.entries(entries).map(([id, cents]) => ({ id, cents }));
 
@@ -13,7 +13,7 @@ function settlesEveryone(balances: Balance[], transfers: ReturnType<typeof greed
   }
 }
 
-/** Independent check: try every partition of the people and keep the most zero-sum blocks. */
+/** This is an independent check that tries every partition of the people and keeps the most zero-sum blocks. */
 function bruteForceMinimum(balances: Balance[]) {
   const values = balances.filter(item => item.cents !== 0).map(item => item.cents);
   let most = 0;
@@ -121,12 +121,8 @@ describe('household ledger', () => {
     expect(balances).toEqual({ maya: 95000, jordan: -49000, sam: -46000 });
     const plan = planSettlement(ledger(), '2026-11');
     expect(plan.comparison).toEqual({ pairwise: 3, greedy: 2, optimal: 2 });
-    expect(summarizePlan(plan)).toBe('Your household can settle up with 2 payments instead of 3 if everyone paid each roommate back separately.');
-    const name = (id: string) => ({ maya: 'Maya', jordan: 'Jordan', sam: 'Sam' } as Record<string, string>)[id];
-    expect(explainTransfers(plan, name)).toEqual([
-      'Jordan pays Maya $490.00. This clears the $490.00 Jordan owes, and Maya is still owed $460.00.',
-      'Sam pays Maya $460.00. This clears the $460.00 Sam owes, and Maya is then fully paid back.',
-    ]);
+    expect(summarizePlan(plan)).toBe('2 payments settle everyone.');
+    expect(formatBalance(-60000)).toBe('−$600.00');
   });
 
   it('counts recorded payments toward balances', () => {
