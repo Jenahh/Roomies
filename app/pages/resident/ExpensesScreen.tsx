@@ -185,7 +185,6 @@ export default function ExpensesScreen({ ledger, update, me, mood, petColor, sto
     <View style={s.header}>
       <View style={s.copy}>
         <Text accessibilityRole="header" style={s.title}>Expenses</Text>
-        <Text style={s.subtitle}>{monthLabel(month)}</Text>
       </View>
     </View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
