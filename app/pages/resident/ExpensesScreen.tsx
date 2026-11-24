@@ -192,7 +192,7 @@ export default function ExpensesScreen({ ledger, update, me, mood, petColor, sto
     <View style={[s.summary, myBalance > 0 && s.owedSummary]}>
       <View style={s.row}>
         <View style={s.copy}>
-          <Text style={s.summaryLabel}>{myBalance < 0 ? 'You owe' : myBalance > 0 ? "You're owed" : 'All settled up'}</Text>
+          {myBalance !== 0 && <Text style={s.summaryLabel}>{myBalance < 0 ? 'You owe' : "You're owed"}</Text>}
           <Text style={s.balance}>{formatCents(Math.abs(myBalance))}</Text>
         </View>
         <View style={[s.wallet, myBalance > 0 && s.owedWallet]}><Icon name="wallet" size={28} /></View>
