@@ -1,3 +1,4 @@
+import SoftChevron from '../components/SoftChevron';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,8 +10,8 @@ import { getImageSource } from '../utils/imageSource';
 
 const roles = [
   { id: 'resident', title: 'Resident', description: 'Manage your shared home', color: '#EDF0FF', label: 'Resident' },
-  { id: 'assistant', title: 'Resident Assistant', description: 'Support your residents', color: '#F2EEFF', label: 'Resident Assistant' },
-  { id: 'landlord', title: 'Property Manager', description: 'Manage your community', color: '#EAF6F0', label: 'Property Manager' },
+  { id: 'assistant', title: 'Resident Assistant', description: 'Support your residents', color: '#EAF6EF', label: 'Resident Assistant' },
+  { id: 'landlord', title: 'Property Manager', description: 'Manage your community', color: '#FFF2DC', label: 'Property Manager' },
 ] as const;
 
 type Role = typeof roles[number]['id'];
@@ -28,7 +29,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.page}>
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={styles.backButton}>
-            <Text style={styles.backArrow}>{'<'}</Text>
+            <SoftChevron />
           </Pressable>
           <View pointerEvents="none" style={styles.logoCenter}>
             <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
@@ -41,7 +42,7 @@ export default function RegistrationScreen({ onBack, onContinue }: RegistrationS
           {roles.map(role => {
             const isSelected = role.id === selectedRole;
             return (
-              <Pressable key={role.id} accessibilityRole="radio" accessibilityState={{ checked: isSelected }} onPress={() => setSelectedRole(role.id)} style={[styles.card, isSelected && styles.selectedCard]}>
+              <Pressable key={role.id} accessibilityRole="radio" accessibilityState={{ checked: isSelected }} onPress={() => setSelectedRole(role.id)} style={[styles.card, { backgroundColor: role.color }, isSelected && styles.selectedCard]}>
                 <View style={[styles.iconBox, { backgroundColor: role.color }]}>
                   {role.id === 'assistant'
                     ? <RoomiePet role="assistant" size={64} accessibilityLabel="Resident Assistant Roomie" />

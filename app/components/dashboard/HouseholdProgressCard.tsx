@@ -64,16 +64,16 @@ export default function HouseholdProgressCard({ points }: { points: number }) {
         }]}><View style={[s.fill, { width: `${fill * 100}%` }]} /></View>;
       })}
     </View>
-    <Text style={s.points}>
-      {points} household points{remainingPoints > 0 && ` · ${remainingPoints} to next stage`}
-    </Text>
+    <Text numberOfLines={1} style={s.points}>{points} household points</Text>
+    {remainingPoints > 0 && <Text numberOfLines={1} style={s.nextStage}>{remainingPoints} to next stage</Text>}
   </View>;
 }
 
 const s = StyleSheet.create({
   container: { alignItems: 'center', paddingTop: 14, marginBottom: 20 },
   circle: { backgroundColor: '#EAF6EF', alignItems: 'center', justifyContent: 'center' },
-  points: { marginTop: 8, color: '#426858', fontSize: 12, textAlign: 'center' },
+  points: { marginTop: 10, color: '#315F46', fontSize: 18, fontWeight: '700', textAlign: 'center' },
+  nextStage: { marginTop: 4, color: '#426858', fontSize: 14, textAlign: 'center' },
   dash: { position: 'absolute', borderRadius: 2, backgroundColor: '#C7DBCF', overflow: 'hidden' },
   fill: { height: '100%', backgroundColor: '#56A97D' },
 });

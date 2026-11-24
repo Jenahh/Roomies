@@ -1,6 +1,7 @@
 import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  headerPageTitle: { flex: 1, minWidth: 0, fontSize: 26, fontWeight: '700', color: '#292B35', letterSpacing: -0.6 },
   safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
   shell: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center', backgroundColor: '#FAF9F6' },
   pageScroll: { minWidth: 0, width: '100%' },

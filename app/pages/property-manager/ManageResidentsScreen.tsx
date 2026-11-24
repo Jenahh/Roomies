@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { randomUUID } from '../../utils/randomUUID';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -72,7 +73,7 @@ export default function ManageResidentsScreen({ propertyName, household, residen
   return (
     <>
       <View style={s.heading}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back to properties" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Back to properties" onPress={onBack} style={s.back}><SoftChevron /></Pressable>
         <Text accessibilityRole="header" style={s.title}>Manage Residents</Text>
       </View>
       <Text style={s.subtitle}>{propertyName} · Unit roster & access only</Text>
@@ -106,7 +107,7 @@ export default function ManageResidentsScreen({ propertyName, household, residen
       <Modal visible={dialog !== null} transparent animationType="fade" onRequestClose={() => setDialog(null)}>
         <View style={shared.backdrop}>
           <ScrollView showsVerticalScrollIndicator={false} style={shared.modal} contentContainerStyle={shared.modalContent} keyboardShouldPersistTaps="handled">
-            <Pressable accessibilityRole="button" accessibilityLabel="Back to resident roster" onPress={() => setDialog(null)} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Back to resident roster" onPress={() => setDialog(null)} style={s.back}><SoftChevron /></Pressable>
             {dialog === 'invite' && <>
               <Text accessibilityRole="header" style={shared.sectionTitle}>Invite resident to {unitLabel}</Text>
               <Text style={shared.label}>Full name</Text>

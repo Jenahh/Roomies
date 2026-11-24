@@ -1,3 +1,4 @@
+import SoftChevron from '../components/SoftChevron';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +7,12 @@ import { styles } from '../styles/LoginScreen.styles';
 import { demoAccounts, type ResidentUser } from '../data/demoAccount';
 import PasswordVisibilityIcon from '../components/auth/PasswordVisibilityIcon';
 import { getImageSource } from '../utils/imageSource';
+
+const loginRoles = [
+  { id: 'resident', label: 'Resident', name: 'Resident', tint: '#EDF0FF', ink: '#4056DE' },
+  { id: 'assistant', label: 'RA', name: 'Resident Assistant', tint: '#EAF6EF', ink: '#315F46' },
+  { id: 'property-manager', label: 'Manager', name: 'Property Manager', tint: '#FFF2DC', ink: '#79521E' },
+] as const;
 
 type LoginScreenProps = {
   onBack?: () => void;
@@ -18,6 +25,8 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
+  const accountRole = demoAccounts.find(item => item.user.email === email.trim().toLowerCase())?.user.role;
+  const theme = loginRoles.find(item => item.id === accountRole) ?? loginRoles[0];
 
   function logIn() {
     const account = demoAccounts.find(account => account.user.email === email.trim().toLowerCase() && account.password === password);
@@ -39,7 +48,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to welcome" style={({ pressed }) => [styles.backButton, pressed && styles.linkPressed]}>
-            <Text style={styles.backText}>{'<'}</Text>
+            <SoftChevron />
           </Pressable>
           <View pointerEvents="none" style={styles.logoCenter}>
             <Image source={getImageSource(roomiesLogo)} style={styles.logo} resizeMode="contain" accessibilityLabel="Roomies logo" />
@@ -47,7 +56,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
         </View>
 
         <Text accessibilityRole="header" numberOfLines={1} style={styles.title}>Welcome back.</Text>
-        <View style={styles.form}>
+        <View style={[styles.form, { backgroundColor: theme.tint }]}>
           <TextInput accessibilityLabel="Email" value={email} onChangeText={setEmail} placeholder="jane.doe@example.edu" placeholderTextColor="#7B7D87" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" style={styles.input} />
           <View style={styles.passwordField}>
             <TextInput accessibilityLabel="Password" value={password} onChangeText={setPassword} placeholder="Enter your password" placeholderTextColor="#7B7D87" secureTextEntry={!showPassword} autoCapitalize="none" autoCorrect={false} autoComplete="current-password" onSubmitEditing={logIn} style={styles.passwordInput} />
@@ -60,7 +69,7 @@ export default function LoginScreen({ onBack, onCreateAccount, onResidentLogin }
             <Text style={styles.link}>Forgot password?</Text>
           </Pressable>
           {!!message && <Text accessibilityRole="alert" aria-live="polite" style={styles.message}>{message}</Text>}
-          <Pressable accessibilityRole="button" onPress={logIn} style={({ pressed }) => [styles.loginButton, pressed && styles.buttonPressed]}>
+          <Pressable accessibilityRole="button" onPress={logIn} style={({ pressed }) => [styles.loginButton, { backgroundColor: theme.ink }, pressed && styles.buttonPressed]}>
             <Text style={styles.loginText}>Log In</Text>
             
           </Pressable>

@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { getPersonalChorePoints, isPersonalChore, POINTS_PER_CHORE } from '../../data/choreRewards';
 import AchievementProgressBar from '../../components/dashboard/AchievementProgressBar';
 import { Pressable, Text, View } from 'react-native';
@@ -36,7 +37,7 @@ export default function AchievementsScreen({ data, now, onBack, sharedChores }: 
 
   return (
     <>
-      <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><SoftChevron /></Pressable>
       <View style={s.header}>
         
         <View style={s.copy}><Text accessibilityRole="header" style={s.title}>Achievements</Text></View>

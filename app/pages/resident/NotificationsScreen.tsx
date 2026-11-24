@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Pressable, Switch, Text, View } from 'react-native';
 
@@ -31,7 +32,7 @@ export default function NotificationsScreen({ data, setData, mood, storageError,
     setMessage('We’ll show this reminder again in one hour.');
   }
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><SoftChevron /></Pressable>
     <View style={s.header}><View style={s.copy}><Text accessibilityRole="header" style={s.title}>Your reminders</Text></View></View>
     <View style={s.section}><Text style={s.sectionTitle}>Today · {unread} unread</Text><Pressable accessibilityRole="button" disabled={!unread} onPress={() => markRead(visible.map(item => item.id))} style={s.textButton}><Text style={[s.link, !unread && s.muted]}>Mark all as read</Text></Pressable></View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}

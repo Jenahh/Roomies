@@ -1,3 +1,4 @@
+import SoftChevron from '../SoftChevron';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,23 +22,20 @@ const roleContent = {
   resident: {
     label: 'Resident', avatarBackground: '#EDF0FF',
     title: 'Your shared home\nstarts here.', joinTitle: 'Join your\nhousehold.',
-    subtitle: 'Create your resident account to get started.',
     codeLabel: 'Property manager join code',
     notice: 'Ask your property manager for your resident invitation code.',
     submit: 'Create account & join household',
   },
   assistant: {
-    label: 'Resident Assistant', avatarBackground: '#F2EEFF',
+    label: 'Resident Assistant', avatarBackground: '#EAF6EF',
     title: 'Support your\ncommunity.', joinTitle: 'Join as a\nResident Assistant.',
-    subtitle: 'Create your Resident Assistant account to get started.',
     codeLabel: 'RA join code',
     notice: 'Ask your property manager for your RA invitation code.',
     submit: 'Create account & request RA access',
   },
   'property-manager': {
-    label: 'Property Manager', avatarBackground: '#EAF6F0',
+    label: 'Property Manager', avatarBackground: '#FFF2DC',
     title: 'Manage your\ncommunity.', joinTitle: 'Join as a\nProperty Manager.',
-    subtitle: 'Create your Property Manager account to get started.',
     codeLabel: 'Property manager join code',
     notice: 'Ask your administrator for your property manager invitation code.',
     submit: 'Create account & request manager access',
@@ -76,7 +74,7 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
   }
   return <SafeAreaView style={s.safeArea}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
     <View style={s.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={step === 1 ? 'Back to role selection' : 'Back to account details'} onPress={() => { setError(''); if (step === 2) setStep(1); else onBack(); }} style={s.back}><SoftChevron /></Pressable>
       <View pointerEvents="none" style={s.logoCenter}><Image source={getImageSource(roomiesLogo)} style={s.logo} resizeMode="contain" accessibilityLabel="Roomies logo" /></View>
       <Text style={s.step}>{step} of 2</Text>
     </View>
@@ -88,7 +86,7 @@ export default function RoleSignUp({ role, onBack, onLogIn, onRequestSubmitted }
           ? <RoomiePet role="property-manager" size={72} accessibilityLabel="Property Manager Roomie" />
           : <RoomiePet mood="happy-3d" size={72} accessibilityLabel="Resident Roomie Pet" />}
     </View>
-    <Text accessibilityRole="header" style={s.title}>{step === 1 ? content.title : content.joinTitle}</Text>{step === 1 && <Text style={s.subtitle}>{content.subtitle}</Text>}
+    <Text accessibilityRole="header" style={s.title}>{step === 1 ? content.title : content.joinTitle}</Text>
     <View style={[s.card, step === 2 && s.joinCard]}>
       {step === 1 && <Text accessibilityRole="header" style={s.cardTitle}>{content.label} Sign Up</Text>}
       {step === 1 ? <AccountDetailsFields name={name} setName={setName} email={email} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} showPassword={showPassword} setShowPassword={setShowPassword} onContinue={next} /> : <>

@@ -29,6 +29,9 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
   const imageMaxHeight = Math.max(112, availableHeight * (compact ? 0.28 : 0.36) / Math.max(1, fontScale));
   const imageWidth = Math.min(contentWidth || 372, 372, imageMaxHeight * (690 / 570));
   const imageHeight = imageWidth / (690 / 570);
+  // React Native Web does not shrink this headline with adjustsFontSizeToFit.
+  // Use the measured content width so the entire sentence fits on phones too.
+  const titleSize = Math.min(30, (contentWidth || 280) / 12.4);
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
@@ -48,7 +51,7 @@ export default function WelcomeScreen({ onGetStarted, onLogIn }: WelcomeScreenPr
           </View>
 
           <View style={styles.copy}>
-            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.title}>Better living, together.</Text>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.title, { fontSize: titleSize, lineHeight: Math.ceil(titleSize * 1.3) }]}>Better living, together.</Text>
             <Text style={styles.subtitle}>Share the chores, split the bills, and make room for the good stuff.</Text>
           </View>
         </View>

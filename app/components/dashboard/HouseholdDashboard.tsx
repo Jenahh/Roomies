@@ -193,7 +193,7 @@ export default function HouseholdDashboard({ user, onSignOut }: HouseholdDashboa
     </Pressable>
   );
 
-  const residentHeader = <DashboardHeader notificationsActive={activeTab === 'Notifications'} household={householdName} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('CustomizePet'); }} />;
+  const residentHeader = <DashboardHeader pageTitle={activeTab === 'Profile' ? 'Profile' : undefined} notificationsActive={activeTab === 'Notifications'} household={householdName} pet={data.pet} mood={petMood} onHousehold={() => openPanel('Household')} onNotifications={() => openPanel('Notifications')} onPet={() => { setQuickAddOpen(false); setQuickAddTarget(null); setActiveTab('CustomizePet'); }} />;
   function renderResidentPage(content: ReactNode) {
     return <ScrollView ref={pageScroll} style={styles.pageScroll} contentContainerStyle={[styles.page, activeTab === 'Calendar' && styles.calendarPage, !!quickAddLabel && styles.pageWithQuickAdd]} showsVerticalScrollIndicator={false}>
       {residentHeader}

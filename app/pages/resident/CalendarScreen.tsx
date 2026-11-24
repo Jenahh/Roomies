@@ -5,7 +5,8 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { ResidentData } from '../../hooks/useResidentData';
 import type { PetMood } from '../../data/roomiePetMood';
 import { styles as s } from '../../styles/CalendarScreen.styles';
-import Icon, { type IconName } from '../../components/dashboard/DashboardIcon';
+import Icon from '../../components/dashboard/DashboardIcon';
+import CalendarEventIcon, { type CalendarEventIconName } from '../../components/CalendarEventIcon';
 import type { ChoreLook } from '../../data/chorePresets';
 import { ChoreBadge } from '../../features/scheduler/ChoreBadge';
 import RoomiePet from '../../components/RoomiePet';
@@ -22,23 +23,21 @@ const categories = {
   bill: { label: 'Bills', dot: '#A66316', background: '#FFF2DC' },
   event: { label: 'Events', dot: '#5B62BD', background: '#EDF0FF' },
 } as const;
-type EventLook = { title: string; icon: IconName; tint: string; ink: string };
-const householdEvent: EventLook = { title: 'Household event', icon: 'calendar', tint: '#EDF0FF', ink: '#5355AD' };
-const customEvent: EventLook = { title: 'Custom event', icon: 'sparkles', tint: '#FCE8ED', ink: '#8E4259' };
+type EventLook = { title: string; icon: CalendarEventIconName; tint: string };
+const householdEvent: EventLook = { title: 'Household event', icon: 'calendar', tint: '#EDF0FF' };
+const customEvent: EventLook = { title: 'Custom event', icon: 'sparkles', tint: '#FCE8ED' };
 const eventPresets: EventLook[] = [
-  { title: 'House dinner', icon: 'dinner', tint: '#FFF2DC', ink: '#79521E' },
-  { title: 'Roommate meeting', icon: 'group', tint: '#EAF6EF', ink: '#315F46' },
-  { title: 'Study session', icon: 'study', tint: '#E8F0FF', ink: '#345295' },
-  { title: 'Game night', icon: 'game', tint: '#F0E9FC', ink: '#64428A' },
-  { title: 'Grocery run', icon: 'basket', tint: '#ECF4DC', ink: '#47602B' },
+  { title: 'House dinner', icon: 'dinner', tint: '#FFF2DC' },
+  { title: 'Roommate meeting', icon: 'group', tint: '#EAF6EF' },
+  { title: 'Study session', icon: 'study', tint: '#E8F0FF' },
+  { title: 'Game night', icon: 'game', tint: '#F0E9FC' },
+  { title: 'Grocery run', icon: 'basket', tint: '#ECF4DC' },
   householdEvent,
   customEvent,
 ];
 
-function AgendaIcon({ icon, tint, ink }: Pick<EventLook, 'icon' | 'tint' | 'ink'>) {
-  return <View pointerEvents="none" style={[s.categoryBadge, { backgroundColor: tint }]}>
-    <Icon name={icon} size={20} color={ink} />
-  </View>;
+function AgendaIcon({ icon, tint }: Pick<EventLook, 'icon' | 'tint'>) {
+  return <CalendarEventIcon name={icon} tint={tint} />;
 }
 
 const weekdayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -184,10 +183,10 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
     const category = categories[item.kind];
     const look = item.kind === 'event'
       ? item.custom ? customEvent : eventPresets.find(preset => preset.title === item.title) ?? householdEvent
-      : { icon: 'expenses' as const, tint: category.background, ink: category.dot };
+      : { icon: 'bill' as const, tint: category.background };
     return <View key={`${item.kind}-${item.id}`} style={index > 0 && s.itemDivider}>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded }} onPress={() => setDetail(expanded ? null : item)} style={s.item}>
-        {item.kind === 'chore' ? <ChoreBadge look={item.look} title={item.title} /> : <AgendaIcon icon={look.icon} tint={look.tint} ink={look.ink} />}
+        {item.kind === 'chore' ? <ChoreBadge look={item.look} title={item.title} /> : <AgendaIcon icon={look.icon} tint={look.tint} />}
         <View style={s.copy}>
           <Text numberOfLines={1} style={s.itemTitle}>{item.title}</Text>
         </View>
@@ -213,7 +212,7 @@ export default function CalendarScreen({ data, setData, mood, storageError, edit
       </Pressable>
       {picker === 'type' && <View accessibilityRole="radiogroup" accessibilityLabel="Event presets" style={s.presetList}>
         {eventPresets.map(preset => <Pressable key={preset.title} accessibilityRole="radio" accessibilityState={{ checked: eventType === preset.title }} onPress={() => { setEventType(preset.title); setPicker(null); }} style={[s.preset, eventType === preset.title && s.selectedChoice]}>
-          <AgendaIcon icon={preset.icon} tint={preset.tint} ink={preset.ink} />
+          <AgendaIcon icon={preset.icon} tint={preset.tint} />
           <Text numberOfLines={1} style={s.choiceText}>{preset.title}</Text>
         </Pressable>)}
       </View>}

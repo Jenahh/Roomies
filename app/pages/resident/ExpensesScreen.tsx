@@ -2,6 +2,7 @@ import { randomUUID } from '../../utils/randomUUID';
 import { useEffect, useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import DashboardIcon, { type IconName } from '../../components/dashboard/DashboardIcon';
+import RoomiePet from '../../components/RoomiePet';
 import SettleUpAssistant from '../../components/expenses/SettleUpAssistant';
 import type { PetMood } from '../../data/roomiePetMood';
 import {
@@ -86,6 +87,11 @@ export default function ExpensesScreen({ ledger, update, me, mood, petColor, sto
   const members = ledger.members;
   const names = new Map(members.map(member => [member.id, member.name]));
   const labelOf = (id: string) => id === me ? 'You' : names.get(id) ?? id.replace(/^name:/, '');
+  function roomieAvatar(id: string) {
+    const palette = ['Blue', 'Green', 'Purple', 'Yellow', 'Pink'];
+    const color = id === me ? petColor : palette[Array.from(id).reduce((sum, character) => sum + character.codePointAt(0)!, 0) % palette.length];
+    return <RoomiePet color={color} mood="happy-3d" size={38} accessibilityLabel={`${labelOf(id)} Roomie avatar`} />;
+  }
   const occurrences = expenseOccurrences(ledger, month);
   const thisMonth = occurrences.filter(item => item.month === month).reverse();
   const monthlyTotal = thisMonth.reduce((sum, item) => sum + item.amountCents, 0);
@@ -186,6 +192,7 @@ export default function ExpensesScreen({ ledger, update, me, mood, petColor, sto
       <View style={s.copy}>
         <Text accessibilityRole="header" style={s.title}>Expenses</Text>
       </View>
+      <RoomiePet action="expenses" color={petColor} mood={mood} size={40} accessibilityLabel="Your expense Roomie" />
     </View>
     {!!storageError && <Text accessibilityRole="alert" style={s.error}>{storageError}</Text>}
 
@@ -205,8 +212,9 @@ export default function ExpensesScreen({ ledger, update, me, mood, petColor, sto
       <Pressable accessibilityRole="button" onPress={() => { setError(''); setPanel(members.length > 1 ? 'balances' : 'person'); }} style={s.linkButton}><Text style={s.link}>{members.length > 1 ? 'Manage' : 'Add person'}</Text></Pressable>
     </View>
     {members.length > 1
-      ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.balances}>
+      ? <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.balanceStrip} contentContainerStyle={s.balances}>
           {summaries.map(item => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={`${labelOf(item.id)}: ${formatBalance(item.balanceCents)}`} onPress={() => setPanel('balances')} style={s.balanceCard}>
+            {roomieAvatar(item.id)}
             <Text numberOfLines={1} style={s.person}>{labelOf(item.id)}</Text>
             <Text style={[s.personAmount, item.balanceCents > 0 && s.positive, item.balanceCents < 0 && s.negative]}>{formatBalance(item.balanceCents)}</Text>
           </Pressable>)}

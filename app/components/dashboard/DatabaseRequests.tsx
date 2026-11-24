@@ -1,3 +1,4 @@
+import SoftChevron from '../SoftChevron';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import type { ResidentUser } from '../../data/demoAccount';
@@ -91,7 +92,7 @@ export default function DatabaseRequests({ user, type, onBack }: {
 
   return <>
     {onBack && <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.backArrow}>
-      <Text style={s.backArrowText}>{'<'}</Text>
+      <SoftChevron />
     </Pressable>}
     <View style={s.header}><Text accessibilityRole="header" style={s.title}>{title}</Text></View>
     {resident && <View style={s.form}>

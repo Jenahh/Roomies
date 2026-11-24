@@ -45,7 +45,7 @@ export default function ResidentAssistantDashboard({ user, onSignOut }: { user: 
     <SafeAreaView edges={['top', 'left', 'right']} style={s.safeArea}>
       <View style={s.shell}>
         <ScrollView showsVerticalScrollIndicator={false} ref={pageScroll} contentContainerStyle={s.page}>
-          <ResidentAssistantHeader />
+          <ResidentAssistantHeader pageTitle={activeTab === 'Profile' ? 'Profile' : undefined} />
           {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="RA Concern" /> : <ResidentAssistantHomeScreen name={data.name} hall={demoHall} now={now} concerns={demoConcerns} updates={demoHallUpdates} onAllConcerns={() => setActiveTab('Concerns')} onConcern={setSelectedConcern} />)}
           {activeTab === 'Calendar' && (
             <CalendarScreen data={data} setData={setData} mood={petMood} storageError={storageError} />

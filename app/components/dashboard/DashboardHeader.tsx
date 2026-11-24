@@ -2,11 +2,13 @@ import { Pressable, Text, View } from 'react-native';
 import { styles } from '../../styles/ResidentDashboard.styles';
 import Icon from './DashboardIcon';
 import RoomiePet from '../RoomiePet';
+import SoftChevron from '../SoftChevron';
 import { getPetAccessoryIds } from '../../data/roomiePetAccessories';
 import type { PetMood } from '../../data/roomiePetMood';
 import type { ResidentData } from '../../hooks/useResidentData';
 
-export default function DashboardHeader({ household, pet, mood, onHousehold, onNotifications, onPet, notificationsActive = false }: {
+export default function DashboardHeader({ household, pet, mood, onHousehold, onNotifications, onPet, notificationsActive = false, pageTitle }: {
+  pageTitle?: string;
   household: string;
   pet: ResidentData['pet'];
   mood: PetMood;
@@ -17,11 +19,11 @@ export default function DashboardHeader({ household, pet, mood, onHousehold, onN
 }) {
   return (
     <View style={styles.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel={household || 'Set up household'} onPress={onHousehold} style={({ pressed }) => [styles.household, pressed && styles.pressed]}>
+      {pageTitle ? <Text accessibilityRole="header" numberOfLines={1} style={styles.headerPageTitle}>{pageTitle}</Text> : <Pressable accessibilityRole="button" accessibilityLabel={household || 'Set up household'} onPress={onHousehold} style={({ pressed }) => [styles.household, pressed && styles.pressed]}>
         <Icon name="home" color="#657EEA" size={18} />
         <Text numberOfLines={1} style={styles.householdName}>{household || 'Set up household'}</Text>
-        <Text accessible={false} style={styles.chevron}>{'\u2304'}</Text>
-      </Pressable>
+        <SoftChevron direction="down" color="#6578C1" />
+      </Pressable>}
       <Pressable accessibilityRole="button" accessibilityLabel="Notifications" onPress={onNotifications} style={({ pressed }) => [styles.notification, pressed && styles.pressed]}>
         <Icon name="bell" size={20} active={notificationsActive} />
       </Pressable>

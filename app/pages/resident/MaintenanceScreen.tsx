@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { randomUUID } from '../../utils/randomUUID';
 import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import RoomiePet from '../../components/RoomiePet';
@@ -46,7 +47,7 @@ export default function MaintenanceScreen({ setData, storageError, onBack, initi
     reader.readAsDataURL(file);
   }
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.backArrow}><Text style={s.backArrowText}>{'<'}</Text></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.backArrow}><SoftChevron /></Pressable>
     <View style={s.header}>
       {Platform.OS === 'web' ? (
         <div key={saved ? 'saved' : 'ready'} className="maintenance-mascot"><RoomiePet role="property-manager" size={95} /></div>

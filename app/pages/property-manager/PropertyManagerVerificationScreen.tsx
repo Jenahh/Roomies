@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SignupProgress from '../../components/auth/SignupProgress';
@@ -8,7 +9,7 @@ export default function PropertyManagerVerificationScreen({ onBack, onContinueAd
   return (
     <SafeAreaView style={s.safeArea}>
       <View style={s.page}>
-        <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Back to property manager join code" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable></View>
+        <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Back to property manager join code" onPress={onBack} style={s.back}><SoftChevron /></Pressable></View>
         <SignupProgress step={4} />
         <View style={s.content}>
           <Text accessibilityRole="header" style={s.title}>Your manager request is in.</Text>

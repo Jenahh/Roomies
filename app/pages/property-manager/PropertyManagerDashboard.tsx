@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { randomUUID } from '../../utils/randomUUID';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DatabaseRequests from '../../components/dashboard/DatabaseRequests';
@@ -101,7 +102,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
     <SafeAreaView edges={['top', 'left', 'right']} style={s.safeArea}>
       <View style={s.shell}>
         <ScrollView showsVerticalScrollIndicator={false} ref={pageScroll} contentContainerStyle={s.page}>
-          <RoleDashboardHeader role="Property Manager" showLogo={false} showWordmark={false} />
+          <RoleDashboardHeader role="Property Manager" pageTitle={activeTab === 'Profile' ? 'Profile' : undefined} showLogo={false} showWordmark={false} />
           {activeTab === 'Home' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerHomeScreen name={data.name} now={now} property={demoProperty} requests={demoMaintenanceRequests} onCreateAnnouncement={openAnnouncement} onAllRequests={() => setActiveTab('Requests')} onRequest={setSelectedRequest} onManageResidents={() => openResidents()} />)}
           {activeTab === 'Requests' && (user.databaseDemoStaff ? <DatabaseRequests user={user} type="Maintenance" /> : <PropertyManagerRequestsScreen property={demoProperty} requests={demoMaintenanceRequests} onSelect={setSelectedRequest} />)}
           {activeTab === 'Announcements' && <PropertyManagerAnnouncementsScreen property={demoProperty} announcements={announcements} onCreate={openAnnouncement} />}
@@ -114,7 +115,7 @@ export default function PropertyManagerDashboard({ user, onSignOut }: { user: Re
       <Modal visible={!!selectedRequest || creatingAnnouncement} transparent animationType="fade" onRequestClose={closeModal}>
         <View style={s.backdrop}>
           <ScrollView showsVerticalScrollIndicator={false} style={s.modal} contentContainerStyle={s.modalContent} keyboardShouldPersistTaps="handled">
-            <Pressable accessibilityRole="button" accessibilityLabel="Back to dashboard" onPress={closeModal} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Back to dashboard" onPress={closeModal} style={s.back}><SoftChevron /></Pressable>
             {selectedRequest && <MaintenanceRequestDetailsScreen request={selectedRequest} />}
             {creatingAnnouncement && <CreateAnnouncementScreen title={title} setTitle={setTitle} message={message} setMessage={setMessage} error={error} onSave={saveAnnouncement} />}
           </ScrollView>

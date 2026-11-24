@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import RoomiePet from '../../components/RoomiePet';
 import './MaintenanceScreen.css';
 import { randomUUID } from '../../utils/randomUUID';
@@ -23,7 +24,7 @@ export default function ContactRAScreen({ setData, storageError, onBack, initial
     setTitle(''); setDescription(''); setError(''); setSaved(true);
   }
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.backArrow}><Text style={s.backArrowText}>{'<'}</Text></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.backArrow}><SoftChevron /></Pressable>
     <View style={s.header}>
       {Platform.OS === 'web' ? (
         <div key={saved && !storageError ? 'saved' : 'ready'} className="maintenance-mascot">

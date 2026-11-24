@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { ResidentData } from '../../hooks/useResidentData';
@@ -32,7 +33,7 @@ export default function RoomieCheckInScreen({ data, setData, now, storageError, 
 
   return (
     <>
-      <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text><Text style={s.detail}>My Roomie Pet</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Back to home" onPress={onBack} style={s.back}><SoftChevron /><Text style={s.detail}>My Roomie Pet</Text></Pressable>
       <Text accessibilityRole="header" style={s.title}>{checkedIn && mood === 'Happy' ? 'A fresh start!' : 'Roomie check-in'}</Text>
       <Text style={s.subtitle}>{mood === 'Stressed' ? 'A little progress can help your pet feel better.' : mood === 'Annoyed' ? 'Your Roomie noticed overdue chores.' : 'Keep growing together.'}</Text>
       <View style={s.hero}><RoomiePet color={data.pet?.color} mood={mood} accessories={getPetAccessoryIds(data.pet)} accessoryColors={data.pet?.accessoryColors} size={145} accessibilityLabel={`${name}, ${mood.toLowerCase()}`} /></View>

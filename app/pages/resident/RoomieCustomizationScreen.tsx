@@ -1,3 +1,4 @@
+import SoftChevron from '../../components/SoftChevron';
 import { styles as dashboardStyles } from '../../styles/ResidentDashboard.styles';
 import RoomiePet, { ROOMIE_ACCESSORY_IMAGES, ROOMIE_COLORS } from '../../components/RoomiePet';
 import type { PetMood } from '../../data/roomiePetMood';
@@ -71,7 +72,7 @@ export default function RoomieCustomizationScreen({ data, setData, storageError,
   }
 
   return <View style={s.screen}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={dashboardStyles.page}>{header}
-    <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.back}><Text style={s.backText}>{'<'}</Text></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Back to profile" onPress={onBack} style={s.back}><SoftChevron /></Pressable>
     <View style={s.preview}>
       <View style={s.petPreview}>
         <RoomiePet mood={mood} color={color} accessories={accessories} size={220} accessibilityLabel={`${color} ${mood.toLowerCase()} Roomie Pet preview`} />
