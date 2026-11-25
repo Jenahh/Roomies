@@ -23,6 +23,8 @@ export default defineConfig({
   resolve: {
     extensions: ['.web.mjs', '.mjs', '.web.js', '.js', '.web.ts', '.ts', '.web.tsx', '.tsx', '.json'],
     alias: {
+      // Native icon imports use DOM icons in the web bundle; Expo keeps native icons.
+      'lucide-react-native': 'lucide-react',
       'react-native': 'react-native-web',
     },
   },
